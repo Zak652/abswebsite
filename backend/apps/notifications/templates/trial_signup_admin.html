@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"></head>
+<body style="font-family: Inter, -apple-system, sans-serif; color: #111827; max-width: 600px; margin: 0 auto; padding: 32px 24px; background: #FAFAFA;">
+  <div style="background: #FFFFFF; border-radius: 12px; padding: 32px; border: 2px solid #E35B2C;">
+    <div style="border-bottom: 3px solid #E35B2C; padding-bottom: 16px; margin-bottom: 24px;">
+      <h1 style="color: #E35B2C; font-size: 20px; margin: 0 0 4px 0;">⚡ Action Required: New Arcplus Trial Signup</h1>
+      <p style="color: #6B7280; font-size: 14px; margin: 0;">Provision this account in Arcplus and mark as provisioned</p>
+    </div>
+
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+      <tr>
+        <td style="padding: 10px 12px; background: #F3F4F6; font-weight: 600; font-size: 14px; width: 35%; border-bottom: 1px solid #E5E7EB;">Company</td>
+        <td style="padding: 10px 12px; font-size: 14px; border-bottom: 1px solid #E5E7EB;">{{ signup.company_name }}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 12px; background: #F3F4F6; font-weight: 600; font-size: 14px; border-bottom: 1px solid #E5E7EB;">Contact Name</td>
+        <td style="padding: 10px 12px; font-size: 14px; border-bottom: 1px solid #E5E7EB;">{{ signup.full_name }}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 12px; background: #F3F4F6; font-weight: 600; font-size: 14px; border-bottom: 1px solid #E5E7EB;">Email</td>
+        <td style="padding: 10px 12px; font-size: 14px; border-bottom: 1px solid #E5E7EB;"><a href="mailto:{{ signup.email }}">{{ signup.email }}</a></td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 12px; background: #F3F4F6; font-weight: 600; font-size: 14px; border-bottom: 1px solid #E5E7EB;">Phone</td>
+        <td style="padding: 10px 12px; font-size: 14px; border-bottom: 1px solid #E5E7EB;">{{ signup.phone|default:"Not provided" }}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 12px; background: #F3F4F6; font-weight: 600; font-size: 14px; border-bottom: 1px solid #E5E7EB;">Plan Requested</td>
+        <td style="padding: 10px 12px; font-size: 14px; font-weight: 700; color: #1F5FAF; border-bottom: 1px solid #E5E7EB;">{{ signup.get_plan_display }}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 12px; background: #F3F4F6; font-weight: 600; font-size: 14px; border-bottom: 1px solid #E5E7EB;">Asset Estimate</td>
+        <td style="padding: 10px 12px; font-size: 14px; border-bottom: 1px solid #E5E7EB;">{{ signup.asset_count_estimate|default:"Not specified" }}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 12px; background: #F3F4F6; font-weight: 600; font-size: 14px;">Submitted At</td>
+        <td style="padding: 10px 12px; font-size: 14px;">{{ signup.created_at }}</td>
+      </tr>
+    </table>
+
+    <div style="background: #FFF3CD; border-radius: 8px; padding: 16px;">
+      <p style="margin: 0; font-size: 14px; color: #856404;"><strong>Next step:</strong> Provision Arcplus account → send credentials to {{ signup.email }} → mark as provisioned in admin portal.</p>
+    </div>
+  </div>
+</body>
+</html>
