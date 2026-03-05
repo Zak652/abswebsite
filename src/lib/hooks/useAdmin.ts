@@ -76,3 +76,107 @@ export function useAdminTraining() {
     enabled: isAuthenticated,
   });
 }
+
+export function useAdminAnalytics(period: 7 | 30 | 90 = 30) {
+  const { isAuthenticated } = useAuthStore();
+  return useQuery({
+    queryKey: ["admin", "analytics", period],
+    queryFn: () => adminService.getAnalytics(period).then((r) => r.data),
+    enabled: isAuthenticated,
+    staleTime: 60_000,
+  });
+}
+
+export function useAdminUsers(params?: { search?: string; role?: string }) {
+  const { isAuthenticated } = useAuthStore();
+  return useQuery({
+    queryKey: ["admin", "users", params],
+    queryFn: () =>
+      adminService.getUsers(params).then((r) => r.data.results),
+    enabled: isAuthenticated,
+  });
+}
+
+export function useUpdateUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: { is_active?: boolean; role?: string };
+    }) => adminService.updateUser(id, data).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "users"] });
+    },
+  });
+}
+
+export function useAdminProducts(params?: { category?: string }) {
+  const { isAuthenticated } = useAuthStore();
+  return useQuery({
+    queryKey: ["admin", "products", params],
+    queryFn: () => adminService.getProducts(params).then((r) => r.data),
+    enabled: isAuthenticated,
+  });
+}
+
+export function useCreateProduct() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Parameters<typeof adminService.createProduct>[0]) =>
+      adminService.createProduct(data).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "products"] });
+    },
+  });
+}
+
+export function useUpdateAdminProduct() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Parameters<typeof adminService.updateProduct>[1] }) =>
+      adminService.updateProduct(id, data).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "products"] });
+    },
+  });
+}
+
+export function useDeleteProduct() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => adminService.deleteProduct(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "products"] });
+    },
+  });
+}
+
+export function useAdminServiceRequests(params?: { service_type?: string; status?: string }) {
+  const { isAuthenticated } = useAuthStore();
+  return useQuery({
+    queryKey: ["admin", "services", params],
+    queryFn: () =>
+      adminService.getServiceRequests(params).then((r) => r.data.results),
+    enabled: isAuthenticated,
+  });
+}
+
+export function useUpdateServiceRequest() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: { status?: string; admin_notes?: string };
+    }) => adminService.updateServiceRequest(id, data).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "services"] });
+      qc.invalidateQueries({ queryKey: ["admin", "stats"] });
+    },
+  });
+}

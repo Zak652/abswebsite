@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { Download } from "lucide-react";
 import { useAdminRFQs, useUpdateRFQ } from "@/lib/hooks/useAdmin";
+import { adminService } from "@/lib/api/admin";
 import { DataTable } from "@/components/admin/DataTable";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import type { Column } from "@/components/admin/DataTable";
@@ -13,6 +15,15 @@ const STATUS_OPTIONS = [
   { value: "quoted", label: "Quoted" },
   { value: "closed", label: "Closed" },
 ];
+
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 function RFQStatusSelect({
   rfq,
@@ -64,9 +75,20 @@ export default function AdminQuotesPage() {
   const [statusFilter, setStatusFilter] = useState<string | undefined>();
   const { data: rfqs, isLoading } = useAdminRFQs(statusFilter);
   const updateRFQ = useUpdateRFQ();
+  const [exporting, setExporting] = useState(false);
 
   const handleStatusUpdate = (id: string, status: string) => {
     updateRFQ.mutate({ id, data: { status } });
+  };
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const res = await adminService.exportRFQs();
+      downloadBlob(res.data, "rfqs.csv");
+    } finally {
+      setExporting(false);
+    }
   };
 
   const columns: Column<RFQSubmission>[] = [
@@ -129,23 +151,27 @@ export default function AdminQuotesPage() {
             {rfqs?.length ?? 0} submission{rfqs?.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <div className="flex gap-2">
-          {[undefined, "new", "reviewing", "quoted", "closed"].map(
-            (status) => (
-              <button
-                key={status ?? "all"}
-                onClick={() => setStatusFilter(status)}
-                className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${statusFilter === status
-                    ? "bg-primary-900 text-white border-primary-900"
-                    : "bg-white text-neutral-500 border-neutral-200 hover:border-neutral-400"
-                  }`}
-              >
-                {status
-                  ? status.charAt(0).toUpperCase() + status.slice(1)
-                  : "All"}
-              </button>
-            )
-          )}
+        <div className="flex items-center gap-2 flex-wrap">
+          {[undefined, "new", "reviewing", "quoted", "closed"].map((status) => (
+            <button
+              key={status ?? "all"}
+              onClick={() => setStatusFilter(status)}
+              className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${statusFilter === status
+                  ? "bg-primary-900 text-white border-primary-900"
+                  : "bg-white text-neutral-500 border-neutral-200 hover:border-neutral-400"
+                }`}
+            >
+              {status ? status.charAt(0).toUpperCase() + status.slice(1) : "All"}
+            </button>
+          ))}
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-neutral-200 bg-white text-neutral-600 hover:border-neutral-400 transition-colors disabled:opacity-50"
+          >
+            <Download className="w-3.5 h-3.5" />
+            {exporting ? "Exporting…" : "Export CSV"}
+          </button>
         </div>
       </div>
 

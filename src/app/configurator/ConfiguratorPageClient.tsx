@@ -1,290 +1,426 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { ArrowLeft, Check, Tag, Shield, Zap, Battery } from "lucide-react";
+import {
+    ArrowLeft,
+    Check,
+    Tag,
+    Shield,
+    Zap,
+    Battery,
+    Package,
+    Loader2,
+} from "lucide-react";
 import Link from "next/link";
+import { useProduct, useProductConfig } from "@/lib/hooks/useProducts";
+import type { ProductConfigOption, ProductConfigSection } from "@/types/products";
 
-// --- Configuration Data ---
-const configOptions = {
-    models: [
-        { id: "std", name: "Standard (Wi-Fi Only)", price: 850, desc: "Perfect for indoor warehouse operations.", badge: null },
-        { id: "pro", name: "Professional (LTE + Wi-Fi)", price: 1150, desc: "For field service and yard management.", badge: "Popular" },
-    ],
-    engines: [
-        { id: "2d", name: "1D/2D Imager", price: 0, desc: "Standard range scanning." },
-        { id: "lr", name: "Long-Range Imager", price: 200, desc: "Scan barcodes up to 45 ft away." },
-        { id: "rfid", name: "RFID UHF Module", price: 500, desc: "Bulk capture of hundreds of tags instantly." },
-    ],
-    batteries: [
-        { id: "std_bat", name: "Standard 4000mAh", price: 0, desc: "Up to 8 hours of continuous use." },
-        { id: "ext_bat", name: "Extended 6000mAh", price: 75, desc: "Up to 14 hours of continuous use." },
-        { id: "hot_swap", name: "Hot-Swap System", price: 150, desc: "Zero downtime battery replacement." },
-    ],
-    protection: [
-        { id: "none", name: "Standard Casing", price: 0, desc: "IP65 rated against dust and water." },
-        { id: "boot", name: "Rugged Boot", price: 85, desc: "Added drop protection up to 6ft." },
-        { id: "ex", name: "Full ATEX / Ex-Proof", price: 800, desc: "Intrinsically safe for hazardous areas." },
-    ]
+// ── Icon string → component map ─────────────────────────────────────
+const ICON_MAP: Record<string, React.ElementType> = {
+    Tag,
+    Shield,
+    Zap,
+    Battery,
+    Package,
 };
 
-// Badge icons for visual overlay
-const overlayConfig: Record<string, { icon: typeof Tag; label: string; color: string; position: string }[]> = {
-    rfid: [{ icon: Tag, label: "RFID Ready", color: "bg-accent-500 text-white", position: "top-10 right-10" }],
-    lr: [{ icon: Zap, label: "Long Range", color: "bg-blue-500 text-white", position: "top-10 right-10" }],
-    ex: [{ icon: Shield, label: "ATEX Ex-Proof", color: "bg-yellow-400 text-black", position: "bottom-10 left-10" }],
-    boot: [{ icon: Shield, label: "Rugged Boot", color: "bg-green-500 text-white", position: "bottom-10 left-10" }],
-    pro: [{ icon: Zap, label: "LTE Enabled", color: "bg-purple-500 text-white", position: "top-10 left-10" }],
-    ext_bat: [{ icon: Battery, label: "Extended Battery", color: "bg-emerald-500 text-white", position: "bottom-10 right-10" }],
-    hot_swap: [{ icon: Battery, label: "Hot-Swap", color: "bg-emerald-600 text-white", position: "bottom-10 right-10" }],
-};
+// ── Skeleton helper ──────────────────────────────────────────────────
+function Skeleton({ className = "" }: { className?: string }) {
+    return (
+        <div className={`animate-pulse bg-neutral-200 rounded-xl ${className}`} />
+    );
+}
 
-export function ConfiguratorPageClient() {
-    const [selections, setSelections] = useState({
-        model: configOptions.models[0],
-        engine: configOptions.engines[0],
-        battery: configOptions.batteries[0],
-        protection: configOptions.protection[0],
-    });
+// ── Option Button ────────────────────────────────────────────────────
+function OptionButton({
+    opt,
+    selected,
+    onSelect,
+}: {
+    opt: ProductConfigOption;
+    selected: boolean;
+    onSelect: () => void;
+}) {
+    return (
+        <button
+            onClick={onSelect}
+            className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 relative ${selected
+                ? "border-accent-500 bg-accent-500/5"
+                : "border-neutral-200 hover:border-primary-900/20"
+                }`}
+        >
+            <div className="flex justify-between items-center mb-1">
+                <div className="flex items-center gap-2">
+                    <span className="font-bold text-primary-900">{opt.name}</span>
+                    {opt.badge && (
+                        <span className="text-[10px] font-bold text-accent-500 bg-accent-500/10 px-2 py-0.5 rounded-full uppercase">
+                            {opt.badge}
+                        </span>
+                    )}
+                </div>
+                <span className="font-mono text-primary-900/60 text-sm">
+                    {!opt.price_usd || parseFloat(opt.price_usd) === 0
+                        ? "Included"
+                        : `+$${opt.price_usd}`}
+                </span>
+            </div>
+            {opt.description && (
+                <p className="text-sm text-primary-900/60 pr-8">{opt.description}</p>
+            )}
+            {selected && (
+                <Check className="absolute right-4 top-1/2 -translate-y-1/2 text-accent-500 w-5 h-5" />
+            )}
+        </button>
+    );
+}
+
+// ── Skeleton panes ───────────────────────────────────────────────────
+function VisualSkeleton() {
+    return (
+        <div className="w-full max-w-md aspect-square flex items-center justify-center">
+            <Skeleton className="w-72 h-72 rounded-3xl" />
+        </div>
+    );
+}
+
+function OptionsSkeleton() {
+    return (
+        <div className="space-y-10 max-w-xl mx-auto">
+            <Skeleton className="h-9 w-64" />
+            {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="space-y-3">
+                    <Skeleton className="h-5 w-40" />
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-16 w-full" />
+                </div>
+            ))}
+        </div>
+    );
+}
+
+// ── Main configurator ────────────────────────────────────────────────
+function ConfiguratorContent() {
+    const searchParams = useSearchParams();
+    const productSlug = searchParams.get("product");
+
+    const { data: product, isLoading: productLoading } = useProduct(
+        productSlug ?? ""
+    );
+    const { data: configSections, isLoading: configLoading } = useProductConfig(
+        productSlug ?? ""
+    );
+
+    const isLoading = productLoading || configLoading;
+
+    const [selections, setSelections] = useState<
+        Record<string, ProductConfigOption>
+    >({});
     const [quantity, setQuantity] = useState(1);
 
-    const totalPrice = (selections.model.price + selections.engine.price + selections.battery.price + selections.protection.price) * quantity;
+    // Set defaults once config sections load
+    useEffect(() => {
+        if (configSections && configSections.length > 0) {
+            const defaults: Record<string, ProductConfigOption> = {};
+            for (const section of configSections) {
+                const defaultOpt =
+                    section.options.find((o) => o.is_default) ?? section.options[0];
+                if (defaultOpt) defaults[String(section.id)] = defaultOpt;
+            }
+            setSelections(defaults);
+        }
+    }, [configSections]);
 
-    // Collect all active overlays
-    const activeOverlays = [
-        ...(overlayConfig[selections.engine.id] || []),
-        ...(overlayConfig[selections.protection.id] || []),
-        ...(overlayConfig[selections.model.id] || []),
-        ...(overlayConfig[selections.battery.id] || []),
-    ];
+    const totalPrice =
+        Object.values(selections).reduce(
+            (sum, opt) => sum + parseFloat(opt.price_usd || "0"),
+            0
+        ) * quantity;
 
-    // Generate a composite key for visual transitions
-    const visualKey = `${selections.model.id}-${selections.engine.id}-${selections.battery.id}-${selections.protection.id}`;
+    const activeOverlays = Object.values(selections).filter(
+        (opt) => opt.overlay_label
+    );
+
+    const visualKey = Object.values(selections)
+        .map((o) => o.option_id)
+        .join("-");
+
+    // Encode config for the RFQ page
+    const encodedConfig = (() => {
+        try {
+            return btoa(
+                JSON.stringify({
+                    product: productSlug,
+                    sections: Object.fromEntries(
+                        Object.entries(selections).map(([sectionId, opt]) => [
+                            sectionId,
+                            opt.option_id,
+                        ])
+                    ),
+                    quantity,
+                })
+            );
+        } catch {
+            return "";
+        }
+    })();
+
+    const rfqHref =
+        productSlug && encodedConfig ? `/rfq?config=${encodedConfig}` : "/rfq";
+
+    const productImage =
+        product?.image_hero ?? "/images/barcode_scanner_1772490256748.png";
+    const productName = product?.name ?? "Configure Product";
+    const backHref = productSlug ? `/scanners/${productSlug}` : "/scanners";
+
+    // No product selected
+    if (!productSlug) {
+        return (
+            <div className="flex flex-col min-h-screen bg-white">
+                <div className="pt-24 px-4 sm:px-6 lg:px-8 border-b border-neutral-100 pb-4">
+                    <Link
+                        href="/scanners"
+                        className="inline-flex items-center text-sm font-medium text-primary-900/60 hover:text-accent-500 transition-colors mb-4"
+                    >
+                        <ArrowLeft className="w-4 h-4 mr-2" /> Back to Scanners
+                    </Link>
+                    <h1 className="text-3xl md:text-4xl font-heading font-bold text-primary-900">
+                        Configurator
+                    </h1>
+                </div>
+                <div className="flex-1 flex flex-col items-center justify-center py-32 text-center px-4">
+                    <Package className="w-16 h-16 text-neutral-300 mb-6" />
+                    <h2 className="text-2xl font-heading font-bold text-primary-900 mb-3">
+                        No product selected
+                    </h2>
+                    <p className="text-primary-900/60 mb-8 max-w-md">
+                        Select a configurable scanner or tag from the product catalogue to
+                        build your custom configuration.
+                    </p>
+                    <Link
+                        href="/scanners"
+                        className="bg-accent-500 text-white px-8 py-4 rounded-full font-medium hover:bg-accent-600 transition-colors"
+                    >
+                        Browse Scanners
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col min-h-screen bg-white">
             {/* Header */}
             <div className="pt-24 px-4 sm:px-6 lg:px-8 border-b border-neutral-100 pb-4 bg-white z-20">
-                <Link href="/scanners" className="inline-flex items-center text-sm font-medium text-primary-900/60 hover:text-accent-500 transition-colors mb-4">
-                    <ArrowLeft className="w-4 h-4 mr-2" /> Back to Scanners
+                <Link
+                    href={backHref}
+                    className="inline-flex items-center text-sm font-medium text-primary-900/60 hover:text-accent-500 transition-colors mb-4"
+                >
+                    <ArrowLeft className="w-4 h-4 mr-2" /> Back
                 </Link>
-                <h1 className="text-3xl md:text-4xl font-heading font-bold text-primary-900">Configure Handheld Scanner</h1>
+                {isLoading ? (
+                    <Skeleton className="h-9 w-72" />
+                ) : (
+                    <h1 className="text-3xl md:text-4xl font-heading font-bold text-primary-900">
+                        Configure {productName}
+                    </h1>
+                )}
             </div>
 
             {/* Main Layout: Visuals (Left) & Options (Right) */}
             <div className="flex-1 flex flex-col lg:flex-row pb-24 lg:pb-0">
-
-                {/* LEFT: Visuals (Sticky on desktop) */}
+                {/* LEFT: Sticky product visual */}
                 <div className="w-full lg:w-1/2 bg-surface relative lg:sticky lg:top-36 lg:h-[calc(100vh-144px)] flex items-center justify-center p-8 lg:p-16 border-r border-neutral-100">
-                    <AnimatePresence mode="wait">
-                        <motion.div
-                            key={visualKey}
-                            initial={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
-                            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                            exit={{ opacity: 0, scale: 1.05, filter: "blur(4px)" }}
-                            transition={{ duration: 0.4 }}
-                            className="relative w-full max-w-md aspect-square"
-                        >
-                            <Image
-                                src="/images/barcode_scanner_1772490256748.png"
-                                alt="Scanner configuration preview"
-                                fill
-                                className="object-contain drop-shadow-2xl"
-                                priority
-                            />
-
-                            {/* Dynamic overlays for ALL option changes */}
-                            {activeOverlays.map((overlay, idx) => (
-                                <motion.div
-                                    key={`${overlay.label}-${idx}`}
-                                    initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    className={`absolute ${overlay.position} ${overlay.color} text-xs font-bold px-3 py-1.5 rounded-full flex items-center shadow-lg`}
-                                >
-                                    <overlay.icon className="w-3.5 h-3.5 mr-1.5" /> {overlay.label}
-                                </motion.div>
-                            ))}
-                        </motion.div>
-                    </AnimatePresence>
-                </div>
-
-                {/* RIGHT: Options Selector */}
-                <div className="w-full lg:w-1/2 p-4 sm:p-8 lg:p-16 overflow-y-auto lg:h-[calc(100vh-144px)] mb-32 lg:mb-0 pb-40">
-
-                    <div className="space-y-12 max-w-xl mx-auto">
-
-                        {/* Model Section */}
-                        <section>
-                            <h2 className="text-xl font-heading font-bold text-primary-900 mb-4 border-b border-neutral-100 pb-2">1. Base Model</h2>
-                            <div className="space-y-3">
-                                {configOptions.models.map((opt) => (
-                                    <button
-                                        key={opt.id}
-                                        onClick={() => setSelections(s => ({ ...s, model: opt }))}
-                                        className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 relative ${selections.model.id === opt.id
-                                            ? 'border-accent-500 bg-accent-500/5'
-                                            : 'border-neutral-200 hover:border-primary-900/20'
-                                            }`}
-                                    >
-                                        <div className="flex justify-between items-center mb-1">
-                                            <div className="flex items-center">
-                                                <span className="font-bold text-primary-900">{opt.name}</span>
-                                                {opt.badge && (
-                                                    <span className="ml-2 text-[10px] font-bold text-accent-500 bg-accent-500/10 px-2 py-0.5 rounded-full uppercase">{opt.badge}</span>
-                                                )}
-                                            </div>
-                                            <span className="font-mono text-primary-900/60">${opt.price}</span>
-                                        </div>
-                                        <p className="text-sm text-primary-900/60 pr-8">{opt.desc}</p>
-                                        {selections.model.id === opt.id && <Check className="absolute right-4 top-1/2 -translate-y-1/2 text-accent-500 w-5 h-5" />}
-                                    </button>
-                                ))}
-                            </div>
-                        </section>
-
-                        {/* Engine Section */}
-                        <section>
-                            <h2 className="text-xl font-heading font-bold text-primary-900 mb-4 border-b border-neutral-100 pb-2">2. Scanning Engine</h2>
-                            <div className="space-y-3">
-                                {configOptions.engines.map((opt) => (
-                                    <button
-                                        key={opt.id}
-                                        onClick={() => setSelections(s => ({ ...s, engine: opt }))}
-                                        className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 relative ${selections.engine.id === opt.id
-                                            ? 'border-accent-500 bg-accent-500/5'
-                                            : 'border-neutral-200 hover:border-primary-900/20'
-                                            }`}
-                                    >
-                                        <div className="flex justify-between items-center mb-1">
-                                            <span className="font-bold text-primary-900">{opt.name}</span>
-                                            <span className="font-mono text-primary-900/60">{opt.price === 0 ? 'Included' : `+$${opt.price}`}</span>
-                                        </div>
-                                        <p className="text-sm text-primary-900/60 pr-8">{opt.desc}</p>
-                                        {selections.engine.id === opt.id && <Check className="absolute right-4 top-1/2 -translate-y-1/2 text-accent-500 w-5 h-5" />}
-                                    </button>
-                                ))}
-                            </div>
-                        </section>
-
-                        {/* Battery Section */}
-                        <section>
-                            <h2 className="text-xl font-heading font-bold text-primary-900 mb-4 border-b border-neutral-100 pb-2">3. Battery Setup</h2>
-                            <div className="space-y-3">
-                                {configOptions.batteries.map((opt) => (
-                                    <button
-                                        key={opt.id}
-                                        onClick={() => setSelections(s => ({ ...s, battery: opt }))}
-                                        className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 relative ${selections.battery.id === opt.id
-                                            ? 'border-accent-500 bg-accent-500/5'
-                                            : 'border-neutral-200 hover:border-primary-900/20'
-                                            }`}
-                                    >
-                                        <div className="flex justify-between items-center mb-1">
-                                            <span className="font-bold text-primary-900">{opt.name}</span>
-                                            <span className="font-mono text-primary-900/60">{opt.price === 0 ? 'Included' : `+$${opt.price}`}</span>
-                                        </div>
-                                        <p className="text-sm text-primary-900/60 pr-8">{opt.desc}</p>
-                                        {selections.battery.id === opt.id && <Check className="absolute right-4 top-1/2 -translate-y-1/2 text-accent-500 w-5 h-5" />}
-                                    </button>
-                                ))}
-                            </div>
-                        </section>
-
-                        {/* Protection Section */}
-                        <section>
-                            <h2 className="text-xl font-heading font-bold text-primary-900 mb-4 border-b border-neutral-100 pb-2">4. Protection</h2>
-                            <div className="space-y-3">
-                                {configOptions.protection.map((opt) => (
-                                    <button
-                                        key={opt.id}
-                                        onClick={() => setSelections(s => ({ ...s, protection: opt }))}
-                                        className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 relative ${selections.protection.id === opt.id
-                                            ? 'border-accent-500 bg-accent-500/5'
-                                            : 'border-neutral-200 hover:border-primary-900/20'
-                                            }`}
-                                    >
-                                        <div className="flex justify-between items-center mb-1">
-                                            <span className="font-bold text-primary-900">{opt.name}</span>
-                                            <span className="font-mono text-primary-900/60">{opt.price === 0 ? 'Included' : `+$${opt.price}`}</span>
-                                        </div>
-                                        <p className="text-sm text-primary-900/60 pr-8">{opt.desc}</p>
-                                        {selections.protection.id === opt.id && <Check className="absolute right-4 top-1/2 -translate-y-1/2 text-accent-500 w-5 h-5" />}
-                                    </button>
-                                ))}
-                            </div>
-                        </section>
-
-                        {/* Quantity */}
-                        <section>
-                            <h2 className="text-xl font-heading font-bold text-primary-900 mb-4 border-b border-neutral-100 pb-2">5. Quantity</h2>
-                            <div className="flex items-center space-x-4">
-                                <button
-                                    onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                                    className="w-12 h-12 rounded-xl border-2 border-neutral-200 flex items-center justify-center text-xl font-bold text-primary-900 hover:border-primary-900/30 transition-colors"
-                                    aria-label="Decrease quantity"
-                                >
-                                    −
-                                </button>
-                                <motion.span
-                                    key={quantity}
-                                    initial={{ scale: 1.2 }}
-                                    animate={{ scale: 1 }}
-                                    className="text-3xl font-mono font-bold text-primary-900 w-16 text-center"
-                                >
-                                    {quantity}
-                                </motion.span>
-                                <button
-                                    onClick={() => setQuantity(q => q + 1)}
-                                    className="w-12 h-12 rounded-xl border-2 border-neutral-200 flex items-center justify-center text-xl font-bold text-primary-900 hover:border-primary-900/30 transition-colors"
-                                    aria-label="Increase quantity"
-                                >
-                                    +
-                                </button>
-                            </div>
-                        </section>
-
-                    </div>
-                </div>
-            </div>
-
-            {/* BOTTOM: Sticky Summary Bar */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-100 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] z-30">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between">
-                    <div className="hidden sm:block">
-                        <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wide">Summary</h4>
-                        <div className="flex space-x-2 text-sm font-medium text-primary-900 mt-1">
-                            <span>{selections.model.name}</span>
-                            <span className="text-gray-300">|</span>
-                            <span>{selections.engine.name}</span>
-                            <span className="text-gray-300">|</span>
-                            <span>×{quantity}</span>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center space-x-6 w-full sm:w-auto justify-between sm:justify-end">
-                        <div className="text-left sm:text-right">
-                            <div className="text-xs font-bold text-gray-400 uppercase tracking-wide">Total Price</div>
+                    {isLoading ? (
+                        <VisualSkeleton />
+                    ) : (
+                        <AnimatePresence mode="wait">
                             <motion.div
-                                key={totalPrice}
-                                initial={{ scale: 1.1, color: "#F97316" }}
-                                animate={{ scale: 1, color: "#0A192F" }}
-                                className="text-3xl font-mono font-bold"
+                                key={visualKey}
+                                initial={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
+                                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                                exit={{ opacity: 0, scale: 1.05, filter: "blur(4px)" }}
+                                transition={{ duration: 0.4 }}
+                                className="relative w-full max-w-md aspect-square"
                             >
-                                ${totalPrice.toLocaleString()}
-                            </motion.div>
-                        </div>
+                                <Image
+                                    src={productImage}
+                                    alt={`${productName} configuration preview`}
+                                    fill
+                                    className="object-contain drop-shadow-2xl"
+                                    priority
+                                />
 
-                        <Link
-                            href="/rfq"
-                            className="bg-primary-900 text-white px-8 py-4 rounded-full font-medium hover:bg-accent-500 transition-colors shadow-md hover:shadow-lg whitespace-nowrap"
-                        >
-                            Add to Quote
-                        </Link>
-                    </div>
+                                {activeOverlays.map((opt, idx) => {
+                                    const IconComponent =
+                                        (opt.overlay_icon && ICON_MAP[opt.overlay_icon]) || Tag;
+                                    return (
+                                        <motion.div
+                                            key={`${opt.overlay_label}-${idx}`}
+                                            initial={{ opacity: 0, scale: 0.8 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            className={`absolute ${opt.overlay_position ?? "top-10 right-10"} ${opt.overlay_color ?? "bg-accent-500 text-white"} text-xs font-bold px-3 py-1.5 rounded-full flex items-center shadow-lg`}
+                                        >
+                                            <IconComponent className="w-3.5 h-3.5 mr-1.5" />
+                                            {opt.overlay_label}
+                                        </motion.div>
+                                    );
+                                })}
+                            </motion.div>
+                        </AnimatePresence>
+                    )}
+                </div>
+
+                {/* RIGHT: Options selector */}
+                <div className="w-full lg:w-1/2 p-4 sm:p-8 lg:p-16 overflow-y-auto lg:h-[calc(100vh-144px)] mb-32 lg:mb-0 pb-40">
+                    {isLoading ? (
+                        <OptionsSkeleton />
+                    ) : configSections && configSections.length > 0 ? (
+                        <div className="space-y-12 max-w-xl mx-auto">
+                            {configSections.map((section: ProductConfigSection, idx: number) => (
+                                <section key={section.id}>
+                                    <h2 className="text-xl font-heading font-bold text-primary-900 mb-4 border-b border-neutral-100 pb-2">
+                                        {idx + 1}. {section.name}
+                                    </h2>
+                                    <div className="space-y-3">
+                                        {section.options.map((opt) => (
+                                            <OptionButton
+                                                key={opt.id}
+                                                opt={opt}
+                                                selected={
+                                                    selections[String(section.id)]?.id === opt.id
+                                                }
+                                                onSelect={() =>
+                                                    setSelections((prev) => ({
+                                                        ...prev,
+                                                        [String(section.id)]: opt,
+                                                    }))
+                                                }
+                                            />
+                                        ))}
+                                    </div>
+                                </section>
+                            ))}
+
+                            {/* Quantity */}
+                            <section>
+                                <h2 className="text-xl font-heading font-bold text-primary-900 mb-4 border-b border-neutral-100 pb-2">
+                                    {(configSections?.length ?? 0) + 1}. Quantity
+                                </h2>
+                                <div className="flex items-center space-x-4">
+                                    <button
+                                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                                        className="w-12 h-12 rounded-xl border-2 border-neutral-200 flex items-center justify-center text-xl font-bold text-primary-900 hover:border-primary-900/30 transition-colors"
+                                        aria-label="Decrease quantity"
+                                    >
+                                        −
+                                    </button>
+                                    <motion.span
+                                        key={quantity}
+                                        initial={{ scale: 1.2 }}
+                                        animate={{ scale: 1 }}
+                                        className="text-3xl font-mono font-bold text-primary-900 w-16 text-center"
+                                    >
+                                        {quantity}
+                                    </motion.span>
+                                    <button
+                                        onClick={() => setQuantity((q) => q + 1)}
+                                        className="w-12 h-12 rounded-xl border-2 border-neutral-200 flex items-center justify-center text-xl font-bold text-primary-900 hover:border-primary-900/30 transition-colors"
+                                        aria-label="Increase quantity"
+                                    >
+                                        +
+                                    </button>
+                                </div>
+                            </section>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center h-full py-24 text-center">
+                            <Package className="w-12 h-12 text-neutral-300 mb-4" />
+                            <p className="text-primary-900/60">
+                                No configuration options available for this product.
+                            </p>
+                        </div>
+                    )}
                 </div>
             </div>
 
+            {/* Sticky Summary Bar */}
+            {!isLoading && (
+                <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-100 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] z-30">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between">
+                        <div className="hidden sm:block">
+                            <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wide">
+                                Summary
+                            </h4>
+                            <div className="flex flex-wrap gap-x-2 text-sm font-medium text-primary-900 mt-1 max-w-md">
+                                {Object.values(selections)
+                                    .slice(0, 3)
+                                    .map((opt, i, arr) => (
+                                        <span key={opt.id} className="flex items-center gap-2">
+                                            {opt.name}
+                                            {i < arr.length - 1 && (
+                                                <span className="text-gray-300">|</span>
+                                            )}
+                                        </span>
+                                    ))}
+                                {Object.values(selections).length > 3 && (
+                                    <span className="text-primary-900/40">
+                                        +{Object.values(selections).length - 3} more
+                                    </span>
+                                )}
+                                {Object.values(selections).length > 0 && (
+                                    <>
+                                        <span className="text-gray-300">|</span>
+                                        <span>×{quantity}</span>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="flex items-center space-x-6 w-full sm:w-auto justify-between sm:justify-end">
+                            <div className="text-left sm:text-right">
+                                <div className="text-xs font-bold text-gray-400 uppercase tracking-wide">
+                                    {totalPrice > 0 ? "Estimated Price" : "Price on Request"}
+                                </div>
+                                {totalPrice > 0 && (
+                                    <motion.div
+                                        key={totalPrice}
+                                        initial={{ scale: 1.1, color: "#F97316" }}
+                                        animate={{ scale: 1, color: "#0A192F" }}
+                                        className="text-3xl font-mono font-bold"
+                                    >
+                                        ${totalPrice.toLocaleString()}
+                                    </motion.div>
+                                )}
+                            </div>
+
+                            <Link
+                                href={rfqHref}
+                                className="bg-primary-900 text-white px-8 py-4 rounded-full font-medium hover:bg-accent-500 transition-colors shadow-md hover:shadow-lg whitespace-nowrap"
+                            >
+                                Add to Quote
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
+    );
+}
+
+// ── Export wrapped in Suspense (required for useSearchParams) ─────────
+export function ConfiguratorPageClient() {
+    return (
+        <Suspense
+            fallback={
+                <div className="flex items-center justify-center min-h-screen">
+                    <Loader2 className="w-8 h-8 animate-spin text-accent-500" />
+                </div>
+            }
+        >
+            <ConfiguratorContent />
+        </Suspense>
     );
 }

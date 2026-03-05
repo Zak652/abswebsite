@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, type Variants } from "framer-motion";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Box, Target, Layers, Settings } from "lucide-react";
@@ -11,11 +11,25 @@ const fadeInUp: Variants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
 };
 
+const noMotion: Variants = {
+  hidden: { opacity: 1, y: 0 },
+  visible: { opacity: 1, y: 0 },
+};
+
 const stagger = {
   visible: { transition: { staggerChildren: 0.12 } },
 };
 
+const noStagger = {
+  visible: { transition: { staggerChildren: 0 } },
+};
+
 export function HomePageClient() {
+  const prefersReducedMotion = useReducedMotion();
+  const fade = prefersReducedMotion ? noMotion : fadeInUp;
+  const stg = prefersReducedMotion ? noStagger : stagger;
+  const dur = prefersReducedMotion ? 0 : 0.8;
+
   return (
     <div className="flex flex-col min-h-screen bg-surface">
 
@@ -37,7 +51,7 @@ export function HomePageClient() {
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+            transition={{ duration: dur, ease: "easeOut" }}
             className="text-6xl md:text-8xl font-heading font-bold tracking-tight mb-6"
           >
             Control<br />Every Asset.
@@ -46,7 +60,7 @@ export function HomePageClient() {
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+            transition={{ duration: dur, delay: prefersReducedMotion ? 0 : 0.2, ease: "easeOut" }}
             className="text-xl md:text-2xl font-medium text-white/80 max-w-2xl mx-auto mb-10"
           >
             The enterprise digital product showroom for intelligent asset management, hardware, and lifecycle services.
@@ -55,7 +69,7 @@ export function HomePageClient() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+            transition={{ duration: dur, delay: prefersReducedMotion ? 0 : 0.4, ease: "easeOut" }}
             className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6"
           >
             <Link href="/arcplus" className="w-full sm:w-auto bg-accent-500 text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-accent-600 transition-colors shadow-lg hover:shadow-xl">
@@ -73,10 +87,10 @@ export function HomePageClient() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
-        variants={stagger}
+        variants={stg}
         className="py-32 overflow-hidden bg-surface"
       >
-        <motion.div variants={fadeInUp} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+        <motion.div variants={fade} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
           <h2 className="text-4xl md:text-5xl font-heading font-bold text-primary-900">
             The ecosystem.
           </h2>
@@ -85,7 +99,7 @@ export function HomePageClient() {
           </p>
         </motion.div>
 
-        <motion.div variants={fadeInUp} className="relative w-full">
+        <motion.div variants={fade} className="relative w-full">
           {/* Horizontal scroll container */}
           <div className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-12 px-4 sm:px-6 lg:px-8 space-x-6">
             <div className="snap-center shrink-0 w-[4vw] sm:w-[1vw]"></div>
@@ -115,8 +129,8 @@ export function HomePageClient() {
             {/* Services Card */}
             <Link href="/services" className="block group w-[300px] md:w-[400px] flex-shrink-0 snap-center">
               <motion.div
-                whileHover={{ y: -8 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
+                whileHover={prefersReducedMotion ? undefined : { y: -8 }}
+                transition={{ duration: prefersReducedMotion ? 0 : 0.3, ease: "easeOut" }}
                 className="relative rounded-3xl overflow-hidden aspect-[4/5] shadow-sm hover:shadow-xl transition-shadow duration-500"
               >
                 <Image
@@ -147,11 +161,11 @@ export function HomePageClient() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
-        variants={stagger}
+        variants={stg}
         className="py-24 bg-white"
       >
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div variants={fadeInUp} className="text-center mb-16">
+          <motion.div variants={fade} className="text-center mb-16">
             <h2 className="text-4xl md:text-6xl font-heading font-bold text-primary-900">
               What do you need to achieve?
             </h2>
@@ -160,14 +174,14 @@ export function HomePageClient() {
             </p>
           </motion.div>
 
-          <motion.div variants={stagger} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <motion.div variants={stg} className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[
               { href: "/arcplus", icon: Layers, title: "Digitize asset management", desc: "Build a central digital register with automated depreciation and lifecycle tracking.", cta: "Arcplus Software" },
               { href: "/scanners", icon: Target, title: "Capture assets faster", desc: "Ditch manual counts with long-range RFID and intelligent barcode scanning terminals.", cta: "Hardware Catalog" },
               { href: "/tags", icon: Box, title: "Tag assets permanently", desc: "Industrial-grade labels and tags engineered for harsh environments and extreme temperatures.", cta: "Tags Selector" },
               { href: "/services", icon: Settings, title: "Build an asset register", desc: "Let our expert field teams tag, locate, and catalogue your entire fixed asset network.", cta: "Consulting Services" },
             ].map((item) => (
-              <motion.div key={item.href} variants={fadeInUp}>
+              <motion.div key={item.href} variants={fade}>
                 <Link href={item.href} className="group block">
                   <div className="bg-neutral-100 p-10 rounded-3xl h-full flex items-start space-x-6 hover:bg-primary-900 transition-colors duration-300">
                     <div className="bg-white p-4 rounded-2xl shadow-sm text-primary-900 group-hover:text-accent-500 transition-colors">
@@ -197,29 +211,29 @@ export function HomePageClient() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
-        variants={stagger}
+        variants={stg}
         className="py-24 bg-neutral-100"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div variants={fadeInUp} className="text-center mb-16">
+          <motion.div variants={fade} className="text-center mb-16">
             <h2 className="text-sm font-bold font-mono text-accent-500 uppercase tracking-widest mb-4">Trusted globally</h2>
             <h3 className="text-3xl md:text-5xl font-heading font-bold text-primary-900">Deployed at scale</h3>
           </motion.div>
 
-          <motion.div variants={stagger} className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <motion.div variants={stg} className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               { value: "5M+", label: "Assets Under Management" },
               { value: "42", label: "Countries Deployed" },
               { value: "99.9%", label: "Inventory Accuracy Achieved" },
             ].map((stat) => (
-              <motion.div key={stat.label} variants={fadeInUp} className="bg-white p-8 rounded-3xl text-center shadow-sm border border-neutral-200">
+              <motion.div key={stat.label} variants={fade} className="bg-white p-8 rounded-3xl text-center shadow-sm border border-neutral-200">
                 <div className="text-5xl font-mono font-bold text-primary-900 mb-4">{stat.value}</div>
                 <p className="text-primary-900/60 font-medium">{stat.label}</p>
               </motion.div>
             ))}
           </motion.div>
 
-          <motion.div variants={fadeInUp} className="mt-16 text-center">
+          <motion.div variants={fade} className="mt-16 text-center">
             <p className="text-lg font-medium text-primary-900/50 uppercase tracking-widest">Powering leaders in</p>
             <div className="flex flex-wrap justify-center gap-8 mt-8 opacity-60 font-bold font-heading text-xl text-primary-900">
               <span>Logistics</span>
@@ -241,14 +255,14 @@ export function HomePageClient() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
-        variants={stagger}
+        variants={stg}
         className="py-32 bg-primary-900 text-center"
       >
         <div className="max-w-4xl mx-auto px-4">
-          <motion.h2 variants={fadeInUp} className="text-5xl font-heading font-bold text-white mb-8">
+          <motion.h2 variants={fade} className="text-5xl font-heading font-bold text-white mb-8">
             Ready to gain control?
           </motion.h2>
-          <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
+          <motion.div variants={fade} className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
             <Link href="/arcplus#pricing" className="bg-accent-500 text-white px-10 py-5 rounded-full text-xl font-medium hover:bg-accent-600 transition-colors">
               Start Free Trial
             </Link>
@@ -256,7 +270,7 @@ export function HomePageClient() {
               Configure Solution
             </Link>
           </motion.div>
-          <motion.div variants={fadeInUp} className="mt-6">
+          <motion.div variants={fade} className="mt-6">
             <Link href="/rfq" className="text-white/50 hover:text-accent-500 transition-colors font-medium">
               or request a custom quote →
             </Link>

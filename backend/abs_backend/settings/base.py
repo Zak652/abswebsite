@@ -28,6 +28,8 @@ THIRD_PARTY_APPS = [
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
+    "django_celery_beat",
+    "django_celery_results",
 ]
 
 LOCAL_APPS = [
@@ -36,6 +38,9 @@ LOCAL_APPS = [
     "apps.subscriptions",
     "apps.training",
     "apps.notifications",
+    "apps.products",
+    "apps.services",
+    "apps.payments",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -141,3 +146,22 @@ RESEND_ADMIN_EMAIL = env("RESEND_ADMIN_EMAIL", default="admin@absplatform.com")
 JWT_SECRET = env("JWT_SECRET", default=SECRET_KEY)
 
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3001")
+
+# Celery
+CELERY_BROKER_URL = env("REDIS_URL", default="redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = env("REDIS_URL", default="redis://localhost:6379/0")
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "UTC"
+
+# Stripe
+STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY", default="")
+STRIPE_WEBHOOK_SECRET = env("STRIPE_WEBHOOK_SECRET", default="")
+
+# MTN Mobile Money
+MTN_MOMO_API_KEY = env("MTN_MOMO_API_KEY", default="")
+MTN_MOMO_SUBSCRIPTION_KEY = env("MTN_MOMO_SUBSCRIPTION_KEY", default="")
+
+# Airtel Money
+AIRTEL_MONEY_API_KEY = env("AIRTEL_MONEY_API_KEY", default="")

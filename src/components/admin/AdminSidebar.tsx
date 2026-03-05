@@ -2,19 +2,40 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, FileText, Layers, GraduationCap, ExternalLink, LogOut } from "lucide-react";
+import {
+  LayoutDashboard,
+  FileText,
+  Layers,
+  GraduationCap,
+  ExternalLink,
+  LogOut,
+  Wrench,
+  Users,
+  Package,
+} from "lucide-react";
 import { useLogout } from "@/lib/hooks/useAuth";
-
-const navItems = [
-  { href: "/admin-portal", label: "Overview", icon: LayoutDashboard, exact: true },
-  { href: "/admin-portal/quotes", label: "Quote Requests", icon: FileText, exact: false },
-  { href: "/admin-portal/subscriptions", label: "Trial Signups", icon: Layers, exact: false },
-  { href: "/admin-portal/training", label: "Training", icon: GraduationCap, exact: false },
-];
+import { useAdminStats } from "@/lib/hooks/useAdmin";
 
 export function AdminSidebar() {
   const pathname = usePathname();
   const { mutate: logout, isPending } = useLogout();
+  const { data: stats } = useAdminStats();
+
+  const navItems = [
+    { href: "/admin-portal", label: "Overview", icon: LayoutDashboard, exact: true },
+    { href: "/admin-portal/quotes", label: "Quote Requests", icon: FileText, exact: false },
+    { href: "/admin-portal/subscriptions", label: "Trial Signups", icon: Layers, exact: false },
+    { href: "/admin-portal/training", label: "Training", icon: GraduationCap, exact: false },
+    {
+      href: "/admin-portal/services",
+      label: "Service Requests",
+      icon: Wrench,
+      exact: false,
+      badge: stats?.new_service_requests ?? 0,
+    },
+    { href: "/admin-portal/users", label: "Users", icon: Users, exact: false },
+    { href: "/admin-portal/products", label: "Products", icon: Package, exact: false },
+  ];
 
   return (
     <aside className="w-64 min-h-screen bg-primary-900 flex flex-col shrink-0">
@@ -28,7 +49,7 @@ export function AdminSidebar() {
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
-        {navItems.map(({ href, label, icon: Icon, exact }) => {
+        {navItems.map(({ href, label, icon: Icon, exact, badge }) => {
           const isActive = exact ? pathname === href : pathname.startsWith(href);
           return (
             <Link
@@ -44,7 +65,12 @@ export function AdminSidebar() {
               `}
             >
               <Icon className="w-4 h-4 shrink-0" />
-              {label}
+              <span className="flex-1">{label}</span>
+              {badge != null && badge > 0 && (
+                <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full leading-none">
+                  {badge}
+                </span>
+              )}
             </Link>
           );
         })}

@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { Download } from "lucide-react";
 import { useAdminTrials, useMarkTrialProvisioned } from "@/lib/hooks/useAdmin";
+import { adminService } from "@/lib/api/admin";
 import { useCurrentUser } from "@/lib/hooks/useAuth";
 import { DataTable } from "@/components/admin/DataTable";
 import { StatusBadge } from "@/components/admin/StatusBadge";
@@ -15,17 +17,35 @@ const PLAN_LABELS: Record<string, string> = {
   enterprise: "Enterprise",
 };
 
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function AdminSubscriptionsPage() {
-  const [statusFilter, setStatusFilter] = useState<string | undefined>(
-    "pending"
-  );
+  const [statusFilter, setStatusFilter] = useState<string | undefined>("pending");
   const { data: trials, isLoading } = useAdminTrials(statusFilter);
   const markProvisioned = useMarkTrialProvisioned();
   const { data: currentUser } = useCurrentUser();
+  const [exporting, setExporting] = useState(false);
 
   const handleProvision = (id: string) => {
     const provisionedBy = currentUser?.email ?? "admin";
     markProvisioned.mutate({ id, provisioned_by: provisionedBy });
+  };
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const res = await adminService.exportTrials();
+      downloadBlob(res.data, "trials.csv");
+    } finally {
+      setExporting(false);
+    }
   };
 
   const columns: Column<TrialSignup>[] = [
@@ -95,7 +115,7 @@ export default function AdminSubscriptionsPage() {
             {trials?.length ?? 0} record{trials?.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
           {[undefined, "pending", "provisioned", "active", "converted", "expired"].map(
             (status) => (
               <button
@@ -106,12 +126,18 @@ export default function AdminSubscriptionsPage() {
                     : "bg-white text-neutral-500 border-neutral-200 hover:border-neutral-400"
                   }`}
               >
-                {status
-                  ? status.charAt(0).toUpperCase() + status.slice(1)
-                  : "All"}
+                {status ? status.charAt(0).toUpperCase() + status.slice(1) : "All"}
               </button>
             )
           )}
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-neutral-200 bg-white text-neutral-600 hover:border-neutral-400 transition-colors disabled:opacity-50"
+          >
+            <Download className="w-3.5 h-3.5" />
+            {exporting ? "Exporting…" : "Export CSV"}
+          </button>
         </div>
       </div>
 

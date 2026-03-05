@@ -1,17 +1,40 @@
 "use client";
 
+import { useState } from "react";
+import { Download } from "lucide-react";
 import { useAdminTraining } from "@/lib/hooks/useAdmin";
+import { adminService } from "@/lib/api/admin";
 import { DataTable } from "@/components/admin/DataTable";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import type { Column } from "@/components/admin/DataTable";
 import type { TrainingRegistration } from "@/types/training";
 
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function AdminTrainingPage() {
   const { data: registrations, isLoading } = useAdminTraining();
+  const [exporting, setExporting] = useState(false);
 
   const paidCount = registrations?.filter((r) => r.status === "paid").length ?? 0;
   const pendingCount =
     registrations?.filter((r) => r.status === "pending_payment").length ?? 0;
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const res = await adminService.exportTraining();
+      downloadBlob(res.data, "training-registrations.csv");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const columns: Column<TrainingRegistration>[] = [
     {
@@ -96,6 +119,14 @@ export default function AdminTrainingPage() {
             {pendingCount} pending payment
           </p>
         </div>
+        <button
+          onClick={handleExport}
+          disabled={exporting}
+          className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-neutral-200 bg-white text-neutral-600 hover:border-neutral-400 transition-colors disabled:opacity-50"
+        >
+          <Download className="w-3.5 h-3.5" />
+          {exporting ? "Exporting…" : "Export CSV"}
+        </button>
       </div>
 
       <DataTable

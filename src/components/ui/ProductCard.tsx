@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -14,10 +14,12 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ title, imageAlt, imageSrc, href, ctaText }: ProductCardProps) {
+    const prefersReducedMotion = useReducedMotion();
+
     return (
         <Link href={href} className="block group w-[300px] md:w-[400px] flex-shrink-0">
             <motion.div
-                whileHover={{ y: -8 }}
+                whileHover={prefersReducedMotion ? undefined : { y: -8 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
                 className="relative bg-neutral-100 rounded-3xl overflow-hidden aspect-[4/5] shadow-sm hover:shadow-xl transition-shadow duration-500"
             >

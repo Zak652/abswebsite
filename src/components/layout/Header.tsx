@@ -1,66 +1,78 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Menu, X, ArrowRight } from "lucide-react";
+import { useScrollPosition } from "@/lib/hooks/useScrollPosition";
 
-const scannersMenu = [
+interface NavMenuItem {
+    name: string;
+    desc: string;
+    image: string;
+    href: string;
+}
+
+interface NavMenuGroup {
+    category: string;
+    items: NavMenuItem[];
+}
+
+const fallbackScannersMenu: NavMenuGroup[] = [
     {
-        category: "Fixed Scanners",
+        category: "Scanners",
         items: [
-            { name: "Barcode Fixed", desc: "High-speed conveyor scanning", image: "/images/barcode_scanner_1772490256748.png", href: "/scanners" },
-            { name: "RFID Fixed", desc: "Dock door & portal readers", image: "/images/barcode_scanner_1772490256748.png", href: "/scanners" },
-        ],
-    },
-    {
-        category: "Handheld Devices",
-        items: [
-            { name: "PDA Scanners", desc: "Rugged mobile computers", image: "/images/barcode_scanner_1772490256748.png", href: "/scanners" },
-            { name: "Opticon Readers", desc: "Companion Bluetooth scanners", image: "/images/barcode_scanner_1772490256748.png", href: "/scanners" },
-            { name: "Handheld RFID", desc: "Inventory & cycle counting", image: "/images/barcode_scanner_1772490256748.png", href: "/scanners" },
-        ],
-    },
-    {
-        category: "Wearable",
-        items: [
-            { name: "Ring Scanners", desc: "Hands-free picking", image: "/images/barcode_scanner_1772490256748.png", href: "/scanners" },
-            { name: "Wearable RFID", desc: "Ergonomic continuous read", image: "/images/barcode_scanner_1772490256748.png", href: "/scanners" },
+            { name: "Handheld Series 700", desc: "Industrial-grade handheld scanner", image: "/images/barcode_scanner_1772490256748.png", href: "/scanners/handheld-series-700" },
+            { name: "Fixed RFID Reader FX9600", desc: "High-performance fixed RFID reader", image: "/images/barcode_scanner_1772490256748.png", href: "/scanners/fixed-rfid-reader-fx9600" },
         ],
     },
 ];
 
-const tagsMenu = [
+const fallbackTagsMenu: NavMenuGroup[] = [
     {
-        category: "RFID Tags",
+        category: "Tags",
         items: [
-            { name: "Metal mount", desc: "On-metal tracking", image: "/images/rfid_tag_1772490270592.png", href: "/tags" },
-            { name: "Long range", desc: "Yard management up to 20m", image: "/images/rfid_tag_1772490270592.png", href: "/tags" },
-            { name: "Industrial", desc: "High-temperature & rugged", image: "/images/rfid_tag_1772490270592.png", href: "/tags" },
-        ],
-    },
-    {
-        category: "Barcode Tags",
-        items: [
-            { name: "Polyester", desc: "Durable indoor labels", image: "/images/rfid_tag_1772490270592.png", href: "/tags" },
-            { name: "Aluminum", desc: "Harsh environment plates", image: "/images/rfid_tag_1772490270592.png", href: "/tags" },
-            { name: "Tamper proof", desc: "Security and warranty", image: "/images/rfid_tag_1772490270592.png", href: "/tags" },
-        ],
-    },
-    {
-        category: "GPS Tags",
-        items: [
-            { name: "Fleet tracking", desc: "Real-time vehicle location", image: "/images/rfid_tag_1772490270592.png", href: "/tags" },
-            { name: "Asset tracking", desc: "High-value unpowered assets", image: "/images/rfid_tag_1772490270592.png", href: "/tags" },
+            { name: "Industrial RFID Tag IT-250", desc: "Durable RFID tag for asset tracking", image: "/images/rfid_tag_1772490270592.png", href: "/tags/industrial-rfid-tag-it250" },
+            { name: "Barcode Label BL-120", desc: "High-durability barcode labels", image: "/images/rfid_tag_1772490270592.png", href: "/tags/barcode-label-bl120" },
         ],
     },
 ];
+
+function buildMenuGroups(items: NavMenuItem[], label: string): NavMenuGroup[] {
+    if (items.length === 0) return [];
+    return [{ category: label, items }];
+}
+
+function useNavProducts() {
+    const [scanners, setScanners] = useState<NavMenuGroup[]>(fallbackScannersMenu);
+    const [tags, setTags] = useState<NavMenuGroup[]>(fallbackTagsMenu);
+
+    useEffect(() => {
+        fetch("/api/nav-products")
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => {
+                if (data?.scanners?.length) {
+                    setScanners(buildMenuGroups(data.scanners, "Scanners"));
+                }
+                if (data?.tags?.length) {
+                    setTags(buildMenuGroups(data.tags, "Tags"));
+                }
+            })
+            .catch(() => { });
+    }, []);
+
+    return { scannersMenu: scanners, tagsMenu: tags };
+}
 
 export default function Header() {
     const [activeMenu, setActiveMenu] = useState<string | null>(null);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [mobileStep, setMobileStep] = useState<string | null>(null);
+    const scrolled = useScrollPosition(80);
+    const pathname = usePathname();
+    const { scannersMenu, tagsMenu } = useNavProducts();
 
     const handleMouseEnter = (menu: string) => {
         setActiveMenu(menu);
@@ -71,7 +83,12 @@ export default function Header() {
     };
 
     return (
-        <header className="fixed top-0 left-0 right-0 z-50 bg-surface/90 backdrop-blur-md border-b border-neutral-100">
+        <header className={[
+            "fixed top-0 left-0 right-0 z-50 transition-all duration-[--duration-normal]",
+            scrolled
+                ? "bg-surface/95 backdrop-blur-md border-b border-neutral-200 shadow-sm"
+                : "bg-surface/90 backdrop-blur-md border-b border-neutral-100",
+        ].join(" ")}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-20">
                     {/* Logo */}
@@ -83,13 +100,13 @@ export default function Header() {
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex space-x-8 h-full items-center" onMouseLeave={handleMouseLeave}>
-                        <Link href="/arcplus" className="text-sm font-medium text-primary-900/80 hover:text-primary-900 transition-colors">
+                        <Link href="/arcplus" className={`text-sm font-medium transition-colors border-b-2 pb-0.5 ${pathname === "/arcplus" ? "text-primary-900 border-accent-500" : "text-primary-900/80 hover:text-primary-900 border-transparent"}`}>
                             Arcplus
                         </Link>
 
                         {/* Scanners Dropdown */}
                         <div className="relative h-full flex items-center" onMouseEnter={() => handleMouseEnter("scanners")}>
-                            <Link href="/scanners" className="flex items-center space-x-1 text-sm font-medium text-primary-900/80 hover:text-primary-900 transition-colors">
+                            <Link href="/scanners" className={`flex items-center space-x-1 text-sm font-medium transition-colors border-b-2 pb-0.5 ${pathname.startsWith("/scanners") ? "text-primary-900 border-accent-500" : "text-primary-900/80 hover:text-primary-900 border-transparent"}`}>
                                 <span>Scanners</span>
                                 <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${activeMenu === "scanners" ? "rotate-180" : ""}`} />
                             </Link>
@@ -97,16 +114,16 @@ export default function Header() {
 
                         {/* Tags Dropdown */}
                         <div className="relative h-full flex items-center" onMouseEnter={() => handleMouseEnter("tags")}>
-                            <Link href="/tags" className="flex items-center space-x-1 text-sm font-medium text-primary-900/80 hover:text-primary-900 transition-colors">
+                            <Link href="/tags" className={`flex items-center space-x-1 text-sm font-medium transition-colors border-b-2 pb-0.5 ${pathname.startsWith("/tags") ? "text-primary-900 border-accent-500" : "text-primary-900/80 hover:text-primary-900 border-transparent"}`}>
                                 <span>Tags</span>
                                 <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${activeMenu === "tags" ? "rotate-180" : ""}`} />
                             </Link>
                         </div>
 
-                        <Link href="/services" className="text-sm font-medium text-primary-900/80 hover:text-primary-900 transition-colors">
+                        <Link href="/services" className={`text-sm font-medium transition-colors border-b-2 pb-0.5 ${pathname.startsWith("/services") ? "text-primary-900 border-accent-500" : "text-primary-900/80 hover:text-primary-900 border-transparent"}`}>
                             Services
                         </Link>
-                        <Link href="/training" className="text-sm font-medium text-primary-900/80 hover:text-primary-900 transition-colors">
+                        <Link href="/training" className={`text-sm font-medium transition-colors border-b-2 pb-0.5 ${pathname.startsWith("/training") ? "text-primary-900 border-accent-500" : "text-primary-900/80 hover:text-primary-900 border-transparent"}`}>
                             Training
                         </Link>
                     </nav>

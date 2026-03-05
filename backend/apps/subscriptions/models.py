@@ -36,6 +36,10 @@ class ArcplusTrialSignup(models.Model):
     admin_notes = models.TextField(blank=True)
     provisioned_at = models.DateTimeField(null=True, blank=True)
     provisioned_by = models.CharField(max_length=255, blank=True)
+    trial_start = models.DateTimeField(null=True, blank=True)
+    trial_expiry = models.DateTimeField(null=True, blank=True)
+    reminder_sent_day7 = models.BooleanField(default=False)
+    reminder_sent_day3 = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

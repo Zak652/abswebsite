@@ -82,5 +82,32 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.5,
     },
+    // Service detail pages
+    ...["asset-register", "verification", "disposal", "training", "outsourcing"].map(
+      (slug) => ({
+        url: `${BASE_URL}/services/${slug}`,
+        lastModified: new Date(),
+        changeFrequency: "monthly" as const,
+        priority: 0.7,
+      })
+    ),
+    // Scanner detail pages
+    ...["handheld-series-700", "fixed-rfid-reader-fx9600"].map(
+      (slug) => ({
+        url: `${BASE_URL}/scanners/${slug}`,
+        lastModified: new Date(),
+        changeFrequency: "monthly" as const,
+        priority: 0.7,
+      })
+    ),
+    // Tag detail pages
+    ...["industrial-rfid-tag-it250", "barcode-label-bl120"].map(
+      (slug) => ({
+        url: `${BASE_URL}/tags/${slug}`,
+        lastModified: new Date(),
+        changeFrequency: "monthly" as const,
+        priority: 0.7,
+      })
+    ),
   ];
 }

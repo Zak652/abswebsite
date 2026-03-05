@@ -17,6 +17,8 @@ class TrainingSessionSerializer(serializers.ModelSerializer):
             "location",
             "delivery_mode",
             "price_usd",
+            "price_ugx",
+            "price_kes",
             "capacity",
             "seats_remaining",
             "is_active",

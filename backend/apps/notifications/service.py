@@ -73,6 +73,72 @@ def send_trial_signup_notification(signup):
     )
 
 
+def send_service_request_notification(service_request):
+    """
+    Triggered: on POST /api/v1/services/requests/
+    Sends two emails: user confirmation + admin action alert
+    """
+    ref = str(service_request.id)[:8].upper()
+
+    user_html = render_to_string(
+        "service_request_user.html",
+        {
+            "service_request": service_request,
+            "ref": ref,
+            "service_type_display": service_request.get_service_type_display(),
+        },
+    )
+    _send(
+        to=service_request.email,
+        subject=f"[ABS] Service Request Received — {service_request.get_service_type_display()} (Ref #{ref})",
+        html=user_html,
+    )
+
+    admin_html = render_to_string(
+        "service_request_admin.html",
+        {
+            "service_request": service_request,
+            "ref": ref,
+            "service_type_display": service_request.get_service_type_display(),
+        },
+    )
+    _send(
+        to=settings.RESEND_ADMIN_EMAIL,
+        subject=f"[ACTION REQUIRED] New Service Request — {service_request.get_service_type_display()} from {service_request.company_name}",
+        html=admin_html,
+    )
+
+
+def send_trial_day7_reminder(signup):
+    """Triggered: 7 days after trial starts."""
+    html = render_to_string("trial_day7_reminder.html", {"signup": signup})
+    _send(
+        to=signup.email,
+        subject="Your Arcplus trial expires in 7 days",
+        html=html,
+    )
+
+
+def send_trial_day3_reminder(signup):
+    """Triggered: 3 days before trial expiry."""
+    html = render_to_string("trial_day3_reminder.html", {"signup": signup})
+    _send(
+        to=signup.email,
+        subject="Your Arcplus trial expires in 3 days — upgrade now",
+        html=html,
+    )
+
+
+def send_trial_expiry_notification(signup):
+    """Triggered: when trial expires."""
+    html = render_to_string("trial_expiry.html", {"signup": signup})
+    _send(
+        to=signup.email,
+        subject="Your Arcplus trial has ended",
+        html=html,
+    )
+
+
 def send_training_confirmation(registration):
     """
     Triggered: after Flutterwave webhook confirms payment

@@ -22,6 +22,12 @@ class TrainingSession(models.Model):
     location = models.CharField(max_length=255)
     delivery_mode = models.CharField(max_length=20, choices=DELIVERY_CHOICES)
     price_usd = models.DecimalField(max_digits=10, decimal_places=2)
+    price_ugx = models.DecimalField(
+        max_digits=12, decimal_places=2, null=True, blank=True
+    )
+    price_kes = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
     capacity = models.IntegerField()
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

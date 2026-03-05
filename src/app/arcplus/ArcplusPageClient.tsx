@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
-  Check,
   X,
   ChevronDown,
   Shield,
@@ -17,8 +16,10 @@ import {
   Truck,
   Wrench,
   Trash2,
+  Check,
 } from "lucide-react";
 import { TrialSignupModal } from "@/components/subscriptions/TrialSignupModal";
+import { PricingTable } from "@/components/patterns/PricingTable";
 
 // --- Data Models ---
 
@@ -178,13 +179,25 @@ const stagger = {
 
 export function ArcplusPageClient() {
   const [activeModule, setActiveModule] = useState<string | null>(null);
-  const [billingAnnual, setBillingAnnual] = useState(true);
   const [activeStep, setActiveStep] = useState(0);
   const [showFeatureComparison, setShowFeatureComparison] = useState(false);
+  const [storedCurrency, setStoredCurrency] = useState<"USD" | "UGX" | "KES">("USD");
   const [trialModal, setTrialModal] = useState<{
     open: boolean;
     plan: "starter" | "growth" | "professional" | "enterprise";
   }>({ open: false, plan: "growth" });
+
+  useEffect(() => {
+    const saved = localStorage.getItem("abs_preferred_currency");
+    if (saved === "USD" || saved === "UGX" || saved === "KES") {
+      setStoredCurrency(saved);
+    }
+  }, []);
+
+  const handleCurrencyChange = (c: "USD" | "UGX" | "KES") => {
+    setStoredCurrency(c);
+    localStorage.setItem("abs_preferred_currency", c);
+  };
 
   const nextStep = () => setActiveStep((prev) => (prev + 1) % lifecycleSteps.length);
 
@@ -355,8 +368,8 @@ export function ArcplusPageClient() {
                     key={step}
                     onClick={() => setActiveStep(idx)}
                     className={`w-full text-left p-6 rounded-2xl border transition-all duration-300 flex items-center justify-between ${activeStep === idx
-                        ? "bg-accent-500/10 border-accent-500 text-white"
-                        : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"
+                      ? "bg-accent-500/10 border-accent-500 text-white"
+                      : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"
                       }`}
                   >
                     <span className="text-xl font-medium">{step}</span>
@@ -396,8 +409,8 @@ export function ArcplusPageClient() {
                     <div className="w-32 h-32 mx-auto mb-6 bg-accent-500/20 rounded-full flex items-center justify-center border border-accent-500/50 shadow-[0_0_30px_rgba(249,115,22,0.3)]">
                       <RefreshCw
                         className={`w-12 h-12 text-accent-500 ${activeStep % 2 === 0
-                            ? "animate-spin-slow"
-                            : "animate-bounce"
+                          ? "animate-spin-slow"
+                          : "animate-bounce"
                           }`}
                         style={{ animationDuration: "3s" }}
                       />
@@ -433,122 +446,20 @@ export function ArcplusPageClient() {
         variants={stagger}
         className="py-32 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
       >
-        <motion.div variants={fadeInUp} className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-heading font-bold text-primary-900 mb-6">
+        <motion.div variants={fadeInUp} className="text-center mb-8">
+          <h2 className="text-4xl md:text-5xl font-heading font-bold text-primary-900">
             Simple, scale-based pricing.
           </h2>
-
-          <div className="inline-flex items-center bg-neutral-100 p-1.5 rounded-full relative">
-            <button
-              className={`relative z-10 px-8 py-3 text-sm font-medium rounded-full transition-colors ${!billingAnnual
-                  ? "text-white"
-                  : "text-primary-900/60 hover:text-primary-900"
-                }`}
-              onClick={() => setBillingAnnual(false)}
-            >
-              Monthly
-            </button>
-            <button
-              className={`relative z-10 px-8 py-3 text-sm font-medium rounded-full transition-colors ${billingAnnual
-                  ? "text-white"
-                  : "text-primary-900/60 hover:text-primary-900"
-                }`}
-              onClick={() => setBillingAnnual(true)}
-            >
-              Annual{" "}
-              <span className="text-accent-500 ml-1">(Save 15%)</span>
-            </button>
-            <motion.div
-              className="absolute top-1.5 bottom-1.5 bg-primary-900 rounded-full shadow z-0"
-              initial={false}
-              animate={{
-                left: billingAnnual ? "50%" : "6px",
-                right: billingAnnual ? "6px" : "50%",
-              }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            />
-          </div>
         </motion.div>
 
-        <motion.div
-          variants={stagger}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 items-stretch pt-4"
-        >
-          {pricingPlans.map((plan) => (
-            <motion.div
-              key={plan.name}
-              variants={fadeInUp}
-              className={`relative bg-white rounded-3xl p-8 flex flex-col ${plan.recommended
-                  ? "border-2 border-accent-500 shadow-xl scale-105 z-10"
-                  : "border border-neutral-100 shadow-sm hover:shadow-md"
-                } transition-shadow`}
-            >
-              {plan.recommended && (
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-accent-500 text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-                  Recommended
-                </div>
-              )}
-
-              <h3 className="text-2xl font-bold font-heading text-primary-900 mb-2">
-                {plan.name}
-              </h3>
-              <p className="text-primary-900/60 text-sm mb-6">{plan.assets} assets</p>
-
-              <div className="mb-8">
-                {plan.priceAnnual === null ? (
-                  <div className="text-4xl font-bold text-primary-900">Custom</div>
-                ) : (
-                  <div className="flex items-baseline text-primary-900">
-                    <span className="text-4xl font-bold font-mono tracking-tight text-primary-900">
-                      <AnimatePresence mode="wait">
-                        <motion.span
-                          key={billingAnnual ? "annual" : "monthly"}
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 10 }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          $
-                          {(billingAnnual
-                            ? plan.priceAnnual
-                            : plan.priceMonthly
-                          )?.toLocaleString()}
-                        </motion.span>
-                      </AnimatePresence>
-                    </span>
-                    <span className="ml-2 text-primary-900/60">
-                      /{billingAnnual ? "year" : "month"}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <button
-                onClick={() => openTrialModal(plan.plan)}
-                className={`w-full py-3.5 rounded-full font-medium transition-colors mb-8 ${plan.recommended
-                    ? "bg-accent-500 text-white hover:bg-accent-600"
-                    : "bg-neutral-100 text-primary-900 hover:bg-neutral-200"
-                  }`}
-              >
-                {plan.name === "Enterprise" ? "Contact Sales" : "Start Trial"}
-              </button>
-
-              <div className="flex-1">
-                <p className="text-xs font-bold text-primary-900/50 uppercase tracking-wider mb-4">
-                  Features included:
-                </p>
-                <ul className="space-y-4">
-                  {plan.features.map((feature, i) => (
-                    <li key={i} className="flex items-start">
-                      <Check className="w-5 h-5 text-accent-500 mr-3 shrink-0" />
-                      <span className="text-primary-900/80 text-sm">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
+        <PricingTable
+          plans={pricingPlans}
+          defaultCurrency={storedCurrency}
+          onSelectPlan={(plan) =>
+            openTrialModal(plan as "starter" | "growth" | "professional" | "enterprise")
+          }
+          onCurrencyChange={handleCurrencyChange}
+        />
 
         {/* Expandable Feature Comparison */}
         <div className="mt-16 text-center">

@@ -29,11 +29,15 @@ services:
       - "6379:6379"
 
   backend:
+    image: abswebsite-backend:latest
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: abs_backend
     restart: unless-stopped
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     command: >
       sh -c "python manage.py migrate --settings=abs_backend.settings.local &&
              python manage.py runserver 0.0.0.0:8000 --settings=abs_backend.settings.local"
@@ -47,15 +51,67 @@ services:
       - DJANGO_SETTINGS_MODULE=abs_backend.settings.local
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_started
+
+  celery_worker:
+    image: abswebsite-backend:latest
+    container_name: abs_celery_worker
+    restart: unless-stopped
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    command: celery -A abs_backend worker --loglevel=info
+    volumes:
+      - ./backend:/app
+    env_file:
+      - ./backend/.env
+    environment:
+      - DJANGO_SETTINGS_MODULE=abs_backend.settings.local
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  celery_beat:
+    image: abswebsite-backend:latest
+    container_name: abs_celery_beat
+    restart: unless-stopped
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    command: celery -A abs_backend beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - ./backend:/app
+    env_file:
+      - ./backend/.env
+    environment:
+      - DJANGO_SETTINGS_MODULE=abs_backend.settings.local
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
   frontend:
     image: node:20-alpine
     container_name: abs_frontend
     working_dir: /app
     restart: unless-stopped
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     command: sh -c "npm install && npm run dev -- --port 3000 --hostname 0.0.0.0"
     volumes:
       - .:/app

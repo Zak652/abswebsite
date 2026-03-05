@@ -1,17 +1,95 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { ArrowLeft, Check, ArrowRight, AlertCircle } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { ArrowLeft, Check, ArrowRight, AlertCircle, Settings2 } from "lucide-react";
 import { useSubmitRFQ } from "@/lib/hooks/useRFQ";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Stepper } from "@/components/ui/Stepper";
 
-export function RFQPageClient() {
+// ── Config summary decoded from ?config= URL param ────────────────────
+interface ConfigSummary {
+  product: string;
+  sections: Record<string, string>;
+  quantity: number;
+}
+
+function decodeConfig(raw: string | null): ConfigSummary | null {
+  if (!raw) return null;
+  try {
+    return JSON.parse(atob(raw)) as ConfigSummary;
+  } catch {
+    return null;
+  }
+}
+
+function ConfigSummaryBanner({
+  config,
+  onDismiss,
+}: {
+  config: ConfigSummary;
+  onDismiss: () => void;
+}) {
+  const productName = config.product
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+
+  const selections = Object.values(config.sections);
+
+  return (
+    <div className="mb-8 bg-primary-900/5 border border-primary-900/10 rounded-2xl p-5">
+      <div className="flex items-start justify-between gap-2 mb-3">
+        <div className="flex items-center gap-2">
+          <Settings2 className="w-4 h-4 text-accent-500 shrink-0 mt-0.5" />
+          <p className="text-sm font-semibold text-primary-900">
+            Configuration from Configurator
+          </p>
+        </div>
+        <Link
+          href={`/configurator?product=${config.product}`}
+          className="text-xs text-accent-500 hover:underline shrink-0"
+        >
+          Edit →
+        </Link>
+      </div>
+      <div className="pl-6 space-y-1">
+        <p className="text-sm text-primary-900">
+          <span className="font-medium">{productName}</span>
+          {config.quantity > 1 && (
+            <span className="text-primary-900/60"> × {config.quantity}</span>
+          )}
+        </p>
+        {selections.length > 0 && (
+          <p className="text-xs text-primary-900/60">
+            {selections
+              .map((s) =>
+                s
+                  .split("-")
+                  .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                  .join(" ")
+              )
+              .join(" · ")}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Inner content using useSearchParams ───────────────────────────────
+function RFQContent() {
+  const searchParams = useSearchParams();
+  const rawConfig = searchParams.get("config");
+  const [configSummary] = useState<ConfigSummary | null>(() =>
+    decodeConfig(rawConfig)
+  );
+
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    hardware: false,
+    hardware: configSummary !== null, // pre-select hardware if coming from configurator
     software: false,
     services: false,
     assetCount: "",
@@ -116,6 +194,14 @@ export function RFQPageClient() {
                   Select all that apply to your project.
                 </p>
 
+                {/* Configuration summary from configurator */}
+                {configSummary && (
+                  <ConfigSummaryBanner
+                    config={configSummary}
+                    onDismiss={() => { }}
+                  />
+                )}
+
                 <div className="space-y-4">
                   {[
                     {
@@ -148,9 +234,7 @@ export function RFQPageClient() {
                         }`}
                     >
                       <div>
-                        <div className="font-bold text-lg mb-1">
-                          {item.label}
-                        </div>
+                        <div className="font-bold text-lg mb-1">{item.label}</div>
                         <div
                           className={
                             formData[item.id as keyof typeof formData]
@@ -206,7 +290,7 @@ export function RFQPageClient() {
                           assetCount: e.target.value,
                         }))
                       }
-                      className="w-full bg-surface border border-neutral-200 rounded-xl px-4 py-4 text-primary-900 focus:outline-none focus:border-accent-500 appearance-none"
+                      className="w-full bg-surface border border-neutral-200 rounded-xl px-4 py-4 text-primary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none"
                     >
                       <option value="">Select range...</option>
                       <option value="1-1000">1 - 1,000</option>
@@ -227,7 +311,7 @@ export function RFQPageClient() {
                           locations: e.target.value,
                         }))
                       }
-                      className="w-full bg-surface border border-neutral-200 rounded-xl px-4 py-4 text-primary-900 focus:outline-none focus:border-accent-500 appearance-none"
+                      className="w-full bg-surface border border-neutral-200 rounded-xl px-4 py-4 text-primary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none"
                     >
                       <option value="">Select range...</option>
                       <option value="1">1 Facility</option>
@@ -267,7 +351,7 @@ export function RFQPageClient() {
                       onChange={(e) =>
                         setFormData((s) => ({ ...s, email: e.target.value }))
                       }
-                      className="w-full bg-surface border border-neutral-200 rounded-xl px-4 py-4 text-primary-900 focus:outline-none focus:border-accent-500"
+                      className="w-full bg-surface border border-neutral-200 rounded-xl px-4 py-4 text-primary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                       placeholder="you@company.com"
                     />
                   </div>
@@ -281,7 +365,7 @@ export function RFQPageClient() {
                       onChange={(e) =>
                         setFormData((s) => ({ ...s, company: e.target.value }))
                       }
-                      className="w-full bg-surface border border-neutral-200 rounded-xl px-4 py-4 text-primary-900 focus:outline-none focus:border-accent-500"
+                      className="w-full bg-surface border border-neutral-200 rounded-xl px-4 py-4 text-primary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                       placeholder="ACME Corp"
                     />
                   </div>
@@ -360,5 +444,20 @@ export function RFQPageClient() {
         </div>
       </div>
     </div>
+  );
+}
+
+// ── Export wrapped in Suspense (required for useSearchParams) ─────────
+export function RFQPageClient() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <LoadingSpinner size="lg" />
+        </div>
+      }
+    >
+      <RFQContent />
+    </Suspense>
   );
 }
