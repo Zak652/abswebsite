@@ -4,6 +4,11 @@ import { motion, type Variants } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
+import type { HeroSectionData } from "@/types/cms";
+
+interface ScannersPageClientProps {
+    hero: HeroSectionData | null;
+}
 
 const fadeInUp: Variants = {
     hidden: { opacity: 0, y: 30 },
@@ -14,7 +19,17 @@ const stagger = {
     visible: { transition: { staggerChildren: 0.12 } },
 };
 
-export function ScannersPageClient() {
+const DEFAULT_HEADLINE = "Capture data at the source.";
+const DEFAULT_SUBHEADLINE = "Industrial-grade barcode and RFID readers designed specifically for harsh environments and high-volume operations.";
+
+export function ScannersPageClient({ hero }: ScannersPageClientProps) {
+    const headline = hero?.headline ?? DEFAULT_HEADLINE;
+    const subheadline = hero?.subheadline ?? DEFAULT_SUBHEADLINE;
+    const heroImage = hero?.background_image?.file ?? "/images/barcode_scanner_1772490256748.png";
+    const ctaText = hero?.cta_primary_text ?? "Configure Hardware";
+    const ctaUrl = hero?.cta_primary_link ?? "/configurator";
+    const secondaryCtaText = hero?.cta_secondary_text ?? "Get Quote";
+    const secondaryCtaUrl = hero?.cta_secondary_link ?? "/rfq";
     return (
         <div className="min-h-screen bg-surface">
 
@@ -27,17 +42,17 @@ export function ScannersPageClient() {
                         transition={{ duration: 0.6 }}
                     >
                         <h1 className="text-5xl md:text-7xl font-heading font-bold text-primary-900 mb-6 tracking-tight">
-                            Capture data at the source.
+                            {headline}
                         </h1>
                         <p className="text-xl text-primary-900/60 mb-8 max-w-lg">
-                            Industrial-grade barcode and RFID readers designed specifically for harsh environments and high-volume operations.
+                            {subheadline}
                         </p>
                         <div className="flex flex-wrap gap-4">
-                            <Link href="/configurator" className="bg-accent-500 text-white px-8 py-4 rounded-full font-medium hover:bg-accent-600 transition-colors flex items-center">
-                                Configure Hardware <ArrowRight className="w-4 h-4 ml-2" />
+                            <Link href={ctaUrl} className="bg-accent-500 text-white px-8 py-4 rounded-full font-medium hover:bg-accent-600 transition-colors flex items-center">
+                                {ctaText} <ArrowRight className="w-4 h-4 ml-2" />
                             </Link>
-                            <Link href="/rfq" className="bg-transparent border border-primary-900/20 text-primary-900 px-8 py-4 rounded-full font-medium hover:border-primary-900/40 transition-colors">
-                                Get Quote
+                            <Link href={secondaryCtaUrl} className="bg-transparent border border-primary-900/20 text-primary-900 px-8 py-4 rounded-full font-medium hover:border-primary-900/40 transition-colors">
+                                {secondaryCtaText}
                             </Link>
                         </div>
                     </motion.div>
@@ -49,7 +64,7 @@ export function ScannersPageClient() {
                     className="md:w-1/2 relative h-[500px] w-full bg-white rounded-3xl shadow-sm border border-neutral-100 overflow-hidden"
                 >
                     <Image
-                        src="/images/barcode_scanner_1772490256748.png"
+                        src={heroImage}
                         alt="ABS Industrial Handheld Scanner — clean isolated product shot"
                         fill
                         className="object-contain p-8 hover:scale-105 transition-transform duration-700"

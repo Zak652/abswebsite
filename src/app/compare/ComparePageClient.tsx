@@ -7,11 +7,16 @@ import { ArrowLeft, Check, Minus, Settings } from "lucide-react";
 import Image from "next/image";
 import { useProductsByCategory } from "@/lib/hooks/useProducts";
 import type { Product } from "@/types/products";
+import type { PricingPlanData } from "@/types/cms";
 
 type Category = "scanners" | "tags" | "arcplus";
 
-// ── Static Arcplus data (stays hardcoded per plan) ───────────────────
-const arcplusData = {
+interface ComparePageClientProps {
+    cmsPricingPlans: PricingPlanData[];
+}
+
+// ── Static Arcplus fallback data ─────────────────────────────────────
+const FALLBACK_ARCPLUS = {
     features: [
         "Asset Limit",
         "User Seats",
@@ -27,56 +32,45 @@ const arcplusData = {
         {
             name: "Starter",
             recommended: false,
-            slug: null,
             image: "/images/hardware_software_hero_1772490241653.png",
-            specs: [
-                "1,000",
-                "1",
-                false,
-                false,
-                false,
-                false,
-                false,
-                false,
-                "Email",
-            ],
+            specs: ["1,000", "1", false, false, false, false, false, false, "Email"] as (string | boolean)[],
         },
         {
             name: "Growth",
             recommended: true,
-            slug: null,
             image: "/images/hardware_software_hero_1772490241653.png",
-            specs: [
-                "5,000",
-                "5",
-                true,
-                true,
-                true,
-                false,
-                false,
-                false,
-                "Priority",
-            ],
+            specs: ["5,000", "5", true, true, true, false, false, false, "Priority"] as (string | boolean)[],
         },
         {
             name: "Professional",
             recommended: false,
-            slug: null,
             image: "/images/hardware_software_hero_1772490241653.png",
-            specs: [
-                "20,000",
-                "Unlimited",
-                true,
-                true,
-                true,
-                true,
-                true,
-                false,
-                "Dedicated",
-            ],
+            specs: ["20,000", "Unlimited", true, true, true, true, true, false, "Dedicated"] as (string | boolean)[],
         },
     ],
 };
+
+function buildArcplusFromCms(plans: PricingPlanData[]): typeof FALLBACK_ARCPLUS {
+    if (plans.length === 0) return FALLBACK_ARCPLUS;
+
+    const featureNames = [...new Set(plans.flatMap((p) => p.feature_values.map((fv) => fv.feature_name)))];
+    const products = plans.map((plan) => {
+        const specs: (string | boolean)[] = featureNames.map((name) => {
+            const fv = plan.feature_values.find((f) => f.feature_name === name);
+            if (!fv) return false;
+            if (fv.value === "true") return true;
+            if (fv.value === "false") return false;
+            return fv.value;
+        });
+        return {
+            name: plan.name,
+            recommended: plan.is_recommended,
+            image: "/images/hardware_software_hero_1772490241653.png",
+            specs,
+        };
+    });
+    return { features: featureNames, products };
+}
 
 // ── Skeleton helper ──────────────────────────────────────────────────
 function Skeleton({ className = "" }: { className?: string }) {
@@ -214,16 +208,16 @@ function ProductCompareTable({
                             <td
                                 key={p.id}
                                 className={`p-6 text-center ${idx < displayProducts.length - 1
-                                        ? "border-r border-neutral-100"
-                                        : ""
+                                    ? "border-r border-neutral-100"
+                                    : ""
                                     }`}
                             >
                                 {p.is_configurable ? (
                                     <Link
                                         href={`/configurator?product=${p.slug}`}
                                         className={`inline-flex items-center gap-2 w-full justify-center py-3 rounded-full font-medium transition-colors ${p.is_recommended
-                                                ? "bg-accent-500 text-white hover:bg-accent-600"
-                                                : "bg-neutral-100 text-primary-900 hover:bg-neutral-200"
+                                            ? "bg-accent-500 text-white hover:bg-accent-600"
+                                            : "bg-neutral-100 text-primary-900 hover:bg-neutral-200"
                                             }`}
                                     >
                                         <Settings className="w-4 h-4" /> Configure
@@ -232,8 +226,8 @@ function ProductCompareTable({
                                     <Link
                                         href={`/${category}/${p.slug}`}
                                         className={`inline-block w-full py-3 rounded-full font-medium transition-colors ${p.is_recommended
-                                                ? "bg-accent-500 text-white hover:bg-accent-600"
-                                                : "bg-neutral-100 text-primary-900 hover:bg-neutral-200"
+                                            ? "bg-accent-500 text-white hover:bg-accent-600"
+                                            : "bg-neutral-100 text-primary-900 hover:bg-neutral-200"
                                             }`}
                                     >
                                         View Product
@@ -249,7 +243,7 @@ function ProductCompareTable({
 }
 
 // ── Static Arcplus comparison table ─────────────────────────────────
-function ArcplusCompareTable() {
+function ArcplusCompareTable({ data }: { data: typeof FALLBACK_ARCPLUS }) {
     return (
         <div className="bg-white rounded-3xl border border-neutral-100 shadow-xl overflow-hidden overflow-x-auto">
             <table className="w-full min-w-[800px] text-left">
@@ -260,10 +254,10 @@ function ArcplusCompareTable() {
                                 Features
                             </span>
                         </th>
-                        {arcplusData.products.map((p, idx) => (
+                        {data.products.map((p, idx) => (
                             <th
                                 key={idx}
-                                className={`p-8 w-1/4 border-b border-neutral-100 text-center relative ${idx < arcplusData.products.length - 1 ? "border-r" : ""
+                                className={`p-8 w-1/4 border-b border-neutral-100 text-center relative ${idx < data.products.length - 1 ? "border-r" : ""
                                     }`}
                             >
                                 {p.recommended && (
@@ -293,15 +287,15 @@ function ArcplusCompareTable() {
                     </tr>
                 </thead>
                 <tbody>
-                    {arcplusData.features.map((feature, featureIdx) => (
+                    {data.features.map((feature, featureIdx) => (
                         <tr key={featureIdx} className="hover:bg-neutral-50 transition-colors">
                             <td className="p-6 border-b border-r border-neutral-100 font-medium text-primary-900">
                                 {feature}
                             </td>
-                            {arcplusData.products.map((p, idx) => (
+                            {data.products.map((p, idx) => (
                                 <td
                                     key={idx}
-                                    className={`p-6 border-b border-neutral-100 text-center text-primary-900/70 ${idx < arcplusData.products.length - 1 ? "border-r" : ""
+                                    className={`p-6 border-b border-neutral-100 text-center text-primary-900/70 ${idx < data.products.length - 1 ? "border-r" : ""
                                         }`}
                                 >
                                     {typeof p.specs[featureIdx] === "boolean" ? (
@@ -321,19 +315,19 @@ function ArcplusCompareTable() {
                 <tfoot>
                     <tr>
                         <td className="p-8 bg-neutral-50 border-r border-neutral-100" />
-                        {arcplusData.products.map((p, idx) => (
+                        {data.products.map((p, idx) => (
                             <td
                                 key={idx}
-                                className={`p-8 text-center ${idx < arcplusData.products.length - 1
-                                        ? "border-r border-neutral-100"
-                                        : ""
+                                className={`p-8 text-center ${idx < data.products.length - 1
+                                    ? "border-r border-neutral-100"
+                                    : ""
                                     }`}
                             >
                                 <Link
                                     href="/arcplus#pricing"
                                     className={`inline-block w-full py-3 rounded-full font-medium transition-colors ${p.recommended
-                                            ? "bg-accent-500 text-white hover:bg-accent-600"
-                                            : "bg-neutral-100 text-primary-900 hover:bg-neutral-200"
+                                        ? "bg-accent-500 text-white hover:bg-accent-600"
+                                        : "bg-neutral-100 text-primary-900 hover:bg-neutral-200"
                                         }`}
                                 >
                                     Get Started
@@ -348,8 +342,9 @@ function ArcplusCompareTable() {
 }
 
 // ── Page component ───────────────────────────────────────────────────
-export function ComparePageClient() {
+export function ComparePageClient({ cmsPricingPlans }: ComparePageClientProps) {
     const [activeCategory, setActiveCategory] = useState<Category>("scanners");
+    const arcplusData = buildArcplusFromCms(cmsPricingPlans);
 
     const categories = [
         { id: "scanners" as Category, label: "Hardware Scanners" },
@@ -383,8 +378,8 @@ export function ComparePageClient() {
                             key={cat.id}
                             onClick={() => setActiveCategory(cat.id)}
                             className={`whitespace-nowrap pb-4 px-2 text-lg font-medium transition-colors relative ${activeCategory === cat.id
-                                    ? "text-primary-900"
-                                    : "text-primary-900/40 hover:text-primary-900/70"
+                                ? "text-primary-900"
+                                : "text-primary-900/40 hover:text-primary-900/70"
                                 }`}
                         >
                             {cat.label}
@@ -417,7 +412,7 @@ export function ComparePageClient() {
                             fallbackImage="/images/rfid_tag_1772490270592.png"
                         />
                     )}
-                    {activeCategory === "arcplus" && <ArcplusCompareTable />}
+                    {activeCategory === "arcplus" && <ArcplusCompareTable data={arcplusData} />}
                 </motion.div>
 
                 {/* Bottom CTA */}

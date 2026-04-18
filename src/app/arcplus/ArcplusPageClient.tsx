@@ -20,6 +20,20 @@ import {
 } from "lucide-react";
 import { TrialSignupModal } from "@/components/subscriptions/TrialSignupModal";
 import { PricingTable } from "@/components/patterns/PricingTable";
+import type {
+  HeroSectionData,
+  ArcplusModuleData,
+  PricingPlanData,
+  PageBlockData,
+} from "@/types/cms";
+
+interface ArcplusPageClientProps {
+  hero: HeroSectionData | null;
+  cmsModules: ArcplusModuleData[];
+  cmsPricingPlans: PricingPlanData[];
+  blocks: PageBlockData[];
+  currencyRates: Record<string, number> | null;
+}
 
 // --- Data Models ---
 
@@ -177,7 +191,17 @@ const stagger = {
   visible: { transition: { staggerChildren: 0.1 } },
 };
 
-export function ArcplusPageClient() {
+const ICON_MAP: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
+  Database, Activity, Layers, Trash2, Shield, Box: BoxIcon, Truck, Wrench,
+};
+
+export function ArcplusPageClient({
+  hero,
+  cmsModules,
+  cmsPricingPlans,
+  blocks,
+  currencyRates,
+}: ArcplusPageClientProps) {
   const [activeModule, setActiveModule] = useState<string | null>(null);
   const [activeStep, setActiveStep] = useState(0);
   const [showFeatureComparison, setShowFeatureComparison] = useState(false);
@@ -199,6 +223,91 @@ export function ArcplusPageClient() {
     localStorage.setItem("abs_preferred_currency", c);
   };
 
+  /* Resolve CMS hero or fall back to defaults */
+  const h = hero ?? {
+    headline: "Arcplus Platform",
+    subheadline:
+      "The enterprise nervous system for your physical assets. Eight powerful modules working in perfect sync to digitize every stage of the lifecycle.",
+    cta_primary_text: "Start Free Trial",
+    cta_primary_link: "",
+    cta_secondary_text: "Get Quote",
+    cta_secondary_link: "/rfq",
+    background_image: null,
+  };
+
+  /* Resolve modules from CMS or fallback to hardcoded */
+  const resolvedModules =
+    cmsModules.length > 0
+      ? cmsModules.map((m) => ({
+        id: m.slug,
+        name: m.name,
+        icon: ICON_MAP[m.icon] ?? Database,
+        color: `bg-blue-50 text-blue-600`,
+        capability: m.tagline,
+        detail: m.description,
+      }))
+      : modules;
+
+  /* Resolve pricing plans from CMS or fallback to hardcoded */
+  const resolvedPricingPlans =
+    cmsPricingPlans.length > 0
+      ? cmsPricingPlans.map((p) => ({
+        name: p.name,
+        plan: p.slug as "starter" | "growth" | "professional" | "enterprise",
+        assets: p.asset_range,
+        priceAnnual: p.price_usd || null,
+        priceMonthly: p.price_monthly_usd
+          ? Math.round(p.price_monthly_usd)
+          : p.price_usd
+            ? Math.round(p.price_usd / 12 / 0.85)
+            : null,
+        recommended: p.is_recommended,
+        features: p.feature_values
+          .filter((fv) => fv.is_included)
+          .map((fv) => fv.feature_name),
+      }))
+      : pricingPlans;
+
+  /* Resolve feature comparison from CMS pricing data or fallback */
+  const resolvedFeatureComparison =
+    cmsPricingPlans.length > 0
+      ? (() => {
+        const featureNames = [
+          ...new Set(
+            cmsPricingPlans.flatMap((p) =>
+              p.feature_values.map((fv) => fv.feature_name)
+            )
+          ),
+        ];
+        return featureNames.map((name) => ({
+          feature: name,
+          starter:
+            cmsPricingPlans
+              .find((p) => p.slug === "starter")
+              ?.feature_values.find((fv) => fv.feature_name === name)
+              ?.is_included ?? false,
+          growth:
+            cmsPricingPlans
+              .find((p) => p.slug === "growth")
+              ?.feature_values.find((fv) => fv.feature_name === name)
+              ?.is_included ?? false,
+          pro:
+            cmsPricingPlans
+              .find((p) => p.slug === "professional")
+              ?.feature_values.find((fv) => fv.feature_name === name)
+              ?.is_included ?? false,
+          enterprise:
+            cmsPricingPlans
+              .find((p) => p.slug === "enterprise")
+              ?.feature_values.find((fv) => fv.feature_name === name)
+              ?.is_included ?? false,
+        }));
+      })()
+      : featureComparison;
+
+  /* CTA block from CMS */
+  const ctaBlock = blocks.find((b) => b.block_type === "global_cta");
+
   const nextStep = () => setActiveStep((prev) => (prev + 1) % lifecycleSteps.length);
 
   const openTrialModal = (plan: typeof trialModal.plan = "growth") => {
@@ -215,7 +324,7 @@ export function ArcplusPageClient() {
           transition={{ duration: 0.6 }}
           className="text-5xl md:text-7xl font-heading font-bold text-primary-900 tracking-tight mb-6"
         >
-          Arcplus Platform
+          {h.headline}
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 20 }}
@@ -223,9 +332,7 @@ export function ArcplusPageClient() {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="text-xl text-primary-900/60 max-w-3xl mx-auto mb-16"
         >
-          The enterprise nervous system for your physical assets. Eight powerful
-          modules working in perfect sync to digitize every stage of the
-          lifecycle.
+          {h.subheadline}
         </motion.p>
 
         <motion.div
@@ -276,7 +383,7 @@ export function ArcplusPageClient() {
           variants={fadeInUp}
           className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6"
         >
-          {modules.map((mod) => (
+          {resolvedModules.map((mod) => (
             <motion.div
               key={mod.id}
               variants={fadeInUp}
@@ -325,18 +432,18 @@ export function ArcplusPageClient() {
                 <div className="p-3 rounded-2xl bg-white/10">
                   {(() => {
                     const ModIcon =
-                      modules.find((m) => m.id === activeModule)?.icon ||
+                      resolvedModules.find((m) => m.id === activeModule)?.icon ||
                       Database;
                     return <ModIcon className="w-8 h-8 text-accent-500" />;
                   })()}
                 </div>
                 <h3 className="text-3xl font-heading font-bold">
-                  {modules.find((m) => m.id === activeModule)?.name}
+                  {resolvedModules.find((m) => m.id === activeModule)?.name}
                 </h3>
               </div>
 
               <p className="text-xl text-white/80 max-w-3xl leading-relaxed">
-                {modules.find((m) => m.id === activeModule)?.detail}
+                {resolvedModules.find((m) => m.id === activeModule)?.detail}
               </p>
             </motion.div>
           )}
@@ -453,12 +560,15 @@ export function ArcplusPageClient() {
         </motion.div>
 
         <PricingTable
-          plans={pricingPlans}
+          plans={resolvedPricingPlans}
           defaultCurrency={storedCurrency}
           onSelectPlan={(plan) =>
             openTrialModal(plan as "starter" | "growth" | "professional" | "enterprise")
           }
           onCurrencyChange={handleCurrencyChange}
+          {...(currencyRates?.UGX && currencyRates?.KES
+            ? { rates: { UGX: currencyRates.UGX, KES: currencyRates.KES } }
+            : {})}
         />
 
         {/* Expandable Feature Comparison */}
@@ -505,7 +615,7 @@ export function ArcplusPageClient() {
                     </tr>
                   </thead>
                   <tbody>
-                    {featureComparison.map((row, idx) => (
+                    {resolvedFeatureComparison.map((row, idx) => (
                       <tr
                         key={idx}
                         className="hover:bg-neutral-50 transition-colors"
@@ -553,7 +663,7 @@ export function ArcplusPageClient() {
             variants={fadeInUp}
             className="text-5xl font-heading font-bold text-white mb-8"
           >
-            Transform your asset lifecycle.
+            {ctaBlock?.title ?? "Transform your asset lifecycle."}
           </motion.h2>
           <motion.div
             variants={fadeInUp}

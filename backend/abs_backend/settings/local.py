@@ -12,6 +12,10 @@ if _env_file.exists():
 
 DEBUG = True
 
+# Re-read settings that depend on .env (base.py evaluated before read_env)
+FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3001")
+REVALIDATION_SECRET = env("REVALIDATION_SECRET", default="")
+
 ALLOWED_HOSTS = ["*"]
 
 CORS_ALLOWED_ORIGINS = [

@@ -116,7 +116,7 @@ export function HeroSection({
                 transition={{ duration: 0.7, delay: 0.15, ease: "easeOut" }}
                 className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-xl border border-neutral-200"
               >
-                <Image src={imageSrc} alt={imageAlt} fill className="object-cover" priority />
+                <Image src={imageSrc} alt={imageAlt} fill className="object-cover" priority sizes="(max-width: 768px) 100vw, 50vw" />
               </motion.div>
             )}
           </div>
@@ -133,7 +133,7 @@ export function HeroSection({
     >
       {imageSrc && (
         <div className="absolute inset-0 z-0">
-          <Image src={imageSrc} alt={imageAlt} fill className="object-cover object-center" priority />
+          <Image src={imageSrc} alt={imageAlt} fill className="object-cover object-center" priority sizes="100vw" />
           {overlay && (
             <>
               <div className="absolute inset-0 bg-primary-900/60 mix-blend-multiply" />

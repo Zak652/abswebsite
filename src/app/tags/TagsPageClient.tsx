@@ -5,8 +5,13 @@ import { motion, type Variants } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Waves, ShieldCheck, Cog, Thermometer, Radio, MapPin } from "lucide-react";
+import type { HeroSectionData } from "@/types/cms";
 
 type FilterKey = "all" | "environment" | "range" | "application";
+
+interface TagsPageClientProps {
+    hero: HeroSectionData | null;
+}
 
 const tagCategories = [
     {
@@ -68,9 +73,20 @@ const stagger = {
     visible: { transition: { staggerChildren: 0.1 } },
 };
 
-export function TagsPageClient() {
+const DEFAULT_HEADLINE = "A digital identity for physical assets.";
+const DEFAULT_SUBHEADLINE = "Industrial RFID, Barcode, and GPS tags engineered to survive the lifecycle of the assets they track.";
+
+export function TagsPageClient({ hero }: TagsPageClientProps) {
     const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
     const [filterValue, setFilterValue] = useState<string>("all");
+
+    const headline = hero?.headline ?? DEFAULT_HEADLINE;
+    const subheadline = hero?.subheadline ?? DEFAULT_SUBHEADLINE;
+    const heroImage = hero?.background_image?.file ?? "/images/rfid_tag_1772490270592.png";
+    const ctaText = hero?.cta_primary_text ?? "Configure Tags";
+    const ctaUrl = hero?.cta_primary_link ?? "/configurator";
+    const secondaryCtaText = hero?.cta_secondary_text ?? "Get Quote";
+    const secondaryCtaUrl = hero?.cta_secondary_link ?? "/rfq";
 
     const filters: { key: FilterKey; label: string; options: string[] }[] = [
         { key: "all", label: "All Tags", options: [] },
@@ -96,17 +112,17 @@ export function TagsPageClient() {
                         transition={{ duration: 0.6 }}
                     >
                         <h1 className="text-5xl md:text-7xl font-heading font-bold text-primary-900 mb-6 tracking-tight">
-                            A digital identity for physical assets.
+                            {headline}
                         </h1>
                         <p className="text-xl text-primary-900/60 mb-8 max-w-lg">
-                            Industrial RFID, Barcode, and GPS tags engineered to survive the lifecycle of the assets they track.
+                            {subheadline}
                         </p>
                         <div className="flex flex-wrap gap-4">
-                            <Link href="/configurator" className="bg-primary-900 text-white px-8 py-4 rounded-full font-medium hover:bg-accent-500 transition-colors flex items-center">
-                                Configure Tags <ArrowRight className="w-4 h-4 ml-2" />
+                            <Link href={ctaUrl} className="bg-primary-900 text-white px-8 py-4 rounded-full font-medium hover:bg-accent-500 transition-colors flex items-center">
+                                {ctaText} <ArrowRight className="w-4 h-4 ml-2" />
                             </Link>
-                            <Link href="/rfq" className="bg-transparent border border-primary-900/20 text-primary-900 px-8 py-4 rounded-full font-medium hover:border-primary-900/40 transition-colors">
-                                Get Quote
+                            <Link href={secondaryCtaUrl} className="bg-transparent border border-primary-900/20 text-primary-900 px-8 py-4 rounded-full font-medium hover:border-primary-900/40 transition-colors">
+                                {secondaryCtaText}
                             </Link>
                         </div>
                     </motion.div>
@@ -118,7 +134,7 @@ export function TagsPageClient() {
                     className="md:w-1/2 relative h-[400px] w-full bg-white rounded-3xl shadow-sm border border-neutral-100 overflow-hidden"
                 >
                     <Image
-                        src="/images/rfid_tag_1772490270592.png"
+                        src={heroImage}
                         alt="ABS Industrial RFID Tag — clean isolated product shot"
                         fill
                         className="object-contain p-12 hover:scale-105 transition-transform duration-700"

@@ -14,7 +14,7 @@ import type { TrainingSession } from "@/types/training";
 type ViewMode = "list" | "calendar";
 type Currency = "USD" | "UGX" | "KES";
 
-const RATES: Record<Currency, number> = { USD: 1, UGX: 3700, KES: 130 };
+const DEFAULT_RATES: Record<Currency, number> = { USD: 1, UGX: 3700, KES: 130 };
 const CURRENCY_SYMBOLS: Record<Currency, string> = { USD: "$", UGX: "UGX ", KES: "KES " };
 
 const levelStyles: Record<string, string> = {
@@ -29,14 +29,23 @@ const levelLabels: Record<string, string> = {
   expert: "Expert",
 };
 
-function formatPrice(priceUSD: string, currency: Currency): string {
-  const usd = Number(priceUSD);
-  if (isNaN(usd)) return "—";
-  const converted = Math.round(usd * RATES[currency]);
-  return `${CURRENCY_SYMBOLS[currency]}${converted.toLocaleString()}`;
+interface TrainingPageClientProps {
+  currencyRates: Record<string, number> | null;
 }
 
-export function TrainingPageClient() {
+export function TrainingPageClient({ currencyRates }: TrainingPageClientProps) {
+  const RATES: Record<Currency, number> = {
+    USD: 1,
+    UGX: currencyRates?.UGX ?? DEFAULT_RATES.UGX,
+    KES: currencyRates?.KES ?? DEFAULT_RATES.KES,
+  };
+
+  function formatPrice(priceUSD: string, currency: Currency): string {
+    const usd = Number(priceUSD);
+    if (isNaN(usd)) return "—";
+    const converted = Math.round(usd * RATES[currency]);
+    return `${CURRENCY_SYMBOLS[currency]}${converted.toLocaleString()}`;
+  }
   const { data: sessions, isLoading } = useTrainingSessions();
   const [selectedSession, setSelectedSession] = useState<TrainingSession | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
@@ -111,8 +120,8 @@ export function TrainingPageClient() {
                       key={c}
                       onClick={() => handleCurrencyChange(c)}
                       className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${currency === c
-                          ? "bg-white text-primary-900 shadow-sm"
-                          : "text-primary-900/50 hover:text-primary-900"
+                        ? "bg-white text-primary-900 shadow-sm"
+                        : "text-primary-900/50 hover:text-primary-900"
                         }`}
                     >
                       {c}
@@ -125,8 +134,8 @@ export function TrainingPageClient() {
                   <button
                     onClick={() => setViewMode("list")}
                     className={`p-1.5 rounded-full transition-all ${viewMode === "list"
-                        ? "bg-white text-primary-900 shadow-sm"
-                        : "text-primary-900/50 hover:text-primary-900"
+                      ? "bg-white text-primary-900 shadow-sm"
+                      : "text-primary-900/50 hover:text-primary-900"
                       }`}
                     aria-label="List view"
                   >
@@ -135,8 +144,8 @@ export function TrainingPageClient() {
                   <button
                     onClick={() => setViewMode("calendar")}
                     className={`p-1.5 rounded-full transition-all ${viewMode === "calendar"
-                        ? "bg-white text-primary-900 shadow-sm"
-                        : "text-primary-900/50 hover:text-primary-900"
+                      ? "bg-white text-primary-900 shadow-sm"
+                      : "text-primary-900/50 hover:text-primary-900"
                       }`}
                     aria-label="Calendar view"
                   >
@@ -225,8 +234,8 @@ export function TrainingPageClient() {
                       }
                       disabled={session.seats_remaining === 0}
                       className={`w-full py-4 rounded-xl font-medium transition-colors ${session.seats_remaining > 0
-                          ? "bg-accent-500 text-white hover:bg-accent-600"
-                          : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        ? "bg-accent-500 text-white hover:bg-accent-600"
+                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
                         }`}
                     >
                       {session.seats_remaining > 0 ? "Register Now" : "Session Full"}

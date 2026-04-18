@@ -41,6 +41,7 @@ LOCAL_APPS = [
     "apps.products",
     "apps.services",
     "apps.payments",
+    "apps.cms",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -104,6 +105,9 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "accounts.User"
@@ -147,7 +151,18 @@ JWT_SECRET = env("JWT_SECRET", default=SECRET_KEY)
 
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3001")
 
+# Secret shared with Next.js for on-demand ISR revalidation
+REVALIDATION_SECRET = env("REVALIDATION_SECRET", default="")
+
 # Celery
+# Cache
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": env("REDIS_URL", default="redis://localhost:6379/0"),
+    }
+}
+
 CELERY_BROKER_URL = env("REDIS_URL", default="redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = env("REDIS_URL", default="redis://localhost:6379/0")
 CELERY_ACCEPT_CONTENT = ["json"]

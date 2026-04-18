@@ -1,25 +1,48 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, BookOpen, Building2, Plane, Zap } from "lucide-react";
+import { fetchPageMeta, fetchCaseStudies } from "@/lib/api/cms-server";
+import type { CaseStudyData } from "@/types/cms";
 
-export const metadata: Metadata = {
-  title: "Case Studies | ABS Platform",
-  description:
-    "See how enterprises across Africa have transformed their asset management with ABS solutions.",
+const DEFAULT_TITLE = "Case Studies | ABS Platform";
+const DEFAULT_DESC =
+  "See how enterprises across Africa have transformed their asset management with ABS solutions.";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const meta = await fetchPageMeta("/resources/case-studies");
+  return {
+    title: meta?.title ?? DEFAULT_TITLE,
+    description: meta?.description ?? DEFAULT_DESC,
+  };
+}
+
+const SECTOR_ICONS: Record<string, typeof Building2> = {
+  Government: Building2,
+  "Aviation MRO": Plane,
+  "Public Utilities": Zap,
 };
 
-const CASE_STUDIES = [
+const SECTOR_COLORS: Record<string, string> = {
+  Government: "bg-[var(--color-info-light)] text-primary-500",
+  "Aviation MRO": "bg-[var(--color-warning-light)] text-[var(--color-warning)]",
+  "Public Utilities": "bg-[var(--color-success-light)] text-[var(--color-success)]",
+};
+
+const ACCENT_COLORS: Record<string, string> = {
+  Government: "bg-primary-500",
+  "Aviation MRO": "bg-accent-500",
+  "Public Utilities": "bg-[var(--color-success)]",
+};
+
+const FALLBACK_CASE_STUDIES = [
   {
     id: "lamu-county",
     organisation: "Lamu County Government",
     country: "Kenya",
+    industry: "Government",
     heroMetric: "100%",
     heroLabel: "Asset visibility across 47 departments",
-    quote:
-      "Achieved 100% asset visibility across 47 departments",
-    sector: "Government",
-    sectorIcon: Building2,
-    sectorColor: "bg-[var(--color-info-light)] text-primary-500",
+    quote: "Achieved 100% asset visibility across 47 departments",
     assets: "12,400",
     challenge:
       "Manual spreadsheets and disconnected registers were causing recurring audit failures. Ghost assets inflated the county balance sheet by an estimated KES 2.4M, and annual stock-takes took six weeks to complete.",
@@ -30,20 +53,16 @@ const CASE_STUDIES = [
       { metric: "14 days", label: "to full compliance" },
       { metric: "KES 2.4M", label: "recovered in written-off assets" },
     ],
-    accentColor: "bg-primary-500",
     delay: "0ms",
   },
   {
     id: "pan-african-airways",
     organisation: "Pan African Airways",
     country: "Uganda",
+    industry: "Aviation MRO",
     heroMetric: "40%",
     heroLabel: "Reduction in equipment downtime",
-    quote:
-      "Reduced equipment downtime by 40% with predictive maintenance",
-    sector: "Aviation MRO",
-    sectorIcon: Plane,
-    sectorColor: "bg-[var(--color-warning-light)] text-[var(--color-warning)]",
+    quote: "Reduced equipment downtime by 40% with predictive maintenance",
     assets: "8,200",
     challenge:
       "Ground support equipment was untracked between flights, leading to last-minute scrambles that caused an average of 11 delay events per month. Maintenance schedules were paper-based and not linked to actual asset usage.",
@@ -54,20 +73,16 @@ const CASE_STUDIES = [
       { metric: "Real-time", label: "location tracking across apron" },
       { metric: "ISO 55001", label: "certified post-deployment" },
     ],
-    accentColor: "bg-accent-500",
     delay: "120ms",
   },
   {
     id: "nairobi-metro",
     organisation: "Nairobi Metropolitan Services",
     country: "Kenya",
+    industry: "Public Utilities",
     heroMetric: "28K",
     heroLabel: "Assets digitized in 3 weeks",
-    quote:
-      "Digitized 28,000 assets in 3 weeks",
-    sector: "Public Utilities",
-    sectorIcon: Zap,
-    sectorColor: "bg-[var(--color-success-light)] text-[var(--color-success)]",
+    quote: "Digitized 28,000 assets in 3 weeks",
     assets: "28,000",
     challenge:
       "No centralized asset register existed. Infrastructure assets — spanning roads, water networks, and municipal buildings — were aging with no lifecycle visibility. Capital budget decisions were made on incomplete data.",
@@ -78,12 +93,35 @@ const CASE_STUDIES = [
       { metric: "3 weeks", label: "full deployment timeline" },
       { metric: "72%", label: "cost reduction vs manual audit" },
     ],
-    accentColor: "bg-[var(--color-success)]",
     delay: "240ms",
   },
 ];
 
-export default function CaseStudiesPage() {
+function mapCmsToCard(cs: CaseStudyData, idx: number) {
+  const results = (cs.results ?? []) as { metric: string; label: string }[];
+  return {
+    id: cs.slug,
+    organisation: cs.client_name,
+    country: cs.country,
+    industry: cs.industry,
+    heroMetric: results[0]?.metric ?? "",
+    heroLabel: results[0]?.label ?? "",
+    quote: cs.quote,
+    assets: "",
+    challenge: cs.challenge,
+    solution: cs.solution,
+    results,
+    delay: `${idx * 120}ms`,
+  };
+}
+
+export default async function CaseStudiesPage() {
+  const cmsCaseStudies = await fetchCaseStudies();
+
+  const caseStudies =
+    cmsCaseStudies.length > 0
+      ? cmsCaseStudies.map(mapCmsToCard)
+      : FALLBACK_CASE_STUDIES;
   return (
     <div className="min-h-screen bg-surface pt-24 pb-32">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -120,8 +158,10 @@ export default function CaseStudiesPage() {
 
         {/* Case Study Cards */}
         <div className="space-y-8">
-          {CASE_STUDIES.map((cs, index) => {
-            const SectorIcon = cs.sectorIcon;
+          {caseStudies.map((cs) => {
+            const SectorIcon = SECTOR_ICONS[cs.industry] ?? Building2;
+            const sectorColor = SECTOR_COLORS[cs.industry] ?? "bg-[var(--color-info-light)] text-primary-500";
+            const accentColor = ACCENT_COLORS[cs.industry] ?? "bg-primary-500";
             return (
               <div
                 key={cs.id}
@@ -135,7 +175,7 @@ export default function CaseStudiesPage() {
                 }}
               >
                 {/* Card top accent bar */}
-                <div className={`h-1 w-full ${cs.accentColor}`} />
+                <div className={`h-1 w-full ${accentColor}`} />
 
                 <div className="p-8">
                   {/* Card Header Row */}
@@ -143,10 +183,10 @@ export default function CaseStudiesPage() {
                     <div>
                       {/* Sector badge */}
                       <span
-                        className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full mb-3 ${cs.sectorColor}`}
+                        className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full mb-3 ${sectorColor}`}
                       >
                         <SectorIcon className="w-3.5 h-3.5" />
-                        {cs.sector}
+                        {cs.industry}
                       </span>
                       <h2 className="text-2xl font-heading font-bold text-primary-900">
                         {cs.organisation}

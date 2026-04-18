@@ -11,13 +11,14 @@ interface ProductCardProps {
     imageSrc: string;
     href: string;
     ctaText: string;
+    className?: string;
 }
 
-export default function ProductCard({ title, imageAlt, imageSrc, href, ctaText }: ProductCardProps) {
+export default function ProductCard({ title, imageAlt, imageSrc, href, ctaText, className }: ProductCardProps) {
     const prefersReducedMotion = useReducedMotion();
 
     return (
-        <Link href={href} className="block group w-[300px] md:w-[400px] flex-shrink-0">
+        <Link href={href} className={`block group w-[300px] md:w-[400px] flex-shrink-0 ${className ?? ""}`}>
             <motion.div
                 whileHover={prefersReducedMotion ? undefined : { y: -8 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
@@ -39,6 +40,7 @@ export default function ProductCard({ title, imageAlt, imageSrc, href, ctaText }
                         alt={imageAlt}
                         fill
                         className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
+                        sizes="(max-width: 768px) 300px, 400px"
                     />
                 </div>
 

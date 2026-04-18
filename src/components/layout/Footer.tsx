@@ -2,9 +2,49 @@
 
 import Link from "next/link";
 import { ArrowRight, Mail, Phone, MapPin } from "lucide-react";
+import type { NavigationItemData, SiteSettingsData } from "@/types/cms";
 
-export default function Footer() {
+interface FooterProps {
+    platformLinks?: NavigationItemData[];
+    resourceLinks?: NavigationItemData[];
+    settings?: SiteSettingsData | null;
+}
+
+const DEFAULT_PLATFORM_LINKS = [
+    { label: "Arcplus Software", url: "/arcplus" },
+    { label: "Industrial Scanners", url: "/scanners" },
+    { label: "RFID & Barcode Tags", url: "/tags" },
+    { label: "Field Services", url: "/services" },
+    { label: "Training Academy", url: "/training" },
+    { label: "Compare Solutions", url: "/compare" },
+];
+
+const DEFAULT_RESOURCE_LINKS = [
+    { label: "Case Studies", url: "/resources/case-studies" },
+    { label: "Documentation", url: "/resources/docs" },
+    { label: "API Reference", url: "/resources/api-reference" },
+    { label: "Support Portal", url: "/resources/support" },
+    { label: "System Status", url: "#" },
+];
+
+export default function Footer({
+    platformLinks = [],
+    resourceLinks = [],
+    settings,
+}: FooterProps) {
     const currentYear = new Date().getFullYear();
+
+    const platform = platformLinks.length > 0
+        ? platformLinks.map((l) => ({ label: l.label, url: l.url }))
+        : DEFAULT_PLATFORM_LINKS;
+
+    const resources = resourceLinks.length > 0
+        ? resourceLinks.map((l) => ({ label: l.label, url: l.url }))
+        : DEFAULT_RESOURCE_LINKS;
+
+    const email = settings?.company_email ?? "contact@abssystems.com";
+    const phone = settings?.company_phone ?? "+1 (800) 555-0199";
+    const address = settings?.company_address ?? "100 Enterprise Way\nSuite 400\nBoston, MA 02110";
 
     return (
         <footer className="bg-primary-900 text-white pt-24 pb-12 border-t border-neutral-100/10 mt-auto">
@@ -22,15 +62,17 @@ export default function Footer() {
                         <div className="space-y-3 text-sm text-white/50">
                             <div className="flex items-center">
                                 <Mail className="w-4 h-4 mr-3 text-accent-500" />
-                                <a href="mailto:contact@abssystems.com" className="hover:text-white transition-colors">contact@abssystems.com</a>
+                                <a href={`mailto:${email}`} className="hover:text-white transition-colors">{email}</a>
                             </div>
                             <div className="flex items-center">
                                 <Phone className="w-4 h-4 mr-3 text-accent-500" />
-                                <a href="tel:+18005550199" className="hover:text-white transition-colors">+1 (800) 555-0199</a>
+                                <a href={`tel:${phone.replace(/[^+\d]/g, "")}`} className="hover:text-white transition-colors">{phone}</a>
                             </div>
                             <div className="flex items-start">
                                 <MapPin className="w-4 h-4 mr-3 text-accent-500 mt-0.5" />
-                                <span>100 Enterprise Way<br />Suite 400<br />Boston, MA 02110</span>
+                                <span>{address.split("\n").map((line, i) => (
+                                    <span key={i}>{i > 0 && <br />}{line}</span>
+                                ))}</span>
                             </div>
                         </div>
                     </div>
@@ -39,24 +81,11 @@ export default function Footer() {
                     <div>
                         <h3 className="text-sm font-bold font-mono text-accent-500 uppercase tracking-wider mb-6">Platform</h3>
                         <ul className="space-y-4">
-                            <li>
-                                <Link href="/arcplus" className="text-white/70 hover:text-white transition-colors text-sm">Arcplus Software</Link>
-                            </li>
-                            <li>
-                                <Link href="/scanners" className="text-white/70 hover:text-white transition-colors text-sm">Industrial Scanners</Link>
-                            </li>
-                            <li>
-                                <Link href="/tags" className="text-white/70 hover:text-white transition-colors text-sm">RFID & Barcode Tags</Link>
-                            </li>
-                            <li>
-                                <Link href="/services" className="text-white/70 hover:text-white transition-colors text-sm">Field Services</Link>
-                            </li>
-                            <li>
-                                <Link href="/training" className="text-white/70 hover:text-white transition-colors text-sm">Training Academy</Link>
-                            </li>
-                            <li>
-                                <Link href="/compare" className="text-white/70 hover:text-white transition-colors text-sm">Compare Solutions</Link>
-                            </li>
+                            {platform.map((link) => (
+                                <li key={link.url}>
+                                    <Link href={link.url} className="text-white/70 hover:text-white transition-colors text-sm">{link.label}</Link>
+                                </li>
+                            ))}
                         </ul>
                     </div>
 
@@ -64,21 +93,11 @@ export default function Footer() {
                     <div>
                         <h3 className="text-sm font-bold font-mono text-accent-500 uppercase tracking-wider mb-6">Resources</h3>
                         <ul className="space-y-4">
-                            <li>
-                                <Link href="/resources/case-studies" className="text-white/70 hover:text-white transition-colors text-sm">Case Studies</Link>
-                            </li>
-                            <li>
-                                <Link href="/resources/docs" className="text-white/70 hover:text-white transition-colors text-sm">Documentation</Link>
-                            </li>
-                            <li>
-                                <Link href="/resources/api-reference" className="text-white/70 hover:text-white transition-colors text-sm">API Reference</Link>
-                            </li>
-                            <li>
-                                <Link href="/resources/support" className="text-white/70 hover:text-white transition-colors text-sm">Support Portal</Link>
-                            </li>
-                            <li>
-                                <Link href="#" className="text-white/70 hover:text-white transition-colors text-sm">System Status</Link>
-                            </li>
+                            {resources.map((link) => (
+                                <li key={link.url}>
+                                    <Link href={link.url} className="text-white/70 hover:text-white transition-colors text-sm">{link.label}</Link>
+                                </li>
+                            ))}
                         </ul>
                     </div>
 

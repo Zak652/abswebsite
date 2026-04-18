@@ -35,6 +35,8 @@ services:
       dockerfile: Dockerfile
     container_name: abs_backend
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     dns:
       - 8.8.8.8
       - 8.8.4.4
@@ -43,6 +45,7 @@ services:
              python manage.py runserver 0.0.0.0:8000 --settings=abs_backend.settings.local"
     volumes:
       - ./backend:/app
+      - media_data:/app/media
     ports:
       - "8000:8000"
     env_file:
@@ -68,6 +71,7 @@ services:
     command: celery -A abs_backend worker --loglevel=info
     volumes:
       - ./backend:/app
+      - media_data:/app/media
     env_file:
       - ./backend/.env
     environment:
@@ -88,7 +92,8 @@ services:
     dns:
       - 8.8.8.8
       - 8.8.4.4
-    command: celery -A abs_backend beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    command: celery -A abs_backend beat --loglevel=info --scheduler
+      django_celery_beat.schedulers:DatabaseScheduler
     volumes:
       - ./backend:/app
     env_file:
@@ -120,6 +125,7 @@ services:
     ports:
       - "5000:5000"
     environment:
+      - CMS_API_URL=http://backend:8000/api/v1
       - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
       - NEXT_PUBLIC_SITE_URL=http://localhost:5000
       - JWT_SECRET=${JWT_SECRET:-dev-jwt-secret}
@@ -128,3 +134,4 @@ services:
 
 volumes:
   postgres_data:
+  media_data:

@@ -1,8 +1,11 @@
 import type { MetadataRoute } from "next";
+import { fetchBlogPosts } from "@/lib/api/cms-server";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://absplatform.com";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const blogPosts = await fetchBlogPosts();
+
   return [
     {
       url: `${BASE_URL}/`,
@@ -65,6 +68,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.6,
     },
     {
+      url: `${BASE_URL}/resources/blog`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
+    {
       url: `${BASE_URL}/resources/docs`,
       lastModified: new Date(),
       changeFrequency: "weekly",
@@ -109,5 +118,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
         priority: 0.7,
       })
     ),
+    // Blog post detail pages
+    ...blogPosts.map((post) => ({
+      url: `${BASE_URL}/resources/blog/${post.slug}`,
+      lastModified: post.published_at ? new Date(post.published_at) : new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.6,
+    })),
   ];
 }

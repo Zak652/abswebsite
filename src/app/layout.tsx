@@ -3,7 +3,12 @@ import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import { DraftModeBanner } from "@/components/layout/DraftModeBanner";
 import { Providers } from "./providers";
+import {
+  fetchNavigation,
+  fetchSiteSettings,
+} from "@/lib/api/cms-server";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -45,20 +50,32 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const [headerNav, footerPlatform, footerResources, settings] = await Promise.all([
+    fetchNavigation("header_main"),
+    fetchNavigation("footer_platform"),
+    fetchNavigation("footer_resources"),
+    fetchSiteSettings(),
+  ]);
+
   return (
     <html lang="en">
       <body
         className={`${inter.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable} font-sans antialiased min-h-screen flex flex-col`}
       >
         <Providers>
-          <Header />
+          <DraftModeBanner />
+          <Header cmsNavItems={headerNav} />
           <main className="pt-20 flex-1">{children}</main>
-          <Footer />
+          <Footer
+            platformLinks={footerPlatform}
+            resourceLinks={footerResources}
+            settings={settings}
+          />
         </Providers>
       </body>
     </html>

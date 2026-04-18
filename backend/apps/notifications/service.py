@@ -1,5 +1,10 @@
+import logging
+
 from django.conf import settings
+from django.template import Template, Context
 from django.template.loader import render_to_string
+
+logger = logging.getLogger(__name__)
 
 try:
     import resend
@@ -8,6 +13,32 @@ try:
     RESEND_AVAILABLE = bool(settings.RESEND_API_KEY)
 except ImportError:
     RESEND_AVAILABLE = False
+
+
+def _render_db_template(trigger_type, context_dict):
+    """
+    Try to render a published EmailTemplate from the CMS database.
+    Returns (subject, html) or None if no template found / error.
+    """
+    try:
+        from apps.cms.models import EmailTemplate
+
+        tpl = (
+            EmailTemplate.objects.filter(
+                trigger_type=trigger_type,
+                status="published",
+            )
+            .order_by("-published_at")
+            .first()
+        )
+        if not tpl:
+            return None
+        subject = Template(tpl.subject).render(Context(context_dict))
+        html = Template(tpl.body_html).render(Context(context_dict))
+        return subject, html
+    except Exception:
+        logger.exception("Failed to render DB email template for %s", trigger_type)
+        return None
 
 
 def _send(to, subject, html, cc=None):
@@ -34,20 +65,25 @@ def send_rfq_acknowledgment(rfq_submission):
     To: submitter + CC sales team
     """
     ref = str(rfq_submission.id)[:8].upper()
-    html = render_to_string(
-        "rfq_acknowledgment.html",
-        {
-            "company_name": rfq_submission.company_name,
-            "ref": ref,
-            "needs_hardware": rfq_submission.needs_hardware,
-            "needs_software": rfq_submission.needs_software,
-            "needs_services": rfq_submission.needs_services,
-            "asset_count_range": rfq_submission.asset_count_range,
-        },
-    )
+    ctx = {
+        "company_name": rfq_submission.company_name,
+        "ref": ref,
+        "needs_hardware": rfq_submission.needs_hardware,
+        "needs_software": rfq_submission.needs_software,
+        "needs_services": rfq_submission.needs_services,
+        "asset_count_range": rfq_submission.asset_count_range,
+    }
+
+    db_result = _render_db_template("rfq_acknowledgment", ctx)
+    if db_result:
+        subject, html = db_result
+    else:
+        html = render_to_string("rfq_acknowledgment.html", ctx)
+        subject = f"[ABS] Quote Request Received — Ref #{ref}"
+
     _send(
         to=rfq_submission.email,
-        subject=f"[ABS] Quote Request Received — Ref #{ref}",
+        subject=subject,
         cc=[settings.RESEND_SALES_EMAIL],
         html=html,
     )
@@ -58,14 +94,17 @@ def send_trial_signup_notification(signup):
     Triggered: on POST /api/v1/subscriptions/trial/
     Sends two emails: user confirmation + admin action alert
     """
-    user_html = render_to_string("trial_signup_user.html", {"signup": signup})
-    _send(
-        to=signup.email,
-        subject="Your Arcplus trial request is being processed",
-        html=user_html,
-    )
+    ctx = {"signup": signup}
 
-    admin_html = render_to_string("trial_signup_admin.html", {"signup": signup})
+    db_result = _render_db_template("trial_signup", ctx)
+    if db_result:
+        subject, user_html = db_result
+    else:
+        user_html = render_to_string("trial_signup_user.html", ctx)
+        subject = "Your Arcplus trial request is being processed"
+    _send(to=signup.email, subject=subject, html=user_html)
+
+    admin_html = render_to_string("trial_signup_admin.html", ctx)
     _send(
         to=settings.RESEND_ADMIN_EMAIL,
         subject=f"[ACTION REQUIRED] New Arcplus Trial — {signup.company_name} ({signup.get_plan_display()})",
@@ -79,64 +118,68 @@ def send_service_request_notification(service_request):
     Sends two emails: user confirmation + admin action alert
     """
     ref = str(service_request.id)[:8].upper()
+    service_type_display = service_request.get_service_type_display()
+    ctx = {
+        "service_request": service_request,
+        "ref": ref,
+        "service_type_display": service_type_display,
+    }
 
-    user_html = render_to_string(
-        "service_request_user.html",
-        {
-            "service_request": service_request,
-            "ref": ref,
-            "service_type_display": service_request.get_service_type_display(),
-        },
-    )
-    _send(
-        to=service_request.email,
-        subject=f"[ABS] Service Request Received — {service_request.get_service_type_display()} (Ref #{ref})",
-        html=user_html,
-    )
+    db_result = _render_db_template("service_request", ctx)
+    if db_result:
+        subject, user_html = db_result
+    else:
+        user_html = render_to_string("service_request_user.html", ctx)
+        subject = (
+            f"[ABS] Service Request Received — {service_type_display} (Ref #{ref})"
+        )
+    _send(to=service_request.email, subject=subject, html=user_html)
 
     admin_html = render_to_string(
         "service_request_admin.html",
-        {
-            "service_request": service_request,
-            "ref": ref,
-            "service_type_display": service_request.get_service_type_display(),
-        },
+        ctx,
     )
     _send(
         to=settings.RESEND_ADMIN_EMAIL,
-        subject=f"[ACTION REQUIRED] New Service Request — {service_request.get_service_type_display()} from {service_request.company_name}",
+        subject=f"[ACTION REQUIRED] New Service Request — {service_type_display} from {service_request.company_name}",
         html=admin_html,
     )
 
 
 def send_trial_day7_reminder(signup):
     """Triggered: 7 days after trial starts."""
-    html = render_to_string("trial_day7_reminder.html", {"signup": signup})
-    _send(
-        to=signup.email,
-        subject="Your Arcplus trial expires in 7 days",
-        html=html,
-    )
+    ctx = {"signup": signup}
+    db_result = _render_db_template("trial_day7_reminder", ctx)
+    if db_result:
+        subject, html = db_result
+    else:
+        html = render_to_string("trial_day7_reminder.html", ctx)
+        subject = "Your Arcplus trial expires in 7 days"
+    _send(to=signup.email, subject=subject, html=html)
 
 
 def send_trial_day3_reminder(signup):
     """Triggered: 3 days before trial expiry."""
-    html = render_to_string("trial_day3_reminder.html", {"signup": signup})
-    _send(
-        to=signup.email,
-        subject="Your Arcplus trial expires in 3 days — upgrade now",
-        html=html,
-    )
+    ctx = {"signup": signup}
+    db_result = _render_db_template("trial_day3_reminder", ctx)
+    if db_result:
+        subject, html = db_result
+    else:
+        html = render_to_string("trial_day3_reminder.html", ctx)
+        subject = "Your Arcplus trial expires in 3 days — upgrade now"
+    _send(to=signup.email, subject=subject, html=html)
 
 
 def send_trial_expiry_notification(signup):
     """Triggered: when trial expires."""
-    html = render_to_string("trial_expiry.html", {"signup": signup})
-    _send(
-        to=signup.email,
-        subject="Your Arcplus trial has ended",
-        html=html,
-    )
+    ctx = {"signup": signup}
+    db_result = _render_db_template("trial_expiry", ctx)
+    if db_result:
+        subject, html = db_result
+    else:
+        html = render_to_string("trial_expiry.html", ctx)
+        subject = "Your Arcplus trial has ended"
+    _send(to=signup.email, subject=subject, html=html)
 
 
 def send_training_confirmation(registration):
@@ -144,15 +187,14 @@ def send_training_confirmation(registration):
     Triggered: after Flutterwave webhook confirms payment
     To: registrant
     """
-    html = render_to_string(
-        "training_confirmation.html",
-        {
-            "registration": registration,
-            "session": registration.session,
-        },
-    )
-    _send(
-        to=registration.email,
-        subject=f"Training Registration Confirmed — {registration.session.title}",
-        html=html,
-    )
+    ctx = {
+        "registration": registration,
+        "session": registration.session,
+    }
+    db_result = _render_db_template("training_confirmation", ctx)
+    if db_result:
+        subject, html = db_result
+    else:
+        html = render_to_string("training_confirmation.html", ctx)
+        subject = f"Training Registration Confirmed — {registration.session.title}"
+    _send(to=registration.email, subject=subject, html=html)

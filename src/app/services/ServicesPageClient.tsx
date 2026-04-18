@@ -4,6 +4,16 @@ import { motion, type Variants } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, ClipboardList, Users, Database, BarChart3, Warehouse, HardDrive } from "lucide-react";
+import type { HeroSectionData, ServiceOfferingData } from "@/types/cms";
+
+interface ServicesPageClientProps {
+    hero: HeroSectionData | null;
+    cmsServices: ServiceOfferingData[];
+}
+
+const ICON_MAP: Record<string, typeof ClipboardList> = {
+    ClipboardList, Database, BarChart3, HardDrive, Users, Warehouse,
+};
 
 const fadeInUp: Variants = {
     hidden: { opacity: 0, y: 30 },
@@ -71,7 +81,29 @@ const services = [
     },
 ];
 
-export function ServicesPageClient() {
+export function ServicesPageClient({ hero, cmsServices }: ServicesPageClientProps) {
+    /* Resolve CMS hero or fallback */
+    const h = hero ?? {
+        headline: "Expert Services",
+        subheadline: "We don\u2019t just sell products. We deploy, verify, and optimize your entire asset ecosystem.",
+        background_image: null,
+    };
+
+    /* Resolve CMS services or fallback to hardcoded */
+    const resolvedServices =
+        cmsServices.length > 0
+            ? cmsServices.map((s) => ({
+                id: s.slug,
+                title: s.title,
+                icon: ICON_MAP[s.icon] ?? ClipboardList,
+                problem: s.problem,
+                process: s.process,
+                deliverables: s.deliverables,
+                result: s.result,
+                image: s.image,
+            }))
+            : services;
+
     return (
         <div className="min-h-screen bg-surface">
 
@@ -83,8 +115,8 @@ export function ServicesPageClient() {
                     transition={{ duration: 0.6 }}
                     className="text-center mb-16"
                 >
-                    <h1 className="text-4xl md:text-6xl font-heading font-bold text-primary-900 mb-6">Expert Services</h1>
-                    <p className="text-xl text-primary-900/60 max-w-3xl mx-auto">We don&apos;t just sell products. We deploy, verify, and optimize your entire asset ecosystem.</p>
+                    <h1 className="text-4xl md:text-6xl font-heading font-bold text-primary-900 mb-6">{h.headline}</h1>
+                    <p className="text-xl text-primary-900/60 max-w-3xl mx-auto">{h.subheadline}</p>
                 </motion.div>
 
                 <motion.div
@@ -118,7 +150,7 @@ export function ServicesPageClient() {
                     </motion.div>
 
                     <div className="space-y-20">
-                        {services.map((service, idx) => (
+                        {resolvedServices.map((service, idx) => (
                             <motion.div
                                 key={service.id}
                                 variants={fadeInUp}

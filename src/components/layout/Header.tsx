@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Menu, X, ArrowRight } from "lucide-react";
 import { useScrollPosition } from "@/lib/hooks/useScrollPosition";
+import type { NavigationItemData } from "@/types/cms";
 
 interface NavMenuItem {
     name: string;
@@ -66,7 +67,29 @@ function useNavProducts() {
     return { scannersMenu: scanners, tagsMenu: tags };
 }
 
-export default function Header() {
+interface HeaderProps {
+    cmsNavItems?: NavigationItemData[];
+}
+
+const DEFAULT_NAV_ITEMS = [
+    { label: "Arcplus", url: "/arcplus", hasDropdown: false },
+    { label: "Scanners", url: "/scanners", hasDropdown: true },
+    { label: "Tags", url: "/tags", hasDropdown: true },
+    { label: "Services", url: "/services", hasDropdown: false },
+    { label: "Training", url: "/training", hasDropdown: false },
+];
+
+function resolveNavItems(cmsItems?: NavigationItemData[]) {
+    if (!cmsItems || cmsItems.length === 0) return DEFAULT_NAV_ITEMS;
+    return cmsItems.map((item) => ({
+        label: item.label,
+        url: item.url,
+        hasDropdown: item.url === "/scanners" || item.url === "/tags",
+    }));
+}
+
+export default function Header({ cmsNavItems }: HeaderProps) {
+    const navItems = resolveNavItems(cmsNavItems);
     const [activeMenu, setActiveMenu] = useState<string | null>(null);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [mobileStep, setMobileStep] = useState<string | null>(null);
@@ -100,32 +123,20 @@ export default function Header() {
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex space-x-8 h-full items-center" onMouseLeave={handleMouseLeave}>
-                        <Link href="/arcplus" className={`text-sm font-medium transition-colors border-b-2 pb-0.5 ${pathname === "/arcplus" ? "text-primary-900 border-accent-500" : "text-primary-900/80 hover:text-primary-900 border-transparent"}`}>
-                            Arcplus
-                        </Link>
-
-                        {/* Scanners Dropdown */}
-                        <div className="relative h-full flex items-center" onMouseEnter={() => handleMouseEnter("scanners")}>
-                            <Link href="/scanners" className={`flex items-center space-x-1 text-sm font-medium transition-colors border-b-2 pb-0.5 ${pathname.startsWith("/scanners") ? "text-primary-900 border-accent-500" : "text-primary-900/80 hover:text-primary-900 border-transparent"}`}>
-                                <span>Scanners</span>
-                                <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${activeMenu === "scanners" ? "rotate-180" : ""}`} />
-                            </Link>
-                        </div>
-
-                        {/* Tags Dropdown */}
-                        <div className="relative h-full flex items-center" onMouseEnter={() => handleMouseEnter("tags")}>
-                            <Link href="/tags" className={`flex items-center space-x-1 text-sm font-medium transition-colors border-b-2 pb-0.5 ${pathname.startsWith("/tags") ? "text-primary-900 border-accent-500" : "text-primary-900/80 hover:text-primary-900 border-transparent"}`}>
-                                <span>Tags</span>
-                                <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${activeMenu === "tags" ? "rotate-180" : ""}`} />
-                            </Link>
-                        </div>
-
-                        <Link href="/services" className={`text-sm font-medium transition-colors border-b-2 pb-0.5 ${pathname.startsWith("/services") ? "text-primary-900 border-accent-500" : "text-primary-900/80 hover:text-primary-900 border-transparent"}`}>
-                            Services
-                        </Link>
-                        <Link href="/training" className={`text-sm font-medium transition-colors border-b-2 pb-0.5 ${pathname.startsWith("/training") ? "text-primary-900 border-accent-500" : "text-primary-900/80 hover:text-primary-900 border-transparent"}`}>
-                            Training
-                        </Link>
+                        {navItems.map((item) =>
+                            item.hasDropdown ? (
+                                <div key={item.url} className="relative h-full flex items-center" onMouseEnter={() => handleMouseEnter(item.url.replace("/", ""))}>
+                                    <Link href={item.url} className={`flex items-center space-x-1 text-sm font-medium transition-colors border-b-2 pb-0.5 ${pathname.startsWith(item.url) ? "text-primary-900 border-accent-500" : "text-primary-900/80 hover:text-primary-900 border-transparent"}`}>
+                                        <span>{item.label}</span>
+                                        <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${activeMenu === item.url.replace("/", "") ? "rotate-180" : ""}`} />
+                                    </Link>
+                                </div>
+                            ) : (
+                                <Link key={item.url} href={item.url} className={`text-sm font-medium transition-colors border-b-2 pb-0.5 ${pathname === item.url || pathname.startsWith(item.url + "/") ? "text-primary-900 border-accent-500" : "text-primary-900/80 hover:text-primary-900 border-transparent"}`}>
+                                    {item.label}
+                                </Link>
+                            )
+                        )}
                     </nav>
 
                     {/* CTA */}
@@ -233,21 +244,19 @@ export default function Header() {
                         <div className="px-4 py-6">
                             {!mobileStep ? (
                                 <div className="space-y-6">
-                                    <Link href="/arcplus" className="block text-xl font-heading font-semibold text-primary-900" onClick={() => setMobileMenuOpen(false)}>Arcplus</Link>
-                                    <button
-                                        onClick={() => setMobileStep("scanners")}
-                                        className="flex items-center justify-between w-full text-xl font-heading font-semibold text-primary-900"
-                                    >
-                                        Scanners <ArrowRight className="w-5 h-5 text-primary-900/40" />
-                                    </button>
-                                    <button
-                                        onClick={() => setMobileStep("tags")}
-                                        className="flex items-center justify-between w-full text-xl font-heading font-semibold text-primary-900"
-                                    >
-                                        Tags <ArrowRight className="w-5 h-5 text-primary-900/40" />
-                                    </button>
-                                    <Link href="/services" className="block text-xl font-heading font-semibold text-primary-900" onClick={() => setMobileMenuOpen(false)}>Services</Link>
-                                    <Link href="/training" className="block text-xl font-heading font-semibold text-primary-900" onClick={() => setMobileMenuOpen(false)}>Training</Link>
+                                    {navItems.map((item) =>
+                                        item.hasDropdown ? (
+                                            <button
+                                                key={item.url}
+                                                onClick={() => setMobileStep(item.url.replace("/", ""))}
+                                                className="flex items-center justify-between w-full text-xl font-heading font-semibold text-primary-900"
+                                            >
+                                                {item.label} <ArrowRight className="w-5 h-5 text-primary-900/40" />
+                                            </button>
+                                        ) : (
+                                            <Link key={item.url} href={item.url} className="block text-xl font-heading font-semibold text-primary-900" onClick={() => setMobileMenuOpen(false)}>{item.label}</Link>
+                                        )
+                                    )}
 
                                     <div className="pt-8 border-t border-neutral-100 flex flex-col space-y-4">
                                         <Link href="/arcplus#pricing" className="w-full text-center bg-primary-900 text-white px-5 py-3.5 rounded-xl font-medium" onClick={() => setMobileMenuOpen(false)}>
