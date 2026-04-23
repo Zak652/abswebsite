@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, Mail, Phone, MapPin } from "lucide-react";
 import type { NavigationItemData, SiteSettingsData } from "@/types/cms";
 
@@ -12,11 +13,10 @@ interface FooterProps {
 
 const DEFAULT_PLATFORM_LINKS = [
     { label: "Arcplus Software", url: "/arcplus" },
-    { label: "Industrial Scanners", url: "/scanners" },
-    { label: "RFID & Barcode Tags", url: "/tags" },
+    { label: "RFID & Barode Scanners", url: "/scanners" },
+    { label: "RFID & Barode Tags", url: "/tags" },
     { label: "Field Services", url: "/services" },
-    { label: "Training Academy", url: "/training" },
-    { label: "Compare Solutions", url: "/compare" },
+    { label: "A.M Training", url: "/training" },
 ];
 
 const DEFAULT_RESOURCE_LINKS = [
@@ -24,7 +24,6 @@ const DEFAULT_RESOURCE_LINKS = [
     { label: "Documentation", url: "/resources/docs" },
     { label: "API Reference", url: "/resources/api-reference" },
     { label: "Support Portal", url: "/resources/support" },
-    { label: "System Status", url: "#" },
 ];
 
 export default function Footer({
@@ -42,9 +41,9 @@ export default function Footer({
         ? resourceLinks.map((l) => ({ label: l.label, url: l.url }))
         : DEFAULT_RESOURCE_LINKS;
 
-    const email = settings?.company_email ?? "contact@abssystems.com";
-    const phone = settings?.company_phone ?? "+1 (800) 555-0199";
-    const address = settings?.company_address ?? "100 Enterprise Way\nSuite 400\nBoston, MA 02110";
+    const email = settings?.company_email ?? "info@absasset.com";
+    const phone = settings?.company_phone ?? "+256 414 698346";
+    const address = settings?.company_address ?? "Plot 2048, Block 80\nBuwambo, Wakiso\nUganda";
 
     return (
         <footer className="bg-primary-900 text-white pt-24 pb-12 border-t border-neutral-100/10 mt-auto">
@@ -53,11 +52,17 @@ export default function Footer({
 
                     {/* Brand & Value Prop */}
                     <div className="lg:col-span-1">
-                        <Link href="/" className="inline-block text-3xl font-bold font-heading text-white tracking-tight mb-6">
-                            ABS<span className="text-accent-500">.</span>
+                        <Link href="/" className="inline-block mb-6">
+                            <Image
+                                src="/images/abs-logo-white.png"
+                                alt="ABS - Asset Business Solutions"
+                                width={160}
+                                height={64}
+                                className="h-12 w-auto"
+                            />
                         </Link>
                         <p className="text-white/60 text-sm mb-8 max-w-sm">
-                            The enterprise digital product showroom for intelligent asset management, hardware, and lifecycle services.
+                            Enterprise digital products for intelligent asset management and lifecycle services.
                         </p>
                         <div className="space-y-3 text-sm text-white/50">
                             <div className="flex items-center">
@@ -132,7 +137,7 @@ export default function Footer({
 
                 {/* Bottom Bar */}
                 <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 text-xs text-white/40">
-                    <p>&copy; {currentYear} ABS Systems Inc. All rights reserved.</p>
+                    <p>&copy; {currentYear} Asset Business Solutions Ltd. All rights reserved.</p>
                     <div className="flex space-x-6">
                         <Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link>
                         <Link href="#" className="hover:text-white transition-colors">Terms of Service</Link>

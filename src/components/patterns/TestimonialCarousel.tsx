@@ -44,105 +44,132 @@ export default function TestimonialCarousel({
     if (count === 0) return null;
 
     const t = testimonials[current];
+    const metaLine = [t.author_role, t.company_name].filter(Boolean).join(" · ");
 
     return (
-        <section className="relative py-16 lg:py-24">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                {/* Quote icon */}
-                <Quote
-                    size={40}
-                    className="mx-auto mb-6 text-brand/30"
-                    aria-hidden
-                />
+        <div className="relative overflow-hidden rounded-[2rem] border border-primary-900/10 bg-white shadow-[0_24px_80px_rgba(12,31,61,0.12)]">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,122,26,0.08),_transparent_30%),radial-gradient(circle_at_bottom_left,_rgba(55,113,201,0.08),_transparent_34%)]" />
+            <div className="relative px-6 py-10 sm:px-10 lg:px-14 lg:py-14">
+                <div className="flex items-start justify-between gap-6">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-500/10 text-accent-500">
+                            <Quote size={28} aria-hidden />
+                        </div>
+                        {t.industry && (
+                            <span className="rounded-full border border-primary-900/10 bg-primary-900/[0.03] px-4 py-2 text-xs font-bold uppercase tracking-[0.22em] text-primary-900/50">
+                                {t.industry}
+                            </span>
+                        )}
+                    </div>
 
-                {/* Quote text */}
-                <blockquote className="text-xl lg:text-2xl font-medium text-foreground leading-relaxed">
+                    {count > 1 && (
+                        <div className="hidden sm:flex items-center gap-3">
+                            <button
+                                type="button"
+                                onClick={prev}
+                                aria-label="Previous testimonial"
+                                className="flex h-11 w-11 items-center justify-center rounded-full border border-primary-900/10 text-primary-900/65 transition-colors hover:border-primary-900/30 hover:text-primary-900"
+                            >
+                                <ChevronLeft size={20} />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={next}
+                                aria-label="Next testimonial"
+                                className="flex h-11 w-11 items-center justify-center rounded-full border border-primary-900/10 text-primary-900/65 transition-colors hover:border-primary-900/30 hover:text-primary-900"
+                            >
+                                <ChevronRight size={20} />
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                <blockquote className="mt-8 max-w-4xl text-2xl font-medium leading-relaxed text-primary-900 md:text-4xl md:leading-[1.15]">
                     &ldquo;{t.quote}&rdquo;
                 </blockquote>
 
-                {/* Rating */}
-                {t.rating != null && t.rating > 0 && (
-                    <div className="mt-5 flex justify-center gap-1" aria-label={`${t.rating} out of 5 stars`}>
-                        {Array.from({ length: 5 }).map((_, i) => (
-                            <Star
-                                key={i}
-                                size={18}
-                                className={
-                                    i < t.rating!
-                                        ? "fill-amber-400 text-amber-400"
-                                        : "text-border"
-                                }
+                <div className="mt-8 flex flex-col gap-6 border-t border-primary-900/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-4">
+                        {t.avatar ? (
+                            <Image
+                                src={t.avatar.file}
+                                alt={t.author_name}
+                                width={56}
+                                height={56}
+                                className="h-14 w-14 rounded-full object-cover ring-2 ring-primary-900/10"
                             />
-                        ))}
-                    </div>
-                )}
+                        ) : (
+                            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary-900/5 text-lg font-bold text-primary-900 ring-2 ring-primary-900/10">
+                                {t.author_name.charAt(0)}
+                            </div>
+                        )}
 
-                {/* Author */}
-                <div className="mt-6 flex items-center justify-center gap-3">
-                    {t.avatar ? (
-                        <Image
-                            src={t.avatar.file}
-                            alt={t.author_name}
-                            width={44}
-                            height={44}
-                            className="rounded-full object-cover"
-                        />
-                    ) : (
-                        <div className="w-11 h-11 rounded-full bg-brand/10 flex items-center justify-center text-brand font-bold text-lg">
-                            {t.author_name.charAt(0)}
+                        <div>
+                            <p className="font-heading text-lg font-bold text-primary-900">
+                                {t.author_name}
+                            </p>
+                            <p className="text-sm text-primary-900/60">
+                                {metaLine}
+                            </p>
                         </div>
-                    )}
-                    <div className="text-left">
-                        <p className="font-semibold text-foreground">
-                            {t.author_name}
-                        </p>
-                        <p className="text-sm text-muted">
-                            {[t.author_role, t.company_name]
-                                .filter(Boolean)
-                                .join(" · ")}
-                        </p>
+                    </div>
+
+                    <div className="flex flex-col items-start gap-4 sm:items-end">
+                        {t.company_name && (
+                            <span className="rounded-full bg-accent-500/10 px-4 py-2 text-sm font-semibold text-accent-600">
+                                {t.company_name}
+                            </span>
+                        )}
+
+                        {t.rating != null && t.rating > 0 && (
+                            <div className="flex gap-1" aria-label={`${t.rating} out of 5 stars`}>
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                    <Star
+                                        key={i}
+                                        size={18}
+                                        className={i < t.rating! ? "fill-accent-500 text-accent-500" : "text-primary-900/15"}
+                                    />
+                                ))}
+                            </div>
+                        )}
+
+                        {count > 1 && (
+                            <div className="flex items-center gap-2">
+                                {testimonials.map((_, i) => (
+                                    <button
+                                        key={i}
+                                        type="button"
+                                        onClick={() => setCurrent(i)}
+                                        aria-label={`Go to testimonial ${i + 1}`}
+                                        className={`h-2.5 rounded-full transition-all ${i === current ? "w-8 bg-accent-500" : "w-2.5 bg-primary-900/15 hover:bg-primary-900/30"}`}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                {/* Navigation */}
                 {count > 1 && (
-                    <div className="mt-8 flex items-center justify-center gap-4">
+                    <div className="mt-6 flex items-center gap-3 sm:hidden">
                         <button
                             type="button"
                             onClick={prev}
                             aria-label="Previous testimonial"
-                            className="p-2 rounded-full border border-border hover:bg-surface-alt transition-colors"
+                            className="flex h-11 w-11 items-center justify-center rounded-full border border-primary-900/10 text-primary-900/65 transition-colors hover:border-primary-900/30 hover:text-primary-900"
                         >
                             <ChevronLeft size={20} />
                         </button>
-
-                        {/* Dots */}
-                        <div className="flex gap-2">
-                            {testimonials.map((_, i) => (
-                                <button
-                                    key={i}
-                                    type="button"
-                                    onClick={() => setCurrent(i)}
-                                    aria-label={`Go to testimonial ${i + 1}`}
-                                    className={`w-2.5 h-2.5 rounded-full transition-colors ${i === current
-                                            ? "bg-brand"
-                                            : "bg-border hover:bg-muted"
-                                        }`}
-                                />
-                            ))}
-                        </div>
-
                         <button
                             type="button"
                             onClick={next}
                             aria-label="Next testimonial"
-                            className="p-2 rounded-full border border-border hover:bg-surface-alt transition-colors"
+                            className="flex h-11 w-11 items-center justify-center rounded-full border border-primary-900/10 text-primary-900/65 transition-colors hover:border-primary-900/30 hover:text-primary-900"
                         >
                             <ChevronRight size={20} />
                         </button>
                     </div>
                 )}
             </div>
-        </section>
+        </div>
     );
 }

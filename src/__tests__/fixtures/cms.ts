@@ -4,6 +4,7 @@
 import type {
     HeroSectionData,
     PageBlockData,
+    TestimonialData,
     ServiceOfferingData,
     NavigationItemData,
     SiteSettingsData,
@@ -65,6 +66,29 @@ export const mockStatsBlock: PageBlockData = {
     order: 1,
 };
 
+export const mockLogoCarouselBlock: PageBlockData = {
+    id: 13,
+    page: "home",
+    block_type: "logo_carousel",
+    title: "CMS Trusted By",
+    body: "",
+    image: null,
+    video_url: "",
+    icon: "",
+    link_url: "",
+    link_text: "",
+    data: {
+        eyebrow: "CMS Trusted",
+        logos: [
+            { name: "TestCorp", url: "/images/logos/testcorp.svg" },
+            { name: "DevInc", url: "/images/logos/devinc.svg" },
+        ],
+        industries_header: "CMS Industries",
+        industries: ["Tech", "Finance"],
+    },
+    order: 4,
+};
+
 export const mockCtaBlock: PageBlockData = {
     id: 12,
     page: "home",
@@ -79,6 +103,33 @@ export const mockCtaBlock: PageBlockData = {
     data: {},
     order: 2,
 };
+
+export const mockTestimonials: TestimonialData[] = [
+    {
+        id: 1,
+        quote: "CMS testimonial quote",
+        author_name: "Jane Doe",
+        author_role: "Head of Ops",
+        company_name: "TestCorp",
+        industry: "Logistics",
+        avatar: null,
+        rating: 5,
+        placement: "homepage",
+        order: 1,
+    },
+    {
+        id: 2,
+        quote: "Another proof point from the CMS.",
+        author_name: "John Smith",
+        author_role: "Asset Lead",
+        company_name: "DevInc",
+        industry: "Manufacturing",
+        avatar: null,
+        rating: 5,
+        placement: "homepage",
+        order: 2,
+    },
+];
 
 export const mockService: ServiceOfferingData = {
     id: 1,

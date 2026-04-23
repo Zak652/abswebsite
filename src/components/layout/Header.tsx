@@ -116,8 +116,16 @@ export default function Header({ cmsNavItems }: HeaderProps) {
                 <div className="flex justify-between items-center h-20">
                     {/* Logo */}
                     <div className="flex-shrink-0 flex items-center">
-                        <Link href="/" className="text-2xl font-bold font-heading text-primary-900 tracking-tight">
-                            ABS<span className="text-accent-500">.</span>
+                        <Link href="/">
+                            <Image
+                                src="/images/abs-logo.png"
+                                alt="ABS - Asset Business Solutions"
+                                width={180}
+                                height={72}
+                                className="h-14 w-auto"
+                                priority
+                                unoptimized
+                            />
                         </Link>
                     </div>
 
@@ -140,12 +148,9 @@ export default function Header({ cmsNavItems }: HeaderProps) {
                     </nav>
 
                     {/* CTA */}
-                    <div className="hidden md:flex items-center space-x-4">
-                        <Link href="/rfq" className="text-sm font-medium text-primary-900 hover:text-accent-500 transition-colors">
-                            Get Quote
-                        </Link>
-                        <Link href="/arcplus#pricing" className="bg-primary-900 text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-accent-500 transition-colors shadow-sm hover:shadow-md">
-                            Start Trial
+                    <div className="hidden md:flex items-center">
+                        <Link href="/configurator" className="bg-primary-900 text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-accent-500 transition-colors shadow-sm hover:shadow-md">
+                            Configure Solution
                         </Link>
                     </div>
 

@@ -6,11 +6,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ChevronLeft, ChevronRight, Box, Target, Layers, Settings } from "lucide-react";
 import ProductCard from "@/components/ui/ProductCard";
-import type { HeroSectionData, PageBlockData } from "@/types/cms";
+import LogoCarousel from "@/components/patterns/LogoCarousel";
+import TestimonialCarousel from "@/components/patterns/TestimonialCarousel";
+import type { HeroSectionData, PageBlockData, TestimonialData } from "@/types/cms";
 
 interface HomePageClientProps {
   hero: HeroSectionData | null;
   blocks: PageBlockData[];
+  testimonials?: TestimonialData[];
 }
 
 const fadeInUp: Variants = {
@@ -57,15 +60,59 @@ const DEFAULT_WORKFLOW = [
   { title: "Reliable delivery", desc: "Consistent results that exceed expectations" },
 ];
 
-const DEFAULT_STATS = [
-  { value: "5M+", label: "Assets Under Management" },
-  { value: "42", label: "Countries Deployed" },
-  { value: "99.9%", label: "Inventory Accuracy Achieved" },
+const DEFAULT_LOGOS = [
+  { name: "Acme Corp", url: "/images/logos/acme.svg" },
+  { name: "Globex", url: "/images/logos/globex.svg" },
+  { name: "Initech", url: "/images/logos/initech.svg" },
+  { name: "Umbrella", url: "/images/logos/umbrella.svg" },
+  { name: "Waystar", url: "/images/logos/waystar.svg" },
+  { name: "Hooli", url: "/images/logos/hooli.svg" },
+  { name: "Massive Dynamic", url: "/images/logos/massive-dynamic.svg" },
+  { name: "Soylent Corp", url: "/images/logos/soylent.svg" },
+];
+
+const DEFAULT_TESTIMONIALS: TestimonialData[] = [
+  {
+    id: 1,
+    quote: "Achieved 100% asset visibility across 47 departments.",
+    author_name: "County Asset Manager",
+    author_role: "Asset Manager",
+    company_name: "Lamu County Government",
+    industry: "Government",
+    avatar: null,
+    rating: 5,
+    placement: "homepage",
+    order: 1,
+  },
+  {
+    id: 2,
+    quote: "Reduced equipment downtime by 40% with predictive maintenance.",
+    author_name: "Head of Ground Operations",
+    author_role: "Head of Ground Operations",
+    company_name: "Pan African Airways",
+    industry: "Aviation MRO",
+    avatar: null,
+    rating: 5,
+    placement: "homepage",
+    order: 2,
+  },
+  {
+    id: 3,
+    quote: "Digitized 28,000 assets in 3 weeks.",
+    author_name: "Director of Infrastructure",
+    author_role: "Director of Infrastructure",
+    company_name: "Nairobi Metropolitan Services",
+    industry: "Public Utilities",
+    avatar: null,
+    rating: 5,
+    placement: "homepage",
+    order: 3,
+  },
 ];
 
 const ICON_MAP: Record<string, typeof Layers> = { Layers, Target, Box, Settings };
 
-export function HomePageClient({ hero, blocks }: HomePageClientProps) {
+export function HomePageClient({ hero, blocks, testimonials = [] }: HomePageClientProps) {
   const prefersReducedMotion = useReducedMotion();
   const fade = prefersReducedMotion ? noMotion : fadeInUp;
   const stg = prefersReducedMotion ? noStagger : stagger;
@@ -81,7 +128,8 @@ export function HomePageClient({ hero, blocks }: HomePageClientProps) {
   const guidedBlock = blocks.find((b) => b.block_type === "guided_path");
   const workflowBlock = blocks.find((b) => b.block_type === "workflow");
   const statsBlock = blocks.find((b) => b.block_type === "stats_row");
-  const ctaBlock = blocks.find((b) => b.block_type === "cta_banner");
+  const logoBlock = blocks.find((b) => b.block_type === "logo_carousel");
+  const testimonialsBlock = blocks.find((b) => b.block_type === "testimonials_section");
 
   /* Feature grid cards from CMS data or defaults */
   const featureCards =
@@ -109,11 +157,13 @@ export function HomePageClient({ hero, blocks }: HomePageClientProps) {
       ? (workflowBlock.data.steps as { title: string; desc: string }[])
       : DEFAULT_WORKFLOW;
 
-  /* Trust stats from CMS data or defaults */
-  const stats =
-    statsBlock?.data?.stats && Array.isArray(statsBlock.data.stats)
-      ? (statsBlock.data.stats as { value: string; label: string }[])
-      : DEFAULT_STATS;
+  /* Logo carousel from CMS data or defaults */
+  const logos =
+    logoBlock?.data?.logos && Array.isArray(logoBlock.data.logos)
+      ? (logoBlock.data.logos as { name: string; url: string }[])
+      : DEFAULT_LOGOS;
+
+  const homepageTestimonials = testimonials.length > 0 ? testimonials : DEFAULT_TESTIMONIALS;
 
   /* Horizontal scroll controls for product gallery */
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -210,6 +260,32 @@ export function HomePageClient({ hero, blocks }: HomePageClientProps) {
           >
             {h.subheadline}
           </motion.p>
+
+          {(h.cta_primary_text || h.cta_secondary_text) && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: dur, delay: prefersReducedMotion ? 0 : 0.4, ease: "easeOut" }}
+              className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-10"
+            >
+              {h.cta_primary_text && (
+                <Link
+                  href={h.cta_primary_link}
+                  className="bg-accent-500 text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-accent-600 transition-colors"
+                >
+                  {h.cta_primary_text}
+                </Link>
+              )}
+              {h.cta_secondary_text && (
+                <Link
+                  href={h.cta_secondary_link}
+                  className="bg-transparent text-white border-2 border-white/20 px-8 py-4 rounded-full text-lg font-medium hover:border-white/40 transition-colors"
+                >
+                  {h.cta_secondary_text}
+                </Link>
+              )}
+            </motion.div>
+          )}
         </div>
       </section>
 
@@ -363,35 +439,36 @@ export function HomePageClient({ hero, blocks }: HomePageClientProps) {
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
         variants={stg}
-        className="py-24 bg-neutral-100"
+        className="pt-24 pb-24 bg-neutral-100"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div variants={fade} className="text-center mb-16">
             <h2 className="text-sm font-bold font-mono text-accent-500 uppercase tracking-widest mb-4">
-              {statsBlock?.data?.eyebrow as string ?? "Trusted globally"}
+              {logoBlock?.data?.eyebrow as string ?? statsBlock?.data?.eyebrow as string ?? "Trusted by many"}
             </h2>
             <h3 className="text-3xl md:text-5xl font-heading font-bold text-primary-900">
-              {statsBlock?.title ?? "Deployed at scale"}
+              {logoBlock?.title ?? statsBlock?.title ?? "Trusted by industry leaders"}
             </h3>
           </motion.div>
 
-          <motion.div variants={stg} className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {stats.map((stat) => (
-              <motion.div key={stat.label} variants={fade} className="bg-white p-8 rounded-3xl text-center shadow-sm border border-neutral-200">
-                <div className="text-5xl font-mono font-bold text-primary-900 mb-4">{stat.value}</div>
-                <p className="text-primary-900/60 font-medium">{stat.label}</p>
-              </motion.div>
-            ))}
+          <motion.div variants={fade}>
+            <LogoCarousel logos={logos} />
           </motion.div>
 
           <motion.div variants={fade} className="mt-16 text-center">
             <p className="text-lg font-medium text-primary-900/50 uppercase tracking-widest">
-              {statsBlock?.data?.industries_header as string ?? "Powering leaders in"}
+              {(logoBlock ?? statsBlock)?.data?.industries_header as string ?? "Powering leaders in"}
             </p>
             <div className="flex flex-wrap justify-center gap-8 mt-8 opacity-60 font-bold font-heading text-xl text-primary-900">
-              {(Array.isArray(statsBlock?.data?.industries)
-                ? (statsBlock.data.industries as string[])
-                : ["Logistics", "Manufacturing", "Healthcare", "Defense", "IT Assets"]
+              {(Array.isArray((logoBlock ?? statsBlock)?.data?.industries)
+                ? ((logoBlock ?? statsBlock)!.data!.industries as string[])
+                : [
+                  "Government & Public Institutions",
+                  "NGOs & Development Partners",
+                  "Utilities & Infrastructure Partners",
+                  "Healthcare & Laboratory Providers",
+                  "Corporate & Private Sector Organizations",
+                ]
               ).map((industry, idx, arr) => (
                 <span key={idx}>
                   {industry}{idx < arr.length - 1 && <span className="ml-8">•</span>}
@@ -402,30 +479,38 @@ export function HomePageClient({ hero, blocks }: HomePageClientProps) {
         </div>
       </motion.section>
 
-      {/* 6. Global conversion CTA */}
+      {/* 6. TESTIMONIALS */}
       <motion.section
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
         variants={stg}
-        className="py-32 bg-primary-900 text-center"
+        className="relative overflow-hidden border-t border-primary-900/8 bg-[linear-gradient(180deg,#fff4e8_0%,#fffaf4_38%,#ffffff_100%)] py-28"
       >
-        <div className="max-w-4xl mx-auto px-4">
-          <motion.h2 variants={fade} className="text-5xl font-heading font-bold text-white mb-8">
-            {ctaBlock?.title ?? "Ready to gain control?"}
-          </motion.h2>
-          <motion.div variants={fade} className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
-            <Link href={ctaBlock?.link_url ?? "/arcplus#pricing"} className="bg-accent-500 text-white px-10 py-5 rounded-full text-xl font-medium hover:bg-accent-600 transition-colors">
-              {ctaBlock?.link_text ?? "Start Free Trial"}
-            </Link>
-            <Link href={ctaBlock?.data?.secondary_link as string ?? "/configurator"} className="bg-transparent text-white border-2 border-white/20 px-10 py-5 rounded-full text-xl font-medium hover:border-white/40 transition-colors">
-              {ctaBlock?.data?.secondary_text as string ?? "Configure Solution"}
-            </Link>
+        <div className="absolute inset-x-0 top-0 h-24 bg-[linear-gradient(180deg,rgba(255,255,255,0.5)_0%,rgba(255,255,255,0)_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,122,26,0.14),_transparent_24%),radial-gradient(circle_at_bottom_right,_rgba(92,145,220,0.08),_transparent_28%)]" />
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div variants={fade} className="mb-14 text-center">
+            <div className="mb-8 flex items-center justify-center gap-4">
+              <span className="h-px w-16 bg-gradient-to-r from-transparent to-accent-500/50" />
+              <span className="rounded-full border border-accent-500/15 bg-white/70 px-4 py-2 text-[0.7rem] font-mono font-bold uppercase tracking-[0.28em] text-primary-900/45 shadow-sm backdrop-blur-sm">
+                {(testimonialsBlock?.data?.eyebrow_tag as string | undefined) ?? "Customer voices"}
+              </span>
+              <span className="h-px w-16 bg-gradient-to-l from-transparent to-accent-500/50" />
+            </div>
+            <p className="mb-4 text-sm font-bold font-mono uppercase tracking-[0.3em] text-accent-500">
+              {(testimonialsBlock?.data?.eyebrow_label as string | undefined) ?? "Proven in the field"}
+            </p>
+            <h2 className="text-4xl font-heading font-bold text-primary-900 md:text-5xl">
+              {testimonialsBlock?.title || "What teams say after deployment"}
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-primary-900/60">
+              {testimonialsBlock?.body || "Real outcomes from organizations using ABS to digitize registers, improve traceability, and move faster with confidence."}
+            </p>
           </motion.div>
-          <motion.div variants={fade} className="mt-6">
-            <Link href={ctaBlock?.data?.tertiary_link as string ?? "/rfq"} className="text-white/50 hover:text-accent-500 transition-colors font-medium">
-              {ctaBlock?.data?.tertiary_text as string ?? "or request a custom quote →"}
-            </Link>
+
+          <motion.div variants={fade}>
+            <TestimonialCarousel testimonials={homepageTestimonials} autoPlay={7000} />
           </motion.div>
         </div>
       </motion.section>

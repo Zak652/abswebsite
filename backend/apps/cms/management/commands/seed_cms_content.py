@@ -7,6 +7,7 @@ Usage:
 """
 
 from django.core.management.base import BaseCommand
+from django.core.files.base import ContentFile
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -98,6 +99,38 @@ class Command(BaseCommand):
         if extra:
             d.update(extra)
         return d
+
+    def _ensure_testimonial_avatar(self, *, filename, initials, fill, accent, alt_text):
+        from apps.cms.models import MediaAsset
+
+        asset = MediaAsset.objects.filter(filename=filename).first()
+        if asset:
+            return asset
+
+        svg = f"""
+<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"96\" height=\"96\" viewBox=\"0 0 96 96\" fill=\"none\">
+  <rect width=\"96\" height=\"96\" rx=\"48\" fill=\"{fill}\"/>
+  <circle cx=\"72\" cy=\"24\" r=\"10\" fill=\"{accent}\" fill-opacity=\"0.9\"/>
+  <text x=\"48\" y=\"57\" text-anchor=\"middle\" font-family=\"Arial, Helvetica, sans-serif\" font-size=\"30\" font-weight=\"700\" fill=\"white\">{initials}</text>
+</svg>
+""".strip()
+        content = ContentFile(svg.encode("utf-8"), name=filename)
+
+        asset = MediaAsset(
+            asset_type="image",
+            filename=filename,
+            alt_text=alt_text,
+            caption="",
+            file_size=len(svg.encode("utf-8")),
+            width=96,
+            height=96,
+            processing_status="completed",
+            uploaded_by=self.user,
+            usage_count=0,
+        )
+        asset.file.save(filename, content, save=False)
+        asset.save()
+        return asset
 
     # ------------------------------------------------------------------
     # Site Settings
@@ -566,24 +599,32 @@ class Command(BaseCommand):
             },
             {
                 "page": "home",
-                "block_type": "stats_row",
-                "title": "Deployed at scale",
+                "block_type": "logo_carousel",
+                "title": "Trusted by industry leaders",
                 "body": "",
                 "order": 4,
                 "data": {
-                    "eyebrow": "Trusted globally",
-                    "stats": [
-                        {"value": "5M+", "label": "Assets Under Management"},
-                        {"value": "42", "label": "Countries Deployed"},
-                        {"value": "99.9%", "label": "Inventory Accuracy Achieved"},
+                    "eyebrow": "Trusted by many",
+                    "logos": [
+                        {"name": "Acme Corp", "url": "/images/logos/acme.svg"},
+                        {"name": "Globex", "url": "/images/logos/globex.svg"},
+                        {"name": "Initech", "url": "/images/logos/initech.svg"},
+                        {"name": "Umbrella", "url": "/images/logos/umbrella.svg"},
+                        {"name": "Waystar", "url": "/images/logos/waystar.svg"},
+                        {"name": "Hooli", "url": "/images/logos/hooli.svg"},
+                        {
+                            "name": "Massive Dynamic",
+                            "url": "/images/logos/massive-dynamic.svg",
+                        },
+                        {"name": "Soylent Corp", "url": "/images/logos/soylent.svg"},
                     ],
                     "industries_header": "Powering leaders in",
                     "industries": [
-                        "Logistics",
-                        "Manufacturing",
-                        "Healthcare",
-                        "Defense",
-                        "IT Assets",
+                        "Government & Public Institutions",
+                        "NGOs & Development Partners",
+                        "Utilities & Infrastructure Partners",
+                        "Healthcare & Laboratory Providers",
+                        "Corporate & Private Sector Organizations",
                     ],
                 },
             },
@@ -674,9 +715,10 @@ class Command(BaseCommand):
             },
         ]
         created = 0
+        updated = 0
         for b in blocks:
-            # Use page + block_type + order as uniqueness key
-            _, is_new = PageBlock.objects.get_or_create(
+            # Use page + block_type + order as uniqueness key and refresh seeded defaults on reruns.
+            _, is_new = PageBlock.objects.update_or_create(
                 page=b["page"],
                 block_type=b["block_type"],
                 order=b["order"],
@@ -684,7 +726,9 @@ class Command(BaseCommand):
             )
             if is_new:
                 created += 1
-        self.stdout.write(f"  PageBlock: {created} created")
+            else:
+                updated += 1
+        self.stdout.write(f"  PageBlock: {created} created, {updated} updated")
 
     # ------------------------------------------------------------------
     # Service Offerings
@@ -1909,6 +1953,28 @@ class Command(BaseCommand):
     def _seed_testimonials(self):
         from apps.cms.models import Testimonial
 
+        lamu_avatar = self._ensure_testimonial_avatar(
+            filename="testimonial-lamu-county-manager.svg",
+            initials="CM",
+            fill="#183153",
+            accent="#ff7a1a",
+            alt_text="County Asset Manager avatar",
+        )
+        airways_avatar = self._ensure_testimonial_avatar(
+            filename="testimonial-pan-african-airways.svg",
+            initials="HG",
+            fill="#2f5ea6",
+            accent="#78d146",
+            alt_text="Head of Ground Operations avatar",
+        )
+        infrastructure_avatar = self._ensure_testimonial_avatar(
+            filename="testimonial-nairobi-infrastructure.svg",
+            initials="DI",
+            fill="#445a73",
+            accent="#ff7a1a",
+            alt_text="Director of Infrastructure avatar",
+        )
+
         testimonials = [
             {
                 "quote": "Achieved 100% asset visibility across 47 departments",
@@ -1916,6 +1982,7 @@ class Command(BaseCommand):
                 "author_role": "Asset Manager",
                 "company_name": "Lamu County Government",
                 "industry": "Government",
+                "avatar": lamu_avatar,
                 "rating": 5,
                 "placement": "homepage",
                 "order": 1,
@@ -1926,6 +1993,7 @@ class Command(BaseCommand):
                 "author_role": "Head of Ground Operations",
                 "company_name": "Pan African Airways",
                 "industry": "Aviation MRO",
+                "avatar": airways_avatar,
                 "rating": 5,
                 "placement": "homepage",
                 "order": 2,
@@ -1936,6 +2004,7 @@ class Command(BaseCommand):
                 "author_role": "Director of Infrastructure",
                 "company_name": "Nairobi Metropolitan Services",
                 "industry": "Public Utilities",
+                "avatar": infrastructure_avatar,
                 "rating": 5,
                 "placement": "global",
                 "order": 3,
@@ -1943,11 +2012,11 @@ class Command(BaseCommand):
         ]
         created = 0
         for t in testimonials:
-            _, is_new = Testimonial.objects.get_or_create(
+            _, is_new = Testimonial.objects.update_or_create(
                 quote=t["quote"],
                 company_name=t["company_name"],
                 defaults={**t, **self._pub()},
             )
             if is_new:
                 created += 1
-        self.stdout.write(f"  Testimonial: {created} created")
+        self.stdout.write(f"  Testimonial: {created} created/updated")

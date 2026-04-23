@@ -6,7 +6,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { HomePageClient } from "@/app/HomePageClient";
-import { mockHero, mockGuidedBlock, mockStatsBlock, mockCtaBlock } from "./fixtures/cms";
+import { mockHero, mockGuidedBlock, mockStatsBlock, mockLogoCarouselBlock, mockTestimonials } from "./fixtures/cms";
 
 // Mock ProductCard — it fetches API data internally
 vi.mock("@/components/ui/ProductCard", () => ({
@@ -39,15 +39,24 @@ describe("HomePageClient", () => {
             expect(screen.getByText("CMS desc")).toBeInTheDocument();
         });
 
-        it("renders CMS trust stats from blocks", () => {
+        it("renders trust layer heading from stats_row block as fallback", () => {
             render(<HomePageClient hero={null} blocks={[mockStatsBlock]} />);
-            expect(screen.getByText("10M+")).toBeInTheDocument();
-            expect(screen.getByText("CMS Assets")).toBeInTheDocument();
+            expect(screen.getByText("Trust Stats")).toBeInTheDocument();
         });
 
-        it("renders CMS global CTA from blocks", () => {
-            render(<HomePageClient hero={null} blocks={[mockCtaBlock]} />);
-            expect(screen.getByText("CMS CTA Title")).toBeInTheDocument();
+        it("renders CMS logo carousel from blocks", () => {
+            render(<HomePageClient hero={null} blocks={[mockLogoCarouselBlock]} />);
+            expect(screen.getByText("CMS Trusted By")).toBeInTheDocument();
+            expect(screen.getByText("CMS Trusted")).toBeInTheDocument();
+            const logos = screen.getAllByAltText("TestCorp");
+            // Doubled for seamless marquee loop
+            expect(logos.length).toBe(2);
+        });
+
+        it("renders CMS testimonial content", () => {
+            render(<HomePageClient hero={null} blocks={[]} testimonials={mockTestimonials} />);
+            expect(screen.getByText(/CMS testimonial quote/i)).toBeInTheDocument();
+            expect(screen.getByText("Jane Doe")).toBeInTheDocument();
         });
     });
 
@@ -69,14 +78,15 @@ describe("HomePageClient", () => {
 
         it("renders default trust stats when no block", () => {
             render(<HomePageClient hero={null} blocks={[]} />);
-            expect(screen.getByText("5M+")).toBeInTheDocument();
-            expect(screen.getByText("Assets Under Management")).toBeInTheDocument();
+            // Default logos should render (not stats)
+            const logos = screen.getAllByAltText("Acme Corp");
+            expect(logos.length).toBe(2); // Doubled for marquee
         });
 
-        it("renders default CTA section text when no block", () => {
+        it("renders default testimonial section when no CMS testimonials are provided", () => {
             render(<HomePageClient hero={null} blocks={[]} />);
-            const matches = screen.getAllByText("Start Free Trial");
-            expect(matches.length).toBeGreaterThanOrEqual(1);
+            expect(screen.getByText("What teams say after deployment")).toBeInTheDocument();
+            expect(screen.getByText("County Asset Manager")).toBeInTheDocument();
         });
 
         it("renders product cards section", () => {

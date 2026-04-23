@@ -268,8 +268,10 @@ class PageBlock(PublishableMixin):
         ("text", "Text"),
         ("cta_banner", "CTA Banner"),
         ("stats_row", "Stats Row"),
+        ("logo_carousel", "Logo Carousel"),
         ("image_text", "Image + Text"),
         ("video", "Video"),
+        ("testimonials_section", "Testimonials Section"),
     ]
 
     page = models.CharField(max_length=100, db_index=True)
