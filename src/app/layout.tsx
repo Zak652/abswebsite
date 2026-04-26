@@ -48,6 +48,17 @@ export const metadata: Metadata = {
     locale: "en_US",
     type: "website",
   },
+  icons: {
+    icon: [
+      { url: "/favicons/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicons/favicon-16.ico", sizes: "16x16", type: "image/x-icon" },
+      { url: "/favicons/favicon-32.ico", sizes: "32x32", type: "image/x-icon" },
+      { url: "/favicons/favicon-48.ico", sizes: "48x48", type: "image/x-icon" },
+      { url: "/favicons/android-chrome-160.png", sizes: "160x160", type: "image/png" },
+    ],
+    apple: { url: "/favicons/apple-touch-icon-180.png", sizes: "180x180" },
+    shortcut: "/favicons/favicon-32.ico",
+  },
 };
 
 export default async function RootLayout({
