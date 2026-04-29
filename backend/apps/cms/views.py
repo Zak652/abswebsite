@@ -23,6 +23,7 @@ from apps.cms.models import (
     BlogCategory,
     BlogPost,
     Testimonial,
+    TrainingPageSettings,
 )
 from apps.cms.serializers import (
     SiteSettingsSerializer,
@@ -43,6 +44,7 @@ from apps.cms.serializers import (
     BlogCategorySerializer,
     BlogPostSerializer,
     TestimonialSerializer,
+    TrainingPageSettingsSerializer,
 )
 
 
@@ -122,14 +124,19 @@ class PageBlockListView(CachedResponseMixin, APIView):
 
     def get(self, request):
         page = request.query_params.get("page", "home")
+        key = request.query_params.get("key")
 
         def fetch():
-            blocks = PageBlock.objects.filter(page=page, status="published").order_by(
-                "order"
-            )
-            return PageBlockSerializer(blocks, many=True).data
+            qs = PageBlock.objects.filter(page=page, status="published")
+            if key:
+                qs = qs.filter(key=key)
+            qs = qs.order_by("order")
+            return PageBlockSerializer(qs, many=True).data
 
-        data = get_cached("blocks", fetch, page=page)
+        cache_kwargs = {"page": page}
+        if key:
+            cache_kwargs["key"] = key
+        data = get_cached("blocks", fetch, **cache_kwargs)
         return Response(data)
 
 
@@ -402,4 +409,16 @@ class TestimonialListView(CachedResponseMixin, APIView):
             return TestimonialSerializer(qs, many=True).data
 
         data = get_cached("testimonials", fetch, placement=placement or "all")
+        return Response(data)
+
+
+class TrainingPageSettingsView(CachedResponseMixin, APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        def fetch():
+            obj = TrainingPageSettings.objects.get()
+            return TrainingPageSettingsSerializer(obj).data
+
+        data = get_cached("training_page_settings", fetch)
         return Response(data)

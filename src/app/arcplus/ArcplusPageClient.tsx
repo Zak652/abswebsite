@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
-import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -20,11 +19,17 @@ import {
 } from "lucide-react";
 import { TrialSignupModal } from "@/components/subscriptions/TrialSignupModal";
 import { PricingTable } from "@/components/patterns/PricingTable";
+import { CMSHero } from "@/components/cms/CMSHero";
 import type {
   HeroSectionData,
   ArcplusModuleData,
   PricingPlanData,
   PageBlockData,
+  ArcplusIntroBlockData,
+  ArcplusLifecycleBlockData,
+  ArcplusLifecycleStep,
+  ArcplusFeatureComparisonBlockData,
+  ArcplusCtaBlockData,
 } from "@/types/cms";
 
 interface ArcplusPageClientProps {
@@ -223,18 +228,6 @@ export function ArcplusPageClient({
     localStorage.setItem("abs_preferred_currency", c);
   };
 
-  /* Resolve CMS hero or fall back to defaults */
-  const h = hero ?? {
-    headline: "Arcplus Platform",
-    subheadline:
-      "The enterprise nervous system for your physical assets. Eight powerful modules working in perfect sync to digitize every stage of the lifecycle.",
-    cta_primary_text: "Start Free Trial",
-    cta_primary_link: "",
-    cta_secondary_text: "Get Quote",
-    cta_secondary_link: "/rfq",
-    background_image: null,
-  };
-
   /* Resolve modules from CMS or fallback to hardcoded */
   const resolvedModules =
     cmsModules.length > 0
@@ -305,10 +298,69 @@ export function ArcplusPageClient({
       })()
       : featureComparison;
 
-  /* CTA block from CMS */
-  const ctaBlock = blocks.find((b) => b.block_type === "global_cta");
+  /* CTA block from CMS (resolve by stable key first, fall back to type) */
+  const ctaBlock =
+    blocks.find((b) => b.key === "arcplus_cta") ??
+    blocks.find((b) => b.block_type === "cta_banner");
+  const ctaData = (ctaBlock?.data ?? {}) as ArcplusCtaBlockData;
 
-  const nextStep = () => setActiveStep((prev) => (prev + 1) % lifecycleSteps.length);
+  /* Modules section intro */
+  const modulesIntroBlock =
+    blocks.find((b) => b.key === "arcplus_modules_intro") ??
+    blocks.find(
+      (b) => b.block_type === "intro" && b.order < 20
+    );
+  const modulesIntroData = (modulesIntroBlock?.data ?? {}) as ArcplusIntroBlockData;
+
+  /* Pricing section intro */
+  const pricingIntroBlock =
+    blocks.find((b) => b.key === "arcplus_pricing_intro") ??
+    blocks.find(
+      (b) => b.block_type === "intro" && b.order >= 20
+    );
+
+  /* Visual Lifecycle workflow block */
+  const lifecycleBlock =
+    blocks.find((b) => b.key === "arcplus_lifecycle") ??
+    blocks.find((b) => b.block_type === "workflow");
+  const lifecycleData = (lifecycleBlock?.data ?? {}) as ArcplusLifecycleBlockData;
+  const lifecycleStepObjects: ArcplusLifecycleStep[] =
+    Array.isArray(lifecycleData.steps) && lifecycleData.steps.length > 0
+      ? lifecycleData.steps
+      : lifecycleSteps.map((label) => ({
+        label,
+        dashboard_title: `${label} Workflow`,
+        dashboard_caption: "Running logic systems...",
+      }));
+  const lifecycleStepLabels = lifecycleStepObjects.map((s) => s.label);
+  const dashboardLabel =
+    lifecycleData.dashboard_label ?? "Arcplus Dashboard Overview";
+  const safeActiveStep = Math.min(activeStep, lifecycleStepObjects.length - 1);
+  const activeLifecycleStep = lifecycleStepObjects[safeActiveStep];
+
+  /* Feature comparison block */
+  const featureComparisonBlock = blocks.find(
+    (b) =>
+      b.key === "arcplus_feature_comparison" ||
+      b.block_type === "feature_comparison"
+  );
+  const featureComparisonData =
+    (featureComparisonBlock?.data ?? {}) as ArcplusFeatureComparisonBlockData;
+  const featureColumnLabels = {
+    starter: featureComparisonData.column_labels?.starter ?? "Starter",
+    growth: featureComparisonData.column_labels?.growth ?? "Growth",
+    pro: featureComparisonData.column_labels?.pro ?? "Professional",
+    enterprise:
+      featureComparisonData.column_labels?.enterprise ?? "Enterprise",
+  };
+  const featureLabel = featureComparisonData.feature_label ?? "Feature";
+  const toggleShowLabel =
+    featureComparisonData.toggle_show ?? "Show full feature comparison";
+  const toggleHideLabel =
+    featureComparisonData.toggle_hide ?? "Hide full feature comparison";
+
+  const nextStep = () =>
+    setActiveStep((prev) => (prev + 1) % lifecycleStepObjects.length);
 
   const openTrialModal = (plan: typeof trialModal.plan = "growth") => {
     setTrialModal({ open: true, plan });
@@ -317,59 +369,18 @@ export function ArcplusPageClient({
   return (
     <div className="flex flex-col min-h-screen bg-surface overflow-x-hidden">
       {/* 1. HERO & PLATFORM INTRO */}
-      <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-5xl md:text-7xl font-heading font-bold text-primary-900 tracking-tight mb-6"
-        >
-          {h.headline}
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-xl text-primary-900/60 max-w-3xl mx-auto mb-16"
-        >
-          {h.subheadline}
-        </motion.p>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex flex-wrap gap-4 justify-center"
-        >
-          <button
-            onClick={() => openTrialModal("growth")}
-            className="bg-accent-500 text-white px-8 py-4 rounded-full font-medium hover:bg-accent-600 transition-colors"
-          >
-            Start Free Trial
-          </button>
-          <Link
-            href="/rfq"
-            className="bg-transparent border border-primary-900/20 text-primary-900 px-8 py-4 rounded-full font-medium hover:border-primary-900/40 transition-colors"
-          >
-            Get Quote
-          </Link>
-        </motion.div>
-
-        <motion.div
-          className="mt-16 w-full max-w-5xl mx-auto rounded-[2rem] overflow-hidden shadow-2xl relative h-[400px] md:h-[600px] border border-neutral-200"
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
-          <Image
-            src="/images/arcplus_hero.png"
-            alt="Arcplus Enterprise Dashboard on Laptop"
-            fill
-            className="object-cover"
-            priority
-          />
-        </motion.div>
-      </section>
+      <CMSHero
+        hero={hero}
+        fallbackHeading="Arcplus Platform"
+        fallbackSubheading="The enterprise nervous system for your physical assets. Eight powerful modules working in perfect sync to digitize every stage of the lifecycle."
+        fallbackImageSrc="/images/arcplus_hero.png"
+        fallbackImageAlt="Arcplus Enterprise Dashboard on Laptop"
+        minHeight="70vh"
+        fallbackCtas={[
+          { label: "Start Free Trial", href: "#pricing", variant: "primary" },
+          { label: "Get Quote", href: "/rfq", variant: "ghost" },
+        ]}
+      />
 
       {/* 2. MODULES SHOWCASE */}
       <motion.section
@@ -379,6 +390,28 @@ export function ArcplusPageClient({
         variants={stagger}
         className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative"
       >
+        {(modulesIntroBlock?.title ||
+          modulesIntroBlock?.body ||
+          modulesIntroData.eyebrow) && (
+            <motion.div variants={fadeInUp} className="text-center mb-12">
+              {modulesIntroData.eyebrow && (
+                <p className="text-xs font-mono uppercase tracking-widest text-accent-500 mb-3">
+                  {modulesIntroData.eyebrow}
+                </p>
+              )}
+              {modulesIntroBlock?.title && (
+                <h2 className="text-3xl md:text-4xl font-heading font-bold text-primary-900">
+                  {modulesIntroBlock.title}
+                </h2>
+              )}
+              {modulesIntroBlock?.body && (
+                <p className="mt-4 text-lg text-primary-900/70 max-w-3xl mx-auto">
+                  {modulesIntroBlock.body}
+                </p>
+              )}
+            </motion.div>
+          )}
+
         <motion.div
           variants={fadeInUp}
           className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6"
@@ -462,25 +495,25 @@ export function ArcplusPageClient({
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <motion.div variants={fadeInUp}>
               <h2 className="text-4xl md:text-5xl font-heading font-bold mb-6">
-                Visual Lifecycle Management
+                {lifecycleBlock?.title ?? "Visual Lifecycle Management"}
               </h2>
               <p className="text-xl text-white/70 mb-12">
-                See exactly where your assets are in their lifecycle context.
-                The Arcplus dashboard acts as a single pane of glass.
+                {lifecycleBlock?.body ||
+                  "See exactly where your assets are in their lifecycle context. The Arcplus dashboard acts as a single pane of glass."}
               </p>
 
               <div className="space-y-6">
-                {lifecycleSteps.map((step, idx) => (
+                {lifecycleStepLabels.map((step, idx) => (
                   <button
                     key={step}
                     onClick={() => setActiveStep(idx)}
-                    className={`w-full text-left p-6 rounded-2xl border transition-all duration-300 flex items-center justify-between ${activeStep === idx
+                    className={`w-full text-left p-6 rounded-2xl border transition-all duration-300 flex items-center justify-between ${safeActiveStep === idx
                       ? "bg-accent-500/10 border-accent-500 text-white"
                       : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"
                       }`}
                   >
                     <span className="text-xl font-medium">{step}</span>
-                    {activeStep === idx && (
+                    {safeActiveStep === idx && (
                       <ArrowRight className="w-5 h-5 text-accent-500" />
                     )}
                   </button>
@@ -499,41 +532,100 @@ export function ArcplusPageClient({
                   <div className="w-3 h-3 rounded-full bg-green-500/50" />
                 </div>
                 <div className="text-xs font-mono text-white/50">
-                  Arcplus Dashboard Overview
+                  {dashboardLabel}
                 </div>
               </div>
 
-              <div className="flex-1 p-8 flex items-center justify-center relative">
+              <div className="flex-1 flex relative overflow-hidden">
                 <AnimatePresence mode="wait">
                   <motion.div
-                    key={activeStep}
-                    initial={{ opacity: 0, scale: 0.95 }}
+                    key={safeActiveStep}
+                    initial={{ opacity: 0, scale: 0.98 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 1.05 }}
+                    exit={{ opacity: 0, scale: 1.02 }}
                     transition={{ duration: 0.4 }}
-                    className="text-center"
+                    className="absolute inset-0 flex flex-col"
                   >
-                    <div className="w-32 h-32 mx-auto mb-6 bg-accent-500/20 rounded-full flex items-center justify-center border border-accent-500/50 shadow-[0_0_30px_rgba(249,115,22,0.3)]">
-                      <RefreshCw
-                        className={`w-12 h-12 text-accent-500 ${activeStep % 2 === 0
-                          ? "animate-spin-slow"
-                          : "animate-bounce"
-                          }`}
-                        style={{ animationDuration: "3s" }}
-                      />
-                    </div>
-                    <h3 className="text-3xl font-heading font-bold text-white mb-2">
-                      {lifecycleSteps[activeStep]} Workflow
-                    </h3>
-                    <p className="text-white/50 font-mono">
-                      Running logic systems...
-                    </p>
+                    {activeLifecycleStep?.image_url ? (
+                      <>
+                        <div className="flex-1 relative bg-[#0b1322]">
+                          {/* Screenshot fills the entire pane (dashboard frame
+                              becomes the bezel). object-contain preserves the
+                              full screenshot; the dark backdrop fills any
+                              letterboxing. */}
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={activeLifecycleStep.image_url}
+                            alt={
+                              activeLifecycleStep.image_alt ??
+                              activeLifecycleStep.dashboard_title ??
+                              activeLifecycleStep.label
+                            }
+                            className="absolute inset-0 w-full h-full object-contain object-top"
+                          />
+                          {/* Subtle gradient so the overlay caption is legible
+                              even on light screenshots. */}
+                          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#0f172a]/95 via-[#0f172a]/60 to-transparent pointer-events-none" />
+                        </div>
+                        <div className="absolute left-0 right-0 bottom-0 p-5 pr-24">
+                          <h3 className="text-xl sm:text-2xl font-heading font-bold text-white drop-shadow">
+                            {activeLifecycleStep.dashboard_title ??
+                              `${lifecycleStepLabels[safeActiveStep] ?? ""} Workflow`}
+                          </h3>
+                          <p className="text-white/70 font-mono text-sm mt-1">
+                            {activeLifecycleStep.dashboard_caption ??
+                              "Running logic systems..."}
+                          </p>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex-1 p-8 flex flex-col items-center justify-center text-center">
+                        <div className="w-32 h-32 mx-auto mb-6 bg-accent-500/20 rounded-full flex items-center justify-center border border-accent-500/50 shadow-[0_0_30px_rgba(249,115,22,0.3)]">
+                          {(() => {
+                            const ICONS: Record<
+                              string,
+                              typeof RefreshCw
+                            > = {
+                              RefreshCw,
+                              Database,
+                              Activity,
+                              Wrench,
+                              Layers,
+                              Trash2,
+                              Truck,
+                              Shield,
+                            };
+                            const Icon =
+                              (activeLifecycleStep?.icon &&
+                                ICONS[activeLifecycleStep.icon]) ||
+                              RefreshCw;
+                            return (
+                              <Icon
+                                className={`w-12 h-12 text-accent-500 ${safeActiveStep % 2 === 0
+                                  ? "animate-spin-slow"
+                                  : "animate-bounce"
+                                  }`}
+                                style={{ animationDuration: "3s" }}
+                              />
+                            );
+                          })()}
+                        </div>
+                        <h3 className="text-3xl font-heading font-bold text-white mb-2">
+                          {activeLifecycleStep?.dashboard_title ??
+                            `${lifecycleStepLabels[safeActiveStep] ?? ""} Workflow`}
+                        </h3>
+                        <p className="text-white/50 font-mono">
+                          {activeLifecycleStep?.dashboard_caption ??
+                            "Running logic systems..."}
+                        </p>
+                      </div>
+                    )}
                   </motion.div>
                 </AnimatePresence>
 
                 <button
                   onClick={nextStep}
-                  className="absolute bottom-4 right-4 text-xs font-mono text-white/30 hover:text-accent-500 transition-colors"
+                  className="absolute bottom-4 right-4 text-xs font-mono text-white/40 hover:text-accent-500 transition-colors z-10 bg-[#0f172a]/60 px-2 py-1 rounded"
                   aria-label="Next lifecycle step"
                 >
                   NEXT FRAME →
@@ -555,8 +647,13 @@ export function ArcplusPageClient({
       >
         <motion.div variants={fadeInUp} className="text-center mb-8">
           <h2 className="text-4xl md:text-5xl font-heading font-bold text-primary-900">
-            Simple, scale-based pricing.
+            {pricingIntroBlock?.title ?? "Simple, scale-based pricing."}
           </h2>
+          {pricingIntroBlock?.body && (
+            <p className="mt-4 text-lg text-primary-900/70 max-w-3xl mx-auto">
+              {pricingIntroBlock.body}
+            </p>
+          )}
         </motion.div>
 
         <PricingTable
@@ -577,7 +674,7 @@ export function ArcplusPageClient({
             onClick={() => setShowFeatureComparison(!showFeatureComparison)}
             className="inline-flex items-center text-lg font-medium text-primary-900 hover:text-accent-500 transition-colors"
           >
-            {showFeatureComparison ? "Hide" : "Show"} full feature comparison
+            {showFeatureComparison ? toggleHideLabel : toggleShowLabel}
             <ChevronDown
               className={`w-5 h-5 ml-2 transition-transform duration-300 ${showFeatureComparison ? "rotate-180" : ""
                 }`}
@@ -598,19 +695,19 @@ export function ArcplusPageClient({
                   <thead>
                     <tr>
                       <th className="p-6 bg-neutral-50 border-b border-r border-neutral-100 text-sm font-bold text-primary-900/40 uppercase tracking-widest">
-                        Feature
+                        {featureLabel}
                       </th>
                       <th className="p-6 border-b border-r border-neutral-100 text-center text-sm font-bold text-primary-900">
-                        Starter
+                        {featureColumnLabels.starter}
                       </th>
                       <th className="p-6 border-b border-r border-neutral-100 text-center text-sm font-bold text-accent-500 bg-accent-500/5">
-                        Growth
+                        {featureColumnLabels.growth}
                       </th>
                       <th className="p-6 border-b border-r border-neutral-100 text-center text-sm font-bold text-primary-900">
-                        Professional
+                        {featureColumnLabels.pro}
                       </th>
                       <th className="p-6 border-b border-neutral-100 text-center text-sm font-bold text-primary-900">
-                        Enterprise
+                        {featureColumnLabels.enterprise}
                       </th>
                     </tr>
                   </thead>
@@ -665,21 +762,43 @@ export function ArcplusPageClient({
           >
             {ctaBlock?.title ?? "Transform your asset lifecycle."}
           </motion.h2>
+          {ctaBlock?.body && (
+            <motion.p
+              variants={fadeInUp}
+              className="text-xl text-white/70 max-w-2xl mx-auto mb-10"
+            >
+              {ctaBlock.body}
+            </motion.p>
+          )}
           <motion.div
             variants={fadeInUp}
             className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6"
           >
-            <button
-              onClick={() => openTrialModal("growth")}
-              className="bg-accent-500 text-white px-10 py-5 rounded-full text-xl font-medium hover:bg-accent-600 transition-colors"
-            >
-              Start Free Trial
-            </button>
+            {(() => {
+              const primaryLabel = ctaBlock?.link_text || "Start Free Trial";
+              const primaryHref = ctaBlock?.link_url || "#trial";
+              const opensTrial = !primaryHref || primaryHref === "#trial";
+              return opensTrial ? (
+                <button
+                  onClick={() => openTrialModal("growth")}
+                  className="bg-accent-500 text-white px-10 py-5 rounded-full text-xl font-medium hover:bg-accent-600 transition-colors"
+                >
+                  {primaryLabel}
+                </button>
+              ) : (
+                <Link
+                  href={primaryHref}
+                  className="bg-accent-500 text-white px-10 py-5 rounded-full text-xl font-medium hover:bg-accent-600 transition-colors"
+                >
+                  {primaryLabel}
+                </Link>
+              );
+            })()}
             <Link
-              href="/rfq"
+              href={ctaData.secondary_url || "/rfq"}
               className="bg-transparent text-white border-2 border-white/20 px-10 py-5 rounded-full text-xl font-medium hover:border-white/40 transition-colors"
             >
-              Get Quote
+              {ctaData.secondary_label || "Get Quote"}
             </Link>
           </motion.div>
         </div>

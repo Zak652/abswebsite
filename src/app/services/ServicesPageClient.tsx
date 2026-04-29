@@ -4,6 +4,7 @@ import { motion, type Variants } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, ClipboardList, Users, Database, BarChart3, Warehouse, HardDrive } from "lucide-react";
+import { CMSHero } from "@/components/cms/CMSHero";
 import type { HeroSectionData, ServiceOfferingData } from "@/types/cms";
 
 interface ServicesPageClientProps {
@@ -82,13 +83,6 @@ const services = [
 ];
 
 export function ServicesPageClient({ hero, cmsServices }: ServicesPageClientProps) {
-    /* Resolve CMS hero or fallback */
-    const h = hero ?? {
-        headline: "Expert Services",
-        subheadline: "We don\u2019t just sell products. We deploy, verify, and optimize your entire asset ecosystem.",
-        background_image: null,
-    };
-
     /* Resolve CMS services or fallback to hardcoded */
     const resolvedServices =
         cmsServices.length > 0
@@ -107,33 +101,14 @@ export function ServicesPageClient({ hero, cmsServices }: ServicesPageClientProp
     return (
         <div className="min-h-screen bg-surface">
 
-            {/* Hero */}
-            <section className="pt-32 pb-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                    className="text-center mb-16"
-                >
-                    <h1 className="text-4xl md:text-6xl font-heading font-bold text-primary-900 mb-6">{h.headline}</h1>
-                    <p className="text-xl text-primary-900/60 max-w-3xl mx-auto">{h.subheadline}</p>
-                </motion.div>
-
-                <motion.div
-                    className="w-full rounded-[2rem] overflow-hidden shadow-xl relative h-[300px] md:h-[500px]"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
-                >
-                    <Image
-                        src="/images/services_hero.png"
-                        alt="Field service team performing asset verification"
-                        fill
-                        className="object-cover object-top"
-                        priority
-                    />
-                </motion.div>
-            </section>
+            {/* Hero — driven by CMS variant (overlay or split) */}
+            <CMSHero
+                hero={hero}
+                fallbackHeading="Expert Services"
+                fallbackSubheading="We don\u2019t just sell products. We deploy, verify, and optimize your entire asset ecosystem."
+                fallbackImageSrc="/images/services_hero.png"
+                fallbackImageAlt="Field service team performing asset verification"
+            />
 
             {/* Service Cards — Outcome-Based */}
             <motion.section

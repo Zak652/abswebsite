@@ -5,6 +5,12 @@ from apps.cms import admin_views as views
 urlpatterns = [
     # Site Settings
     path("settings/", views.AdminSiteSettingsView.as_view(), name="admin-cms-settings"),
+    # Training Page Settings (singleton)
+    path(
+        "training-settings/",
+        views.AdminTrainingPageSettingsView.as_view(),
+        name="admin-cms-training-settings",
+    ),
     # Page Meta
     path("meta/", views.AdminPageMetaListView.as_view(), name="admin-cms-meta-list"),
     path(

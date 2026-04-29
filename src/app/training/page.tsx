@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import { TrainingPageClient } from "./TrainingPageClient";
-import { fetchPageMeta, fetchSiteSettings } from "@/lib/api/cms-server";
+import {
+    fetchPageMeta,
+    fetchSiteSettings,
+    fetchHeroSection,
+    fetchPageBlocks,
+    fetchTrainingPageSettings,
+} from "@/lib/api/cms-server";
 
 const DEFAULT_TITLE = "Training Academy | ABS Platform";
 const DEFAULT_DESC =
@@ -20,7 +26,19 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function TrainingPage() {
-    const settings = await fetchSiteSettings();
+    const [settings, hero, pageBlocks, trainingSettings] = await Promise.all([
+        fetchSiteSettings(),
+        fetchHeroSection("training"),
+        fetchPageBlocks("training"),
+        fetchTrainingPageSettings(),
+    ]);
     const currencyRates = settings?.currency_rates ?? null;
-    return <TrainingPageClient currencyRates={currencyRates} />;
+    return (
+        <TrainingPageClient
+            currencyRates={currencyRates}
+            hero={hero}
+            pageBlocks={pageBlocks}
+            trainingSettings={trainingSettings}
+        />
+    );
 }

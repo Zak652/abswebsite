@@ -4,7 +4,8 @@ import { useState } from "react";
 import { motion, type Variants } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Waves, ShieldCheck, Cog, Thermometer, Radio, MapPin } from "lucide-react";
+import { Waves, ShieldCheck, Cog, Thermometer, Radio, MapPin } from "lucide-react";
+import { CMSHero } from "@/components/cms/CMSHero";
 import type { HeroSectionData } from "@/types/cms";
 
 type FilterKey = "all" | "environment" | "range" | "application";
@@ -80,14 +81,6 @@ export function TagsPageClient({ hero }: TagsPageClientProps) {
     const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
     const [filterValue, setFilterValue] = useState<string>("all");
 
-    const headline = hero?.headline ?? DEFAULT_HEADLINE;
-    const subheadline = hero?.subheadline ?? DEFAULT_SUBHEADLINE;
-    const heroImage = hero?.background_image?.file ?? "/images/rfid_tag_1772490270592.png";
-    const ctaText = hero?.cta_primary_text ?? "Configure Tags";
-    const ctaUrl = hero?.cta_primary_link ?? "/configurator";
-    const secondaryCtaText = hero?.cta_secondary_text ?? "Get Quote";
-    const secondaryCtaUrl = hero?.cta_secondary_link ?? "/rfq";
-
     const filters: { key: FilterKey; label: string; options: string[] }[] = [
         { key: "all", label: "All Tags", options: [] },
         { key: "environment", label: "By Environment", options: ["Metal / Industrial", "Outdoor / Yard", "Chemical / Extreme Temp", "Indoor / Office", "Outdoor / Mobile"] },
@@ -103,45 +96,19 @@ export function TagsPageClient({ hero }: TagsPageClientProps) {
     return (
         <div className="min-h-screen bg-surface">
 
-            {/* 1. HERO IMAGE — clean isolated product */}
-            <section className="pt-32 pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col md:flex-row items-center border-b border-neutral-200">
-                <div className="md:w-1/2 pr-0 md:pr-12 mb-12 md:mb-0">
-                    <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.6 }}
-                    >
-                        <h1 className="text-5xl md:text-7xl font-heading font-bold text-primary-900 mb-6 tracking-tight">
-                            {headline}
-                        </h1>
-                        <p className="text-xl text-primary-900/60 mb-8 max-w-lg">
-                            {subheadline}
-                        </p>
-                        <div className="flex flex-wrap gap-4">
-                            <Link href={ctaUrl} className="bg-primary-900 text-white px-8 py-4 rounded-full font-medium hover:bg-accent-500 transition-colors flex items-center">
-                                {ctaText} <ArrowRight className="w-4 h-4 ml-2" />
-                            </Link>
-                            <Link href={secondaryCtaUrl} className="bg-transparent border border-primary-900/20 text-primary-900 px-8 py-4 rounded-full font-medium hover:border-primary-900/40 transition-colors">
-                                {secondaryCtaText}
-                            </Link>
-                        </div>
-                    </motion.div>
-                </div>
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.8, delay: 0.2 }}
-                    className="md:w-1/2 relative h-[400px] w-full bg-white rounded-3xl shadow-sm border border-neutral-100 overflow-hidden"
-                >
-                    <Image
-                        src={heroImage}
-                        alt="ABS Industrial RFID Tag — clean isolated product shot"
-                        fill
-                        className="object-contain p-12 hover:scale-105 transition-transform duration-700"
-                        priority
-                    />
-                </motion.div>
-            </section>
+            {/* 1. HERO — driven by CMS variant (overlay or split) */}
+            <CMSHero
+                hero={hero}
+                fallbackHeading={DEFAULT_HEADLINE}
+                fallbackSubheading={DEFAULT_SUBHEADLINE}
+                fallbackImageSrc="/images/rfid_tag_1772490270592.png"
+                fallbackImageAlt="ABS Industrial RFID Tag — clean isolated product shot"
+                fallbackCtas={[
+                    { label: "Configure Tags", href: "/configurator", variant: "primary" },
+                    { label: "Get Quote", href: "/rfq", variant: "secondary" },
+                ]}
+                variant={hero?.variant === "overlay" ? "overlay" : "split"}
+            />
 
             {/* 2. CONTEXT IMAGE — deployed in environment + Interactive Filters */}
             <motion.section

@@ -128,6 +128,10 @@ services:
       - CMS_API_URL=http://backend:8000/api/v1
       - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
       - NEXT_PUBLIC_SITE_URL=http://localhost:5000
+      # Origin used by next.config.ts rewrites() to proxy /media/* to Django
+      # over the Docker network (browser hits the frontend, frontend hits the
+      # backend service by its compose hostname).
+      - BACKEND_ORIGIN=http://backend:8000
       - JWT_SECRET=${JWT_SECRET:-dev-jwt-secret}
     depends_on:
       - backend

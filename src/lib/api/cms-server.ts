@@ -21,6 +21,7 @@ import type {
     BlogCategoryData,
     BlogPostData,
     TestimonialData,
+    TrainingPageSettingsData,
 } from "@/types/cms";
 import { draftMode } from "next/headers";
 
@@ -79,6 +80,13 @@ async function cmsFetch<T>(
 
 export async function fetchSiteSettings(): Promise<SiteSettingsData | null> {
     return cmsFetch<SiteSettingsData>("settings/", ["cms-settings"]);
+}
+
+export async function fetchTrainingPageSettings(): Promise<TrainingPageSettingsData | null> {
+    return cmsFetch<TrainingPageSettingsData>(
+        "training-settings/",
+        ["cms-training-settings"]
+    );
 }
 
 export async function fetchPageMeta(

@@ -9,8 +9,8 @@ import {
     useUpdateProductImage,
     useDeleteProductImage,
     useReorderProductImages,
-    useAdminMedia,
 } from "@/lib/hooks/useCMSAdmin";
+import { MediaPicker } from "@/components/admin/MediaPicker";
 
 const IMAGE_TYPES: ProductImageData["image_type"][] = ["hero", "context", "detail", "workflow", "config"];
 
@@ -52,15 +52,13 @@ function ImageForm({
     isPending: boolean;
 }) {
     const [form, setForm] = useState<ImageFormData>({ ...EMPTY, ...initial });
-    const { data: mediaAssets = [] } = useAdminMedia();
-    const imageAssets = mediaAssets.filter((m) => m.asset_type.startsWith("image"));
 
     const set = (key: keyof ImageFormData, value: string | number | boolean) =>
         setForm((prev) => ({ ...prev, [key]: value }));
 
     return (
         <div className="bg-white rounded-xl border border-neutral-200 p-6 space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Image Type</label>
                     <select value={form.image_type} onChange={(e) => set("image_type", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500">
@@ -70,19 +68,17 @@ function ImageForm({
                     </select>
                 </div>
                 <div>
-                    <label className="block text-xs font-medium text-neutral-700 mb-1">Media Asset</label>
-                    <select value={form.asset} onChange={(e) => set("asset", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500">
-                        <option value="">Select an image…</option>
-                        {imageAssets.map((a) => (
-                            <option key={a.id} value={a.id}>{a.filename}</option>
-                        ))}
-                    </select>
-                </div>
-                <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Order</label>
                     <input type="number" value={form.order} onChange={(e) => set("order", parseInt(e.target.value) || 0)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
                 </div>
             </div>
+            <MediaPicker
+                label="Media Asset"
+                value={form.asset || null}
+                onChange={(id) => set("asset", id ?? "")}
+                accept="image"
+                helperText="Pick an image from the media library or upload a new one."
+            />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Alt Text</label>

@@ -1,15 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Calendar, Clock, List, MapPin, Users } from "lucide-react";
+import { Calendar, Clock, List, MapPin, Users } from "lucide-react";
 import { useTrainingSessions } from "@/lib/hooks/useTraining";
 import { TrainingRegistrationModal } from "@/components/training/TrainingRegistrationModal";
 import { TrainingCalendar } from "@/components/training/TrainingCalendar";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { CMSHero } from "@/components/cms/CMSHero";
 import type { TrainingSession } from "@/types/training";
+import type { HeroSectionData, PageBlockData, TrainingPageSettingsData } from "@/types/cms";
 
 type ViewMode = "list" | "calendar";
 type Currency = "USD" | "UGX" | "KES";
@@ -31,9 +31,33 @@ const levelLabels: Record<string, string> = {
 
 interface TrainingPageClientProps {
   currencyRates: Record<string, number> | null;
+  hero: HeroSectionData | null;
+  pageBlocks: PageBlockData[];
+  trainingSettings: TrainingPageSettingsData | null;
 }
 
-export function TrainingPageClient({ currencyRates }: TrainingPageClientProps) {
+export function TrainingPageClient({ currencyRates, hero, pageBlocks, trainingSettings }: TrainingPageClientProps) {
+  /* Resolve CMS private-training sidebar (cta_banner block) or fallback */
+  const sidebarBlock = pageBlocks.find((b) => b.block_type === "cta_banner");
+  const sidebar = {
+    title: sidebarBlock?.title || "Need private team training?",
+    body: sidebarBlock?.body || "We can deliver custom curriculum tailored specifically to your company\u2019s instance of Arcplus and operating procedures.",
+    link_text: sidebarBlock?.link_text || "Request Custom Quote",
+    link_url: sidebarBlock?.link_url || "/rfq",
+  };
+
+  /* Resolve CMS training-page microcopy or fallback */
+  const labels = {
+    sessions_heading: trainingSettings?.sessions_heading || "Upcoming Sessions",
+    no_sessions_message: trainingSettings?.no_sessions_message || "No upcoming sessions at this time. Check back soon.",
+    low_seats_template: trainingSettings?.low_seats_template || "Only {count} seat{plural} remaining",
+    register_button_label: trainingSettings?.register_button_label || "Register Now",
+    full_button_label: trainingSettings?.full_button_label || "Session Full",
+  };
+  const formatLowSeats = (count: number) =>
+    labels.low_seats_template
+      .replace("{count}", String(count))
+      .replace("{plural}", count !== 1 ? "s" : "");
   const RATES: Record<Currency, number> = {
     USD: 1,
     UGX: currencyRates?.UGX ?? DEFAULT_RATES.UGX,
@@ -69,47 +93,23 @@ export function TrainingPageClient({ currencyRates }: TrainingPageClientProps) {
     });
 
   return (
-    <div className="min-h-screen bg-surface pt-24 pb-32">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Link
-          href="/"
-          className="inline-flex items-center text-sm font-medium text-primary-900/60 hover:text-accent-500 transition-colors mb-12"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" /> Back
-        </Link>
-
-        <div className="mb-12">
-          <h1 className="text-4xl md:text-5xl font-heading font-bold text-primary-900 mb-6">
-            Training Academy
-          </h1>
-          <p className="text-xl text-primary-900/60 max-w-2xl">
-            Empower your team. Become certified in asset lifecycle management
-            and hardware deployment.
-          </p>
-        </div>
-
-        <motion.div
-          className="mb-16 w-full rounded-[2rem] overflow-hidden shadow-xl relative h-[300px] md:h-[400px]"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <Image
-            src="/images/training_hero.png"
-            alt="Corporate training session in a modern boardroom"
-            fill
-            className="object-cover object-top"
-            priority
-          />
-        </motion.div>
-
+    <div className="min-h-screen bg-surface pb-32">
+      <CMSHero
+        hero={hero}
+        fallbackHeading="Training Academy"
+        fallbackSubheading="Empower your team. Become certified in asset lifecycle management and hardware deployment."
+        fallbackImageSrc="/images/training_hero.png"
+        fallbackImageAlt="Corporate training session in a modern boardroom"
+        minHeight="60vh"
+      />
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
         <div className="grid md:grid-cols-3 gap-12">
           {/* Main content: sessions */}
           <div className="md:col-span-2">
             {/* Controls bar: view mode + currency */}
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
               <h2 className="text-2xl font-bold font-heading text-primary-900">
-                Upcoming Sessions
+                {labels.sessions_heading}
               </h2>
 
               <div className="flex items-center gap-3">
@@ -162,7 +162,7 @@ export function TrainingPageClient({ currencyRates }: TrainingPageClientProps) {
             ) : !sessions || sessions.length === 0 ? (
               <div className="bg-white rounded-3xl p-8 border border-neutral-100 text-center">
                 <p className="text-primary-900/60">
-                  No upcoming sessions at this time. Check back soon.
+                  {labels.no_sessions_message}
                 </p>
               </div>
             ) : viewMode === "calendar" ? (
@@ -221,8 +221,7 @@ export function TrainingPageClient({ currencyRates }: TrainingPageClientProps) {
                     {session.seats_remaining <= 5 && session.seats_remaining > 0 && (
                       <div className="flex items-center gap-1.5 text-xs text-accent-500 mb-4">
                         <Users className="w-3.5 h-3.5" />
-                        Only {session.seats_remaining} seat
-                        {session.seats_remaining !== 1 ? "s" : ""} remaining
+                        {formatLowSeats(session.seats_remaining)}
                       </div>
                     )}
 
@@ -238,7 +237,7 @@ export function TrainingPageClient({ currencyRates }: TrainingPageClientProps) {
                         : "bg-gray-100 text-gray-400 cursor-not-allowed"
                         }`}
                     >
-                      {session.seats_remaining > 0 ? "Register Now" : "Session Full"}
+                      {session.seats_remaining > 0 ? labels.register_button_label : labels.full_button_label}
                     </button>
                   </div>
                 ))}
@@ -250,17 +249,16 @@ export function TrainingPageClient({ currencyRates }: TrainingPageClientProps) {
           <div className="md:col-span-1">
             <div className="bg-primary-900 rounded-3xl p-8 sticky top-32">
               <h2 className="text-2xl font-bold font-heading text-white mb-4">
-                Need private team training?
+                {sidebar.title}
               </h2>
               <p className="text-white/70 mb-8">
-                We can deliver custom curriculum tailored specifically to your
-                company&apos;s instance of Arcplus and operating procedures.
+                {sidebar.body}
               </p>
               <Link
-                href="/rfq"
+                href={sidebar.link_url}
                 className="block w-full py-4 bg-accent-500 text-white font-medium rounded-xl hover:bg-accent-600 transition-colors text-center"
               >
-                Request Custom Quote
+                {sidebar.link_text}
               </Link>
             </div>
           </div>

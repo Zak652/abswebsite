@@ -29,6 +29,7 @@ from apps.cms.models import (
     EmailTemplate,
     Testimonial,
     RegionalVariant,
+    TrainingPageSettings,
 )
 
 
@@ -201,6 +202,7 @@ class PageBlockSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "page",
+            "key",
             "block_type",
             "title",
             "body",
@@ -490,6 +492,7 @@ class PageBlockAdminSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "page",
+            "key",
             "block_type",
             "title",
             "body",
@@ -1255,3 +1258,30 @@ class PageMetaAdminSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "updated_at"]
+
+
+class TrainingPageSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TrainingPageSettings
+        fields = [
+            "sessions_heading",
+            "no_sessions_message",
+            "low_seats_template",
+            "register_button_label",
+            "full_button_label",
+            "updated_at",
+        ]
+
+
+class TrainingPageSettingsAdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TrainingPageSettings
+        fields = [
+            "sessions_heading",
+            "no_sessions_message",
+            "low_seats_template",
+            "register_button_label",
+            "full_button_label",
+            "updated_at",
+        ]
+        read_only_fields = ["updated_at"]

@@ -231,8 +231,8 @@ class HeroSection(PublishableMixin):
     page = models.CharField(max_length=100, unique=True)
     headline = models.CharField(max_length=255)
     subheadline = models.TextField()
-    cta_primary_text = models.CharField(max_length=100)
-    cta_primary_link = models.CharField(max_length=500)
+    cta_primary_text = models.CharField(max_length=100, blank=True)
+    cta_primary_link = models.CharField(max_length=500, blank=True)
     cta_secondary_text = models.CharField(max_length=100, blank=True)
     cta_secondary_link = models.CharField(max_length=500, blank=True)
     background_image = models.ForeignKey(
@@ -272,9 +272,17 @@ class PageBlock(PublishableMixin):
         ("image_text", "Image + Text"),
         ("video", "Video"),
         ("testimonials_section", "Testimonials Section"),
+        ("intro", "Section Intro"),
+        ("feature_comparison", "Feature Comparison"),
     ]
 
     page = models.CharField(max_length=100, db_index=True)
+    key = models.CharField(
+        max_length=50,
+        blank=True,
+        db_index=True,
+        help_text="Stable lookup key (e.g. 'arcplus_lifecycle'). Used by frontend to resolve a specific block.",
+    )
     block_type = models.CharField(max_length=30, choices=BLOCK_TYPE_CHOICES)
     title = models.CharField(max_length=255, blank=True)
     body = models.TextField(blank=True)
@@ -857,3 +865,52 @@ class RegionalVariant(models.Model):
 
     def __str__(self):
         return f"{self.content_type} #{self.object_id} ({self.region}/{self.language})"
+
+
+# ---------------------------------------------------------------------------
+# Training Page Settings (singleton)
+# ---------------------------------------------------------------------------
+
+
+class TrainingPageSettingsManager(models.Manager):
+    def get(self, **kwargs):
+        obj, _ = self.get_or_create(pk=1)
+        return obj
+
+
+class TrainingPageSettings(models.Model):
+    """Singleton for training page microcopy and labels."""
+
+    sessions_heading = models.CharField(max_length=255, default="Upcoming Sessions")
+    no_sessions_message = models.TextField(
+        default="No upcoming sessions at this time. Check back soon."
+    )
+    low_seats_template = models.CharField(
+        max_length=255,
+        default="Only {count} seat{plural} remaining",
+        help_text="Use {count} for seat number and {plural} for s/empty.",
+    )
+    register_button_label = models.CharField(max_length=100, default="Register Now")
+    full_button_label = models.CharField(max_length=100, default="Session Full")
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+
+    objects = TrainingPageSettingsManager()
+
+    class Meta:
+        db_table = "cms_training_page_settings"
+        verbose_name = "training page settings"
+        verbose_name_plural = "training page settings"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return "Training Page Settings"

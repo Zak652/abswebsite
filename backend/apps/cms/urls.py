@@ -4,6 +4,11 @@ from apps.cms import views
 
 urlpatterns = [
     path("settings/", views.SiteSettingsView.as_view(), name="cms-settings"),
+    path(
+        "training-settings/",
+        views.TrainingPageSettingsView.as_view(),
+        name="cms-training-settings",
+    ),
     path("meta/", views.PageMetaView.as_view(), name="cms-meta"),
     path("hero/", views.HeroSectionView.as_view(), name="cms-hero"),
     path("blocks/", views.PageBlockListView.as_view(), name="cms-blocks"),

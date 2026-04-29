@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Pencil, Trash2, X, Save } from "lucide-react";
+import { Plus, Pencil, Trash2, X, Save, ChevronDown, Info } from "lucide-react";
 import {
     useAdminHeroes,
     useCreateHero,
@@ -16,7 +16,13 @@ import {
 } from "@/lib/hooks/useCMSAdmin";
 import { CMSStatusBadge } from "@/components/admin/CMSStatusBadge";
 import { PublishingActions } from "@/components/admin/PublishingActions";
-import type { AdminHeroSectionData, AdminPageBlockData, TransitionRequest } from "@/types/cms";
+import { MediaPicker } from "@/components/admin/MediaPicker";
+import {
+    BLOCK_TYPES,
+    type AdminHeroSectionData,
+    type AdminPageBlockData,
+    type TransitionRequest,
+} from "@/types/cms";
 
 /* ------------------------------------------------------------------ */
 /* Hero Form                                                          */
@@ -171,38 +177,117 @@ function HeroForm({
 
 type BlockFormData = {
     page: string;
+    key: string;
     block_type: string;
     title: string;
     body: string;
     icon: string;
     link_url: string;
     link_text: string;
+    video_url: string;
+    image_id: string | null;
+    data_json: string;
     order: number;
 };
 
 const EMPTY_BLOCK: BlockFormData = {
     page: "",
+    key: "",
     block_type: "text",
     title: "",
     body: "",
     icon: "",
     link_url: "",
     link_text: "",
+    video_url: "",
+    image_id: null,
+    data_json: "{}",
     order: 0,
 };
 
-const BLOCK_TYPES = [
-    "text",
-    "hero",
-    "feature_grid",
-    "stats",
-    "cta",
-    "image_text",
-    "card_grid",
-    "timeline",
-    "accordion",
-    "testimonial",
-];
+/** Per-block-type doc strings shown inline so editors know which `data`
+ *  keys map to what on the public page. */
+type BlockDocs = { description: string; example?: string };
+
+const BLOCK_DATA_DOCS: Record<string, BlockDocs> = {
+    workflow: {
+        description:
+            "Arcplus Visual Lifecycle. Top-level: title (left heading) and body (left paragraph). data.dashboard_label is the small label in the dashboard chrome (top-right pane). data.steps drives BOTH the left-rail buttons and the right-pane preview. Each step object: label (left button), dashboard_title + dashboard_caption (right pane heading + subtitle), and EITHER an image_url (a /media/… path or full URL shown inside the preview pane) OR an icon (lucide-react name like Database, Activity, Wrench, Layers, Trash2, Truck, Shield).",
+        example: `{
+  "dashboard_label": "Arcplus Dashboard Overview",
+  "steps": [
+    {
+      "label": "Register",
+      "dashboard_title": "Register Workflow",
+      "dashboard_caption": "Logging new assets into the register…",
+      "image_url": "/media/media_assets/2026/04/register.png",
+      "image_alt": "Register dashboard preview"
+    },
+    {
+      "label": "Operate",
+      "dashboard_title": "Operate Workflow",
+      "dashboard_caption": "Tracking assignments and utilization…",
+      "icon": "Activity"
+    }
+  ]
+}`,
+    },
+    cta_banner: {
+        description:
+            "Arcplus CTA. title + body for the heading and subtitle. link_text + link_url for the primary button (use link_url=\"#trial\" to open the trial signup modal instead of navigating). data.secondary_label + data.secondary_url drive the secondary button (defaults: \"Get Quote\" / \"/rfq\").",
+        example: `{
+  "secondary_label": "Get Quote",
+  "secondary_url": "/rfq"
+}`,
+    },
+    feature_comparison: {
+        description:
+            "Arcplus pricing comparison. title is the section heading. data.toggle_show / toggle_hide are the show/hide toggle button labels. data.feature_label is the leftmost column header. data.column_labels overrides the four pricing tier column headers.",
+        example: `{
+  "toggle_show": "Show full feature comparison",
+  "toggle_hide": "Hide full feature comparison",
+  "feature_label": "Feature",
+  "column_labels": {
+    "starter": "Starter",
+    "growth": "Growth",
+    "pro": "Professional",
+    "enterprise": "Enterprise"
+  }
+}`,
+    },
+    intro: {
+        description:
+            "Section intro. title is the heading, body is the paragraph below it. data.eyebrow is an optional small uppercase label rendered above the heading.",
+        example: `{
+  "eyebrow": "Modules"
+}`,
+    },
+};
+
+/** Convert the form state into the API payload (parses data_json,
+ *  drops UI-only fields, maps image_id -> backend write field). */
+function blockFormToPayload(form: BlockFormData): Record<string, unknown> {
+    let parsedData: unknown = {};
+    try {
+        parsedData = JSON.parse(form.data_json || "{}");
+    } catch {
+        parsedData = {};
+    }
+    return {
+        page: form.page,
+        key: form.key,
+        block_type: form.block_type,
+        title: form.title,
+        body: form.body,
+        icon: form.icon,
+        link_url: form.link_url,
+        link_text: form.link_text,
+        video_url: form.video_url,
+        image_id: form.image_id,
+        data: parsedData,
+        order: form.order,
+    };
+}
 
 function BlockForm({
     initial,
@@ -216,18 +301,34 @@ function BlockForm({
     isPending: boolean;
 }) {
     const [form, setForm] = useState<BlockFormData>({ ...EMPTY_BLOCK, ...initial });
+    const [jsonError, setJsonError] = useState<string | null>(null);
+    const [showDocs, setShowDocs] = useState(false);
 
-    const set = (key: keyof BlockFormData, value: string | number) =>
+    const set = <K extends keyof BlockFormData>(key: K, value: BlockFormData[K]) =>
         setForm((prev) => ({ ...prev, [key]: value }));
+
+    const handleSave = () => {
+        try {
+            JSON.parse(form.data_json || "{}");
+            setJsonError(null);
+            onSubmit(form);
+        } catch (err) {
+            setJsonError(err instanceof Error ? err.message : "Invalid JSON");
+        }
+    };
+
+    const docs = BLOCK_DATA_DOCS[form.block_type];
+    const isVideo = form.block_type === "video";
 
     return (
         <div className="bg-white rounded-xl border border-neutral-200 p-6 space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Page Slug</label>
                     <input
                         value={form.page}
                         onChange={(e) => set("page", e.target.value)}
+                        placeholder="home, arcplus, scanners…"
                         className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
                     />
                 </div>
@@ -244,6 +345,15 @@ function BlockForm({
                             </option>
                         ))}
                     </select>
+                </div>
+                <div>
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">Key</label>
+                    <input
+                        value={form.key}
+                        onChange={(e) => set("key", e.target.value)}
+                        placeholder="e.g. arcplus_lifecycle"
+                        className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500 font-mono"
+                    />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Order</label>
@@ -294,9 +404,90 @@ function BlockForm({
                     <input
                         value={form.link_url}
                         onChange={(e) => set("link_url", e.target.value)}
+                        placeholder="/path or #trial"
                         className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
                     />
                 </div>
+            </div>
+            {isVideo && (
+                <div>
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">Video URL</label>
+                    <input
+                        value={form.video_url}
+                        onChange={(e) => set("video_url", e.target.value)}
+                        className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
+                    />
+                </div>
+            )}
+            <MediaPicker
+                label="Image"
+                value={form.image_id}
+                onChange={(id) => set("image_id", id)}
+                accept="image"
+                helperText="Optional. Used by blocks that render an image (image_text, hero, etc.)."
+            />
+            <div>
+                <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-medium text-neutral-700">
+                        Data (JSON)
+                    </label>
+                    {docs && (
+                        <button
+                            type="button"
+                            onClick={() => setShowDocs((v) => !v)}
+                            className="inline-flex items-center gap-1 text-[11px] text-neutral-500 hover:text-primary-700"
+                        >
+                            <Info className="w-3 h-3" />
+                            {showDocs ? "Hide" : "Show"} keys for {form.block_type}
+                            <ChevronDown
+                                className={`w-3 h-3 transition-transform ${showDocs ? "rotate-180" : ""}`}
+                            />
+                        </button>
+                    )}
+                </div>
+                {showDocs && docs && (
+                    <div className="text-[11px] text-neutral-600 bg-neutral-50 border border-neutral-200 rounded-md p-3 mb-2 space-y-2">
+                        <p className="leading-relaxed">{docs.description}</p>
+                        {docs.example && (
+                            <div>
+                                <div className="flex items-center justify-between mb-1">
+                                    <span className="text-[10px] uppercase tracking-wide text-neutral-400">
+                                        Example data
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            set("data_json", docs.example!);
+                                            setJsonError(null);
+                                        }}
+                                        className="text-[10px] text-primary-700 hover:underline"
+                                    >
+                                        Use this as data
+                                    </button>
+                                </div>
+                                <pre className="bg-white border border-neutral-200 rounded p-2 overflow-x-auto text-[10px] leading-snug font-mono text-neutral-700">
+                                    {docs.example}
+                                </pre>
+                            </div>
+                        )}
+                    </div>
+                )}
+                <textarea
+                    value={form.data_json}
+                    onChange={(e) => {
+                        set("data_json", e.target.value);
+                        setJsonError(null);
+                    }}
+                    rows={6}
+                    spellCheck={false}
+                    className={`w-full text-xs font-mono border rounded-lg px-3 py-2 focus:outline-none ${jsonError
+                        ? "border-red-400 focus:border-red-500"
+                        : "border-neutral-300 focus:border-primary-500"
+                        }`}
+                />
+                {jsonError && (
+                    <p className="text-[11px] text-red-600 mt-1">Invalid JSON: {jsonError}</p>
+                )}
             </div>
             <div className="flex justify-end gap-2 pt-2">
                 <button
@@ -306,8 +497,8 @@ function BlockForm({
                     Cancel
                 </button>
                 <button
-                    onClick={() => onSubmit(form)}
-                    disabled={isPending || !form.page || !form.title}
+                    onClick={handleSave}
+                    disabled={isPending || !form.page || !form.title || !!jsonError}
                     className="inline-flex items-center gap-1.5 text-xs px-4 py-2 rounded-lg bg-primary-900 text-white hover:bg-primary-800 transition-colors disabled:opacity-50"
                 >
                     <Save className="w-3.5 h-3.5" />
@@ -357,15 +548,17 @@ export default function ContentPage() {
     };
 
     const handleCreateBlock = (data: BlockFormData) => {
-        createBlock.mutate(data as unknown as Record<string, unknown>, {
+        const payload = blockFormToPayload(data);
+        createBlock.mutate(payload, {
             onSuccess: () => setCreating(false),
         });
     };
 
     const handleUpdateBlock = (id: number, data: BlockFormData) => {
         const block = blocks.find((b) => b.id === id);
+        const payload = blockFormToPayload(data);
         updateBlock.mutate(
-            { id, data: { ...data, version: block?.version } as Record<string, unknown> },
+            { id, data: { ...payload, version: block?.version } as Record<string, unknown> },
             { onSuccess: () => setEditingId(null) }
         );
     };
@@ -414,8 +607,8 @@ export default function ContentPage() {
                             setEditingId(null);
                         }}
                         className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${tab === t
-                                ? "bg-primary-900 text-white border-primary-900"
-                                : "bg-white text-neutral-500 border-neutral-200 hover:border-neutral-400"
+                            ? "bg-primary-900 text-white border-primary-900"
+                            : "bg-white text-neutral-500 border-neutral-200 hover:border-neutral-400"
                             }`}
                     >
                         {t === "heroes" ? `Heroes (${heroes.length})` : `Blocks (${blocks.length})`}
@@ -558,12 +751,16 @@ export default function ContentPage() {
                                 key={block.id}
                                 initial={{
                                     page: block.page,
+                                    key: block.key ?? "",
                                     block_type: block.block_type,
                                     title: block.title,
                                     body: block.body,
                                     icon: block.icon,
                                     link_url: block.link_url,
                                     link_text: block.link_text,
+                                    video_url: block.video_url,
+                                    image_id: block.image?.id ?? null,
+                                    data_json: JSON.stringify(block.data ?? {}, null, 2),
                                     order: block.order,
                                 }}
                                 onSubmit={(data) => handleUpdateBlock(block.id, data)}
@@ -577,10 +774,15 @@ export default function ContentPage() {
                             >
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 mb-1">
+                                        <div className="flex items-center gap-2 mb-1 flex-wrap">
                                             <span className="text-xs font-mono text-neutral-400 bg-neutral-50 px-2 py-0.5 rounded">
                                                 {block.page}
                                             </span>
+                                            {block.key && (
+                                                <span className="text-xs font-mono text-primary-700 bg-primary-50 px-2 py-0.5 rounded">
+                                                    {block.key}
+                                                </span>
+                                            )}
                                             <span className="text-xs text-neutral-500 bg-neutral-50 px-2 py-0.5 rounded">
                                                 {block.block_type.replace(/_/g, " ")}
                                             </span>

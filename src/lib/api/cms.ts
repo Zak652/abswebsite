@@ -8,6 +8,7 @@
 import { apiClient } from "./client";
 import type {
     SiteSettingsData,
+    TrainingPageSettingsData,
     PageMetaData,
     AdminHeroSectionData,
     AdminPageBlockData,
@@ -40,6 +41,16 @@ export const cmsAdminService = {
 
     updateSettings: (data: Partial<SiteSettingsData>) =>
         apiClient.patch<SiteSettingsData>(`${CMS}/settings/`, data),
+
+    // ── Training Page Settings (singleton) ─────────────────────────
+    getTrainingSettings: () =>
+        apiClient.get<TrainingPageSettingsData>(`${CMS}/training-settings/`),
+
+    updateTrainingSettings: (data: Partial<TrainingPageSettingsData>) =>
+        apiClient.patch<TrainingPageSettingsData>(
+            `${CMS}/training-settings/`,
+            data
+        ),
 
     // ── Page Meta ──────────────────────────────────────────────────
     getPageMetas: () => apiClient.get<PageMetaData[]>(`${CMS}/meta/`),

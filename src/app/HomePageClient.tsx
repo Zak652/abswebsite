@@ -8,6 +8,7 @@ import { ArrowRight, ChevronLeft, ChevronRight, Box, Target, Layers, Settings } 
 import ProductCard from "@/components/ui/ProductCard";
 import LogoCarousel from "@/components/patterns/LogoCarousel";
 import TestimonialCarousel from "@/components/patterns/TestimonialCarousel";
+import { CMSHero } from "@/components/cms/CMSHero";
 import type { HeroSectionData, PageBlockData, TestimonialData } from "@/types/cms";
 
 interface HomePageClientProps {
@@ -116,12 +117,6 @@ export function HomePageClient({ hero, blocks, testimonials = [] }: HomePageClie
   const prefersReducedMotion = useReducedMotion();
   const fade = prefersReducedMotion ? noMotion : fadeInUp;
   const stg = prefersReducedMotion ? noStagger : stagger;
-  const dur = prefersReducedMotion ? 0 : 0.8;
-
-  /* Resolve CMS hero or fall back to defaults */
-  const h = hero ?? DEFAULT_HERO;
-  const heroLines = h.headline.split("\n");
-  const heroBg = h.background_image?.file ?? "/images/hardware_software_hero_1772490241653.png";
 
   /* Resolve CMS page blocks by block_type */
   const featureBlock = blocks.find((b) => b.block_type === "feature_grid");
@@ -223,71 +218,20 @@ export function HomePageClient({ hero, blocks, testimonials = [] }: HomePageClie
     <div className="flex flex-col min-h-screen bg-surface">
 
       {/* 1. HERO SECTION */}
-      <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <Image
-            src={heroBg}
-            alt="Hardware and software blended imagery"
-            fill
-            className="object-cover object-center"
-            priority
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-primary-900/60 mix-blend-multiply" />
-          <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-primary-900/40" />
-        </div>
-
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: dur, ease: "easeOut" }}
-            className="text-6xl md:text-8xl font-heading font-bold tracking-tight mb-6"
-          >
-            {heroLines.map((line, i) => (
-              <span key={i}>
-                {i > 0 && <br />}
-                {line}
-              </span>
-            ))}
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: dur, delay: prefersReducedMotion ? 0 : 0.2, ease: "easeOut" }}
-            className="text-xl md:text-2xl font-medium text-white/80 max-w-2xl mx-auto"
-          >
-            {h.subheadline}
-          </motion.p>
-
-          {(h.cta_primary_text || h.cta_secondary_text) && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: dur, delay: prefersReducedMotion ? 0 : 0.4, ease: "easeOut" }}
-              className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-10"
-            >
-              {h.cta_primary_text && (
-                <Link
-                  href={h.cta_primary_link}
-                  className="bg-accent-500 text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-accent-600 transition-colors"
-                >
-                  {h.cta_primary_text}
-                </Link>
-              )}
-              {h.cta_secondary_text && (
-                <Link
-                  href={h.cta_secondary_link}
-                  className="bg-transparent text-white border-2 border-white/20 px-8 py-4 rounded-full text-lg font-medium hover:border-white/40 transition-colors"
-                >
-                  {h.cta_secondary_text}
-                </Link>
-              )}
-            </motion.div>
-          )}
-        </div>
-      </section>
+      <CMSHero
+        hero={hero}
+        fallbackHeading={
+          <>
+            <span>Control</span>
+            <br />
+            <span>Every Asset.</span>
+          </>
+        }
+        fallbackSubheading={DEFAULT_HERO.subheadline}
+        fallbackImageSrc="/images/hardware_software_hero_1772490241653.png"
+        fallbackImageAlt="Hardware and software blended imagery"
+        minHeight="90vh"
+      />
 
       {/* 2. PRODUCT GALLERY (Apple-Style Horizontal Scroll) */}
       <motion.section

@@ -30,6 +30,7 @@ from apps.cms.models import (
     EmailTemplate,
     Testimonial,
     RegionalVariant,
+    TrainingPageSettings,
 )
 
 
@@ -124,6 +125,36 @@ class SiteSettingsAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return not SiteSettings.objects.exists()
+
+
+@admin.register(TrainingPageSettings)
+class TrainingPageSettingsAdmin(admin.ModelAdmin):
+    list_display = ["__str__", "updated_at"]
+    fieldsets = (
+        (
+            "Sessions list",
+            {
+                "fields": ("sessions_heading", "no_sessions_message"),
+            },
+        ),
+        (
+            "Session card labels",
+            {
+                "fields": (
+                    "low_seats_template",
+                    "register_button_label",
+                    "full_button_label",
+                ),
+            },
+        ),
+    )
+
+    def has_add_permission(self, request):
+        return not TrainingPageSettings.objects.exists()
+
+    def save_model(self, request, obj, form, change):
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
 
 
 @admin.register(PageMeta)

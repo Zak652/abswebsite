@@ -3,7 +3,8 @@
 import { motion, type Variants } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
+import { CMSHero } from "@/components/cms/CMSHero";
 import type { HeroSectionData } from "@/types/cms";
 
 interface ScannersPageClientProps {
@@ -23,55 +24,22 @@ const DEFAULT_HEADLINE = "Capture data at the source.";
 const DEFAULT_SUBHEADLINE = "Industrial-grade barcode and RFID readers designed specifically for harsh environments and high-volume operations.";
 
 export function ScannersPageClient({ hero }: ScannersPageClientProps) {
-    const headline = hero?.headline ?? DEFAULT_HEADLINE;
-    const subheadline = hero?.subheadline ?? DEFAULT_SUBHEADLINE;
-    const heroImage = hero?.background_image?.file ?? "/images/barcode_scanner_1772490256748.png";
-    const ctaText = hero?.cta_primary_text ?? "Configure Hardware";
-    const ctaUrl = hero?.cta_primary_link ?? "/configurator";
-    const secondaryCtaText = hero?.cta_secondary_text ?? "Get Quote";
-    const secondaryCtaUrl = hero?.cta_secondary_link ?? "/rfq";
     return (
         <div className="min-h-screen bg-surface">
 
-            {/* 1. HERO IMAGE — clean isolated product, light background */}
-            <section className="pt-32 pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col md:flex-row items-center">
-                <div className="md:w-1/2 pr-0 md:pr-12 mb-12 md:mb-0">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                    >
-                        <h1 className="text-5xl md:text-7xl font-heading font-bold text-primary-900 mb-6 tracking-tight">
-                            {headline}
-                        </h1>
-                        <p className="text-xl text-primary-900/60 mb-8 max-w-lg">
-                            {subheadline}
-                        </p>
-                        <div className="flex flex-wrap gap-4">
-                            <Link href={ctaUrl} className="bg-accent-500 text-white px-8 py-4 rounded-full font-medium hover:bg-accent-600 transition-colors flex items-center">
-                                {ctaText} <ArrowRight className="w-4 h-4 ml-2" />
-                            </Link>
-                            <Link href={secondaryCtaUrl} className="bg-transparent border border-primary-900/20 text-primary-900 px-8 py-4 rounded-full font-medium hover:border-primary-900/40 transition-colors">
-                                {secondaryCtaText}
-                            </Link>
-                        </div>
-                    </motion.div>
-                </div>
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.8, delay: 0.2 }}
-                    className="md:w-1/2 relative h-[500px] w-full bg-white rounded-3xl shadow-sm border border-neutral-100 overflow-hidden"
-                >
-                    <Image
-                        src={heroImage}
-                        alt="ABS Industrial Handheld Scanner — clean isolated product shot"
-                        fill
-                        className="object-contain p-8 hover:scale-105 transition-transform duration-700"
-                        priority
-                    />
-                </motion.div>
-            </section>
+            {/* 1. HERO — driven by CMS variant (overlay or split) */}
+            <CMSHero
+                hero={hero}
+                fallbackHeading={DEFAULT_HEADLINE}
+                fallbackSubheading={DEFAULT_SUBHEADLINE}
+                fallbackImageSrc="/images/barcode_scanner_1772490256748.png"
+                fallbackImageAlt="ABS Industrial Handheld Scanner — clean isolated product shot"
+                fallbackCtas={[
+                    { label: "Configure Hardware", href: "/configurator", variant: "primary" },
+                    { label: "Get Quote", href: "/rfq", variant: "secondary" },
+                ]}
+                variant={hero?.variant === "overlay" ? "overlay" : "split"}
+            />
 
             {/* 2. CONTEXT IMAGE — product in real environment */}
             <motion.section

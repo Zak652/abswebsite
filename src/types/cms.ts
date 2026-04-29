@@ -40,6 +40,15 @@ export interface SiteSettingsData {
     updated_at: string;
 }
 
+export interface TrainingPageSettingsData {
+    sessions_heading: string;
+    no_sessions_message: string;
+    low_seats_template: string;
+    register_button_label: string;
+    full_button_label: string;
+    updated_at: string;
+}
+
 export interface PageMetaData {
     id: number;
     route: string;
@@ -71,6 +80,7 @@ export interface HeroSectionData {
 export interface PageBlockData {
     id: number;
     page: string;
+    key: string;
     block_type: string;
     title: string;
     body: string;
@@ -81,6 +91,73 @@ export interface PageBlockData {
     link_text: string;
     data: Record<string, unknown>;
     order: number;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Block-type vocabulary (mirrors PageBlock.BLOCK_TYPE_CHOICES)      */
+/* ------------------------------------------------------------------ */
+
+export const BLOCK_TYPES = [
+    "hero",
+    "feature_grid",
+    "guided_path",
+    "workflow",
+    "pricing",
+    "text",
+    "cta_banner",
+    "stats_row",
+    "logo_carousel",
+    "image_text",
+    "video",
+    "testimonials_section",
+    "intro",
+    "feature_comparison",
+] as const;
+
+export type BlockType = (typeof BLOCK_TYPES)[number];
+
+/* ------------------------------------------------------------------ */
+/*  Typed `data` shapes for known Arcplus blocks                      */
+/* ------------------------------------------------------------------ */
+
+export interface ArcplusIntroBlockData {
+    eyebrow?: string;
+}
+
+export interface ArcplusLifecycleStep {
+    label: string;
+    dashboard_title: string;
+    dashboard_caption: string;
+    /** Optional lucide-react icon name (e.g. "Database", "Wrench"). Used in
+     *  the right-pane animated dashboard when `image_url` is not set. */
+    icon?: string;
+    /** Optional image URL shown inside the dashboard preview pane in place
+     *  of the icon. Use a full URL or a `/media/...` path. */
+    image_url?: string;
+    /** Optional alt text for `image_url`. */
+    image_alt?: string;
+}
+
+export interface ArcplusLifecycleBlockData {
+    dashboard_label?: string;
+    steps?: ArcplusLifecycleStep[];
+}
+
+export interface ArcplusFeatureComparisonBlockData {
+    toggle_show?: string;
+    toggle_hide?: string;
+    feature_label?: string;
+    column_labels?: {
+        starter?: string;
+        growth?: string;
+        pro?: string;
+        enterprise?: string;
+    };
+}
+
+export interface ArcplusCtaBlockData {
+    secondary_label?: string;
+    secondary_url?: string;
 }
 
 export interface NavigationItemData {

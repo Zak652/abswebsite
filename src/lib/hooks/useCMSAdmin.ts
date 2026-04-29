@@ -15,6 +15,7 @@ import type { TransitionRequest } from "@/types/cms";
 
 const keys = {
     settings: ["cms", "settings"] as const,
+    trainingSettings: ["cms", "training-settings"] as const,
     pageMetas: ["cms", "page-metas"] as const,
     heroes: ["cms", "heroes"] as const,
     blocks: ["cms", "blocks"] as const,
@@ -56,6 +57,30 @@ export function useUpdateSettings() {
         mutationFn: (data: Parameters<typeof cmsAdminService.updateSettings>[0]) =>
             cmsAdminService.updateSettings(data).then((r) => r.data),
         onSuccess: () => qc.invalidateQueries({ queryKey: keys.settings }),
+    });
+}
+
+/* ------------------------------------------------------------------ */
+/*  Training Page Settings (singleton)                                */
+/* ------------------------------------------------------------------ */
+
+export function useAdminTrainingSettings() {
+    return useQuery({
+        queryKey: keys.trainingSettings,
+        queryFn: () =>
+            cmsAdminService.getTrainingSettings().then((r) => r.data),
+    });
+}
+
+export function useUpdateTrainingSettings() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: (
+            data: Parameters<typeof cmsAdminService.updateTrainingSettings>[0]
+        ) =>
+            cmsAdminService.updateTrainingSettings(data).then((r) => r.data),
+        onSuccess: () =>
+            qc.invalidateQueries({ queryKey: keys.trainingSettings }),
     });
 }
 

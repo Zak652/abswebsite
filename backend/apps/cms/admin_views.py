@@ -37,6 +37,7 @@ from apps.cms.models import (
     ScannerFeature,
     Testimonial,
     RegionalVariant,
+    TrainingPageSettings,
 )
 from apps.cms.serializers import (
     ContentRevisionSerializer,
@@ -45,6 +46,7 @@ from apps.cms.serializers import (
     AssetTagSerializer,
     ProductImageSerializer,
     SiteSettingsAdminSerializer,
+    TrainingPageSettingsAdminSerializer,
     PageMetaAdminSerializer,
     HeroSectionAdminSerializer,
     PageBlockAdminSerializer,
@@ -1266,3 +1268,29 @@ class AdminScannerFeatureDetailView(PublishableCRUDDetailView):
 class AdminScannerFeatureTransitionView(PublishableTransitionView):
     model = ScannerFeature
     log_prefix = "cms_scanner_feature"
+
+
+class AdminTrainingPageSettingsView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        obj = TrainingPageSettings.objects.get()
+        return Response(TrainingPageSettingsAdminSerializer(obj).data)
+
+    def patch(self, request):
+        obj = TrainingPageSettings.objects.get()
+        serializer = TrainingPageSettingsAdminSerializer(
+            obj, data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save(updated_by=request.user)
+        invalidate_model("training_page_settings")
+        log_admin_action(
+            request.user,
+            "cms_training_settings_update",
+            "TrainingPageSettings",
+            "1",
+            request.data,
+            request,
+        )
+        return Response(serializer.data)

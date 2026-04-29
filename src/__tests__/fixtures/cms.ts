@@ -30,6 +30,7 @@ export const mockHero: HeroSectionData = {
 export const mockGuidedBlock: PageBlockData = {
     id: 10,
     page: "home",
+    key: "",
     block_type: "guided_path",
     title: "Guided CMS",
     body: "",
@@ -49,6 +50,7 @@ export const mockGuidedBlock: PageBlockData = {
 export const mockStatsBlock: PageBlockData = {
     id: 11,
     page: "home",
+    key: "",
     block_type: "stats_row",
     title: "Trust Stats",
     body: "",
@@ -69,6 +71,7 @@ export const mockStatsBlock: PageBlockData = {
 export const mockLogoCarouselBlock: PageBlockData = {
     id: 13,
     page: "home",
+    key: "",
     block_type: "logo_carousel",
     title: "CMS Trusted By",
     body: "",
@@ -92,6 +95,7 @@ export const mockLogoCarouselBlock: PageBlockData = {
 export const mockCtaBlock: PageBlockData = {
     id: 12,
     page: "home",
+    key: "",
     block_type: "cta_banner",
     title: "CMS CTA Title",
     body: "",

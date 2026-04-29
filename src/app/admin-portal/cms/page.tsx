@@ -8,6 +8,7 @@ import {
     Cpu,
     Shield,
     BookOpen,
+    GraduationCap,
     Settings,
     Search,
     ImageIcon,
@@ -84,6 +85,22 @@ const sections = [
         useCount: () => {
             const { data, isLoading } = useAdminSupportTiers();
             return { count: data?.length ?? 0, isLoading };
+        },
+    },
+    {
+        href: "/admin-portal/cms/training",
+        label: "Training",
+        description: "Hero section and private training sidebar",
+        icon: GraduationCap,
+        useCount: () => {
+            const heroes = useAdminHeroes();
+            const blocks = useAdminBlocks();
+            const heroCount = (heroes.data ?? []).filter((h) => h.page === "training").length;
+            const blockCount = (blocks.data ?? []).filter((b) => b.page === "training").length;
+            return {
+                count: heroCount + blockCount,
+                isLoading: heroes.isLoading || blocks.isLoading,
+            };
         },
     },
     {
