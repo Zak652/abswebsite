@@ -40,6 +40,24 @@ docker compose up
 | Django API | <http://localhost:8000/api/v1/> |
 | Django Admin | <http://localhost:8000/django-admin/> |
 
+### Running alongside another Docker project
+
+If another project on your machine already binds 5432 (Postgres), 6379 (Redis),
+or 8000 (Django), copy `.env.example` to `.env` at the repo root and override
+the relevant `*_HOST_PORT` variable:
+
+```bash
+cp .env.example .env
+# then edit, e.g.:
+#   POSTGRES_HOST_PORT=5433
+#   REDIS_HOST_PORT=6380
+#   BACKEND_HOST_PORT=8001
+```
+
+Only the host-side mapping changes — services inside the compose network still
+reach each other on their canonical ports, and `NEXT_PUBLIC_API_URL` auto-
+follows `BACKEND_HOST_PORT` so the browser keeps hitting the right API.
+
 ### Frontend only (without Docker)
 
 ```bash
