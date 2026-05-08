@@ -184,3 +184,15 @@ abswebsite/
     ├── types/              TypeScript interfaces
     └── middleware.ts       Route protection (portal, admin, auth)
 ```
+
+## Plans & strategy
+
+Two living documents drive the build going forward — older planning docs in `docs/` and `docs/plans/` are kept for history but carry a banner pointing here.
+
+| Doc | Audience | Use it when |
+|---|---|---|
+| [`docs/ABS_BUILD_GUIDE.md`](docs/ABS_BUILD_GUIDE.md) | Engineers | Picking the next thing to build, looking up severity / acceptance tests, tracking phase progress |
+| [`docs/ABS_STAKEHOLDER_BRIEF.md`](docs/ABS_STAKEHOLDER_BRIEF.md) | Founders, managers, reviewers | Status checks, risk reviews, deciding the open questions |
+
+The original product vision is unchanged and lives in [`ABS_FRONTEND_EXPERIENCE_BUILDER_V2.md`](ABS_FRONTEND_EXPERIENCE_BUILDER_V2.md), with IA in [`docs/ABS_WEBSITE_INFORMATION_ARCHITECTURE.md`](docs/ABS_WEBSITE_INFORMATION_ARCHITECTURE.md) and gallery component spec in [`docs/ABS_VISUAL_PRODUCT_GALLERY_SYSTEM.md`](docs/ABS_VISUAL_PRODUCT_GALLERY_SYSTEM.md).
+

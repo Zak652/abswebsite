@@ -1,3 +1,5 @@
+> ⚠ **Superseded by [`../ABS_BUILD_GUIDE.md`](../ABS_BUILD_GUIDE.md).** Kept for history — this was the greenfield plan; the codebase is now well past it. Current state and next steps live in the build guide.
+
 # ABS Digital Platform — Full Implementation Plan
 
 ## Context Summary

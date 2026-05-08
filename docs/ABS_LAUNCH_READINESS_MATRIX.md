@@ -1,3 +1,5 @@
+> ⚠ **Superseded by [`ABS_BUILD_GUIDE.md`](./ABS_BUILD_GUIDE.md).** Kept for history. Open items have been carried forward into the build guide § 5.4. Don't update this file — update the build guide instead.
+
 # Asset Business Solutions (ABS)
 
 ## Launch Readiness Matrix

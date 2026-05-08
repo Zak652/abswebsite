@@ -1,3 +1,5 @@
+> ✅ **Phase 2 implementation complete** (models, admin pages, ISR pipeline, scheduled publishing — see commits 91588f4, e85c617, 264861b). Remaining gaps (CMS data seeding, content sanitisation, file-upload validation, admin audit log wiring) are folded into [`../ABS_BUILD_GUIDE.md`](../ABS_BUILD_GUIDE.md). This plan is kept for history. Note: this file contains a duplicated copy of the plan starting at the second occurrence of the H1 below — historical artefact, harmless.
+
 # ABS Django Headless CMS — Implementation Plan
 
 ## TL;DR

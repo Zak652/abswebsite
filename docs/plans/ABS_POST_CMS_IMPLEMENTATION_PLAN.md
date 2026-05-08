@@ -1,3 +1,5 @@
+> ⚠ **Superseded by [`../ABS_BUILD_GUIDE.md`](../ABS_BUILD_GUIDE.md).** Kept for history. The launch-readiness work in this plan has been re-scoped against a fresh audit and is tracked in the build guide's P0/P1/P2 phases. Don't update this file.
+
 # ABS Platform — Post-CMS Launch Readiness Plan
 
 ## TL;DR
