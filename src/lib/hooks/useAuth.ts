@@ -115,3 +115,21 @@ export function useConfirmEmailVerification() {
       authService.confirmEmailVerification(token).then((r) => r.data),
   });
 }
+
+export function useExportMyData() {
+  return useMutation({
+    mutationFn: () => authService.exportMyData().then((r) => r.data),
+  });
+}
+
+export function useDeleteMyAccount() {
+  const { logout } = useAuthStore();
+  const router = useRouter();
+  return useMutation({
+    mutationFn: () => authService.deleteMyAccount().then((r) => r.data),
+    onSuccess: () => {
+      logout();
+      router.push("/");
+    },
+  });
+}

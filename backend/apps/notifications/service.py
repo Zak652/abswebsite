@@ -194,6 +194,24 @@ def send_trial_cancellation_notification(signup):
     _send(to=signup.email, subject=subject, html=html)
 
 
+def send_account_deletion_confirmation(to_email: str, full_name: str):
+    """Triggered: after a self-service GDPR delete completes.
+
+    Sent to the original email address — by the time we get here the
+    User row has been anonymised, so the caller hands us the address
+    and name explicitly. There's no reply path on this email; the
+    account is gone.
+    """
+    ctx = {"full_name": full_name}
+    db_result = _render_db_template("account_deletion", ctx)
+    if db_result:
+        subject, html = db_result
+    else:
+        html = render_to_string("account_deletion.html", ctx)
+        subject = "Your ABS account has been deleted"
+    _send(to=to_email, subject=subject, html=html)
+
+
 def send_email_verification(user, token: str):
     """Triggered: on user register, and when the user re-requests it.
 

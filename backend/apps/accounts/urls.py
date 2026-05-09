@@ -6,6 +6,8 @@ from .views import (
     EmailVerifyRequestView,
     LoginView,
     LogoutView,
+    MeDataExportView,
+    MeDeleteView,
     MeView,
     PasswordResetConfirmView,
     PasswordResetRequestView,
@@ -37,5 +39,15 @@ urlpatterns = [
         "email/verify/confirm/",
         EmailVerifyConfirmView.as_view(),
         name="auth-email-verify-confirm",
+    ),
+    path(
+        "me/export/",
+        MeDataExportView.as_view(),
+        name="auth-me-export",
+    ),
+    path(
+        "me/delete/",
+        MeDeleteView.as_view(),
+        name="auth-me-delete",
     ),
 ]
