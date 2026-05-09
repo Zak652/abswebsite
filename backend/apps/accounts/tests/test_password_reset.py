@@ -162,8 +162,8 @@ def test_confirm_token_is_single_use(api, alice):
         "/api/v1/auth/password/reset/confirm/",
         {
             "token": token,
-            "new_password": "second-rotation-pass-2",
-            "new_password_confirm": "second-rotation-pass-2",
+            "new_password": "second-rotation-pass-2",  # gitleaks:allow
+            "new_password_confirm": "second-rotation-pass-2",  # gitleaks:allow
         },
         format="json",
     )
