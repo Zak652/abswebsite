@@ -41,3 +41,6 @@ htmlcov/
 
 # Docker
 *.log
+
+# Claude Code session artefacts (worktrees, plan caches, etc.)
+.claude/
