@@ -21,8 +21,30 @@ export const registerSchema = z
     path: ["password_confirm"],
   });
 
+export const passwordResetRequestSchema = z.object({
+  email: z.string().email("Enter a valid email address"),
+});
+
+export const passwordResetConfirmSchema = z
+  .object({
+    new_password: z
+      .string()
+      .min(8, "Password must be at least 8 characters"),
+    new_password_confirm: z.string(),
+  })
+  .refine((data) => data.new_password === data.new_password_confirm, {
+    message: "Passwords do not match",
+    path: ["new_password_confirm"],
+  });
+
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type RegisterFormData = z.infer<typeof registerSchema>;
+export type PasswordResetRequestFormData = z.infer<
+  typeof passwordResetRequestSchema
+>;
+export type PasswordResetConfirmFormData = z.infer<
+  typeof passwordResetConfirmSchema
+>;
 
 export interface User {
   id: string;
