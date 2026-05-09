@@ -312,11 +312,11 @@ Auto-add `rel="noopener noreferrer"` to outbound links.
 
 | Item | Where | Fix |
 |---|---|---|
-| `Product` JSON-LD on hardware detail pages | `src/app/scanners/[slug]/page.tsx`, `src/app/tags/[slug]/page.tsx` | `generateMetadata` adds a `<script type="application/ld+json">` with name/image/description/sku/offers from CMS. |
-| `Article` JSON-LD on blog posts | `src/app/resources/blog/[slug]/page.tsx` | headline, datePublished, dateModified, author, image. |
-| `Organization` schema in root layout | `src/app/layout.tsx` | Pull from CMS site-settings, render once. |
-| Image entries in sitemap | `src/app/sitemap.ts` | Add `images: [...]` per page that has a hero/og image. |
-| Canonical URL wired from CMS | dynamic page templates | Read `pageMetaData.canonical_url`; default to the request URL. |
+| `Product` JSON-LD on hardware detail pages | scanner / tag detail pages | 🟡 **deferred** — builder ready in [`buildProductLd`](../src/lib/seo.ts), but the `[slug]` pages render through a client component that fetches the product after hydration. Wiring requires either an SSR product fetcher (mirror of `cms-server.ts` for `productsService.getProduct`) or moving the fetch to a server component. Tracked as the next P1 SEO item. |
+| `Article` JSON-LD on blog posts | ✅ shipped (PR #11) | [`buildArticleLd`](../src/lib/seo.ts) emits a `BlogPosting` with headline (capped at 110 chars), `datePublished`, author, featured image (absolute URL), keywords, and a `publisher` block. Mounted via `<JsonLd>` at the top of [`/resources/blog/[slug]/page.tsx`](../src/app/resources/blog/[slug]/page.tsx). |
+| `Organization` schema in root layout | ✅ shipped (PR #11) | [`buildOrganizationLd`](../src/lib/seo.ts) composes a base shape (`@context`, `name`, `url`, `logo`) with contact details from `site_settings` and any admin-supplied JSON in `organization_schema` (the CMS override always wins). Mounted via `<JsonLd>` in `app/layout.tsx`. |
+| Image entries in sitemap | ✅ shipped (PR #11) | [`sitemap.ts`](../src/app/sitemap.ts) now emits `images: [post.featured_image.file]` on blog post entries. Other routes don't have a single canonical image yet — add as their hero/og pipeline lands. |
+| Canonical URL wired from CMS | ✅ shipped (PR #11) | Blog post pages now set `metadata.alternates.canonical = '/resources/blog/<slug>'` and pass the same path to `openGraph.url`. Pattern is ready to extend to other dynamic templates as their `PageMeta` row is consulted. |
 | `hreflang` alternates | layout / metadata | Skip until regional variants exist; leave a TODO. |
 | OG images sized 1200×630 | metadata factories | Specify `width`/`height` in OG image objects; ensure source images are at least 16:9. |
 

@@ -118,12 +118,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.7,
       })
     ),
-    // Blog post detail pages
+    // Blog post detail pages — include the featured image when present
+    // so search engines can index article cover art alongside the URL.
     ...blogPosts.map((post) => ({
       url: `${BASE_URL}/resources/blog/${post.slug}`,
       lastModified: post.published_at ? new Date(post.published_at) : new Date(),
       changeFrequency: "weekly" as const,
       priority: 0.6,
+      images: post.featured_image?.file
+        ? [post.featured_image.file]
+        : undefined,
     })),
   ];
 }
