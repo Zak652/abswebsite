@@ -1,18 +1,13 @@
 """Tests for CMS admin API endpoints: CRUD, transitions, optimistic locking, revisions."""
 
-import pytest
 from django.contrib.contenttypes.models import ContentType
 
-from apps.cms.models import ContentRevision, HeroSection, NavigationItem, SiteSettings
+from apps.cms.models import ContentRevision, HeroSection
 from apps.cms.tests.factories import (
-    CaseStudyFactory,
     HeroSectionFactory,
     NavigationItemFactory,
     PageMetaFactory,
-    PricingPlanFactory,
-    ServiceOfferingFactory,
     SiteSettingsFactory,
-    UserFactory,
 )
 
 

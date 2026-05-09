@@ -1,7 +1,6 @@
 """Tests for public (read-only) CMS API endpoints."""
 
 import pytest
-from django.test import override_settings
 from unittest.mock import patch
 
 from apps.cms.tests.factories import (
@@ -107,7 +106,9 @@ class TestPublicHero:
 
 class TestPublicBlocks:
     def test_returns_published_blocks_ordered(self, anon_client, user):
-        b2 = PageBlockFactory(
+        # Create out of order on purpose so the response asserts the API
+        # orders by `order` rather than insertion time.
+        PageBlockFactory(
             page="home",
             order=2,
             title="Second",
@@ -115,7 +116,7 @@ class TestPublicBlocks:
             created_by=user,
             updated_by=user,
         )
-        b1 = PageBlockFactory(
+        PageBlockFactory(
             page="home",
             order=1,
             title="First",

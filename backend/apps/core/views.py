@@ -12,7 +12,7 @@ from django.db import connection
 from django.core.cache import cache
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
+from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 
 

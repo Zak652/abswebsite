@@ -365,7 +365,7 @@ class Command(BaseCommand):
         for product_data in SEED_DATA["products"]:
             category = category_map[product_data["category_slug"]]
             config_sections_data = product_data.pop("config_sections", [])
-            category_slug = product_data.pop("category_slug")
+            product_data.pop("category_slug", None)
 
             product, created = Product.objects.update_or_create(
                 slug=product_data["slug"],

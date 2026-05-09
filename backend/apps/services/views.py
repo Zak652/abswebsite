@@ -1,7 +1,6 @@
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
 
-from .models import ServiceRequest
 from .serializers import ServiceRequestSerializer
 from apps.notifications.service import send_service_request_notification
 

@@ -4,7 +4,6 @@ Covers § 2.4.1 (file upload), § 2.4.2 (HTML), § 2.4.3 (URL).
 """
 from __future__ import annotations
 
-import io
 from unittest.mock import patch
 
 import pytest
