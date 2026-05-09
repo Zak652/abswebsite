@@ -1,0 +1,333 @@
+# DigitalOcean App Platform spec for the ABS website.
+#
+# Topology (decided 2026-05-08, see docs/ABS_BUILD_GUIDE.md § 3.7):
+#
+#   web      → Django via gunicorn + uvicorn workers (Dockerfile.prod)
+#   worker   → Celery worker, same image, different command
+#   beat     → Celery beat scheduler, same image, different command
+#   frontend → Next.js standalone (Dockerfile.prod at repo root)
+#   db       → managed Postgres
+#   redis    → managed Redis (broker + cache + replay-protection store)
+#
+# Cloudflare proxies the public hostnames (CDN + DDoS + WAF) and serves
+# media from R2. App Platform terminates TLS and forwards X-Forwarded-Proto.
+#
+# To create:  doctl apps create --spec .do/app.yaml
+# To update:  doctl apps update <APP_ID> --spec .do/app.yaml
+#
+# Secret values (marked SECRET below) are pasted in via the dashboard or
+# `doctl apps update --spec` after creation; never commit real secrets.
+
+name: abs-website
+region: ams
+
+# --------------------------------------------------------------------------
+# Backend — Django via gunicorn + uvicorn workers
+# --------------------------------------------------------------------------
+services:
+  - name: web
+    dockerfile_path: backend/Dockerfile.prod
+    source_dir: backend
+    github:
+      repo: Zak652/abswebsite
+      branch: main
+      deploy_on_push: false
+    instance_size_slug: basic-xxs
+    instance_count: 1
+    http_port: 8080
+    health_check:
+      http_path: /api/v1/health/
+      initial_delay_seconds: 20
+      period_seconds: 30
+      timeout_seconds: 5
+      failure_threshold: 3
+    routes:
+      - path: /api
+      - path: /django-admin
+      - path: /media
+    envs:
+      - key: DJANGO_SETTINGS_MODULE
+        value: abs_backend.settings.production
+      - key: ALLOWED_HOSTS
+        value: ${APP_DOMAIN},www.${APP_DOMAIN}
+      - key: CSRF_TRUSTED_ORIGINS
+        value: https://${APP_DOMAIN},https://www.${APP_DOMAIN}
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://${APP_DOMAIN},https://www.${APP_DOMAIN}
+      - key: FRONTEND_URL
+        value: https://${APP_DOMAIN}
+      - key: DJANGO_SECRET_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: JWT_SECRET
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+      - key: REVALIDATION_SECRET
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+      - key: FLUTTERWAVE_SECRET_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: FLUTTERWAVE_WEBHOOK_SECRET
+        scope: RUN_TIME
+        type: SECRET
+      - key: FLUTTERWAVE_PUBLIC_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: RESEND_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: RESEND_FROM_EMAIL
+        value: notifications@absplatform.com
+      - key: RESEND_SALES_EMAIL
+        value: sales@absplatform.com
+      - key: RESEND_ADMIN_EMAIL
+        value: admin@absplatform.com
+      # Cloudflare R2 (S3-compatible) for media storage
+      - key: AWS_ACCESS_KEY_ID
+        scope: RUN_TIME
+        type: SECRET
+      - key: AWS_SECRET_ACCESS_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: AWS_S3_ENDPOINT_URL
+        scope: RUN_TIME
+        type: SECRET
+      - key: AWS_STORAGE_BUCKET_NAME
+        value: abs-media
+      - key: MEDIA_URL
+        value: https://media.absplatform.com/
+      # Wired by App Platform from the `databases` block below.
+      - key: POSTGRES_DB
+        value: ${db.DATABASE}
+      - key: POSTGRES_USER
+        value: ${db.USERNAME}
+      - key: POSTGRES_PASSWORD
+        value: ${db.PASSWORD}
+      - key: POSTGRES_HOST
+        value: ${db.HOSTNAME}
+      - key: POSTGRES_PORT
+        value: ${db.PORT}
+      - key: REDIS_URL
+        value: ${redis.DATABASE_URL}
+
+  # ------------------------------------------------------------------------
+  # Frontend — Next.js standalone
+  # ------------------------------------------------------------------------
+  - name: frontend
+    dockerfile_path: Dockerfile.prod
+    source_dir: .
+    github:
+      repo: Zak652/abswebsite
+      branch: main
+      deploy_on_push: false
+    instance_size_slug: basic-xxs
+    instance_count: 1
+    http_port: 3000
+    health_check:
+      http_path: /
+      initial_delay_seconds: 20
+      period_seconds: 30
+      timeout_seconds: 5
+      failure_threshold: 3
+    # Catch-all — runs after the /api and /media routes above.
+    routes:
+      - path: /
+    envs:
+      - key: NEXT_PUBLIC_API_URL
+        scope: RUN_AND_BUILD_TIME
+        value: https://${APP_DOMAIN}/api/v1
+      - key: NEXT_PUBLIC_SITE_URL
+        scope: RUN_AND_BUILD_TIME
+        value: https://${APP_DOMAIN}
+      - key: NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+      - key: JWT_SECRET
+        scope: RUN_TIME
+        type: SECRET
+      - key: REVALIDATION_SECRET
+        scope: RUN_TIME
+        type: SECRET
+      - key: DRAFT_MODE_SECRET
+        scope: RUN_TIME
+        type: SECRET
+      - key: BACKEND_ORIGIN
+        scope: RUN_TIME
+        # Internal App Platform alias so /media/* rewrites stay inside the VPC.
+        value: http://web:8080
+
+# --------------------------------------------------------------------------
+# Workers — Celery (no HTTP port, just consume the broker)
+# --------------------------------------------------------------------------
+workers:
+  - name: worker
+    dockerfile_path: backend/Dockerfile.prod
+    source_dir: backend
+    github:
+      repo: Zak652/abswebsite
+      branch: main
+      deploy_on_push: false
+    instance_size_slug: basic-xxs
+    instance_count: 1
+    run_command: celery -A abs_backend worker --loglevel=info --concurrency=2
+    envs:
+      - key: DJANGO_SETTINGS_MODULE
+        value: abs_backend.settings.production
+      - key: DJANGO_SECRET_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: JWT_SECRET
+        scope: RUN_TIME
+        type: SECRET
+      - key: RESEND_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: ALLOWED_HOSTS
+        value: localhost
+      - key: CSRF_TRUSTED_ORIGINS
+        value: https://${APP_DOMAIN}
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://${APP_DOMAIN}
+      - key: REVALIDATION_SECRET
+        scope: RUN_TIME
+        type: SECRET
+      - key: FLUTTERWAVE_SECRET_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: FLUTTERWAVE_WEBHOOK_SECRET
+        scope: RUN_TIME
+        type: SECRET
+      - key: POSTGRES_DB
+        value: ${db.DATABASE}
+      - key: POSTGRES_USER
+        value: ${db.USERNAME}
+      - key: POSTGRES_PASSWORD
+        value: ${db.PASSWORD}
+      - key: POSTGRES_HOST
+        value: ${db.HOSTNAME}
+      - key: POSTGRES_PORT
+        value: ${db.PORT}
+      - key: REDIS_URL
+        value: ${redis.DATABASE_URL}
+
+  - name: beat
+    dockerfile_path: backend/Dockerfile.prod
+    source_dir: backend
+    github:
+      repo: Zak652/abswebsite
+      branch: main
+      deploy_on_push: false
+    instance_size_slug: basic-xxs
+    instance_count: 1
+    run_command: celery -A abs_backend beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    envs:
+      - key: DJANGO_SETTINGS_MODULE
+        value: abs_backend.settings.production
+      - key: DJANGO_SECRET_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: JWT_SECRET
+        scope: RUN_TIME
+        type: SECRET
+      - key: ALLOWED_HOSTS
+        value: localhost
+      - key: CSRF_TRUSTED_ORIGINS
+        value: https://${APP_DOMAIN}
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://${APP_DOMAIN}
+      - key: REVALIDATION_SECRET
+        scope: RUN_TIME
+        type: SECRET
+      - key: FLUTTERWAVE_SECRET_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: FLUTTERWAVE_WEBHOOK_SECRET
+        scope: RUN_TIME
+        type: SECRET
+      - key: RESEND_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: POSTGRES_DB
+        value: ${db.DATABASE}
+      - key: POSTGRES_USER
+        value: ${db.USERNAME}
+      - key: POSTGRES_PASSWORD
+        value: ${db.PASSWORD}
+      - key: POSTGRES_HOST
+        value: ${db.HOSTNAME}
+      - key: POSTGRES_PORT
+        value: ${db.PORT}
+      - key: REDIS_URL
+        value: ${redis.DATABASE_URL}
+
+# --------------------------------------------------------------------------
+# One-off jobs — run on every deploy before the new revision serves traffic.
+# --------------------------------------------------------------------------
+jobs:
+  - name: migrate
+    kind: PRE_DEPLOY
+    dockerfile_path: backend/Dockerfile.prod
+    source_dir: backend
+    github:
+      repo: Zak652/abswebsite
+      branch: main
+    instance_size_slug: basic-xxs
+    run_command: python manage.py migrate --noinput
+    envs:
+      - key: DJANGO_SETTINGS_MODULE
+        value: abs_backend.settings.production
+      - key: DJANGO_SECRET_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: JWT_SECRET
+        scope: RUN_TIME
+        type: SECRET
+      - key: ALLOWED_HOSTS
+        value: localhost
+      - key: CSRF_TRUSTED_ORIGINS
+        value: https://${APP_DOMAIN}
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://${APP_DOMAIN}
+      - key: REVALIDATION_SECRET
+        scope: RUN_TIME
+        type: SECRET
+      - key: FLUTTERWAVE_SECRET_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: FLUTTERWAVE_WEBHOOK_SECRET
+        scope: RUN_TIME
+        type: SECRET
+      - key: RESEND_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: POSTGRES_DB
+        value: ${db.DATABASE}
+      - key: POSTGRES_USER
+        value: ${db.USERNAME}
+      - key: POSTGRES_PASSWORD
+        value: ${db.PASSWORD}
+      - key: POSTGRES_HOST
+        value: ${db.HOSTNAME}
+      - key: POSTGRES_PORT
+        value: ${db.PORT}
+      - key: REDIS_URL
+        value: ${redis.DATABASE_URL}
+
+# --------------------------------------------------------------------------
+# Managed databases
+# --------------------------------------------------------------------------
+databases:
+  - name: db
+    engine: PG
+    version: "16"
+    production: true
+    cluster_name: abs-postgres
+    db_name: abs_db
+    db_user: abs_user
+
+  - name: redis
+    engine: REDIS
+    version: "7"
+    production: true
+    cluster_name: abs-redis
