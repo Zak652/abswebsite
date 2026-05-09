@@ -7,6 +7,7 @@ import { useLogin } from "@/lib/hooks/useAuth";
 import { loginSchema, type LoginFormData } from "@/types/auth";
 import { FormInput } from "@/components/ui/FormInput";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { parseApiError } from "@/lib/api/errors";
 
 export function LoginForm() {
   const { mutate: login, isPending, error } = useLogin();
@@ -21,12 +22,7 @@ export function LoginForm() {
 
   const onSubmit = (data: LoginFormData) => login(data);
 
-  const apiError =
-    error && "response" in error
-      ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (error as any).response?.data?.non_field_errors?.[0] ??
-      "Login failed. Please check your credentials."
-      : null;
+  const apiError = error ? parseApiError(error).message : null;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-5">

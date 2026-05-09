@@ -3,6 +3,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { trainingService } from "@/lib/api/training";
 import { useAuthStore } from "@/lib/store/authStore";
+import { safeRedirect } from "@/lib/redirect";
 
 export function useTrainingSessions() {
   return useQuery({
@@ -16,8 +17,10 @@ export function useRegisterForTraining() {
     mutationFn: trainingService.register,
     onSuccess: (response) => {
       const { payment_link } = response.data;
-      if (payment_link && typeof window !== "undefined") {
-        window.location.href = payment_link;
+      if (payment_link) {
+        // Flutterwave hosted checkout — host must be on the
+        // `safeRedirect` allowlist; rejected URLs land on `/`.
+        safeRedirect(payment_link);
       }
     },
   });

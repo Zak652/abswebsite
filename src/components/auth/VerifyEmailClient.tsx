@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { useConfirmEmailVerification } from "@/lib/hooks/useAuth";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { parseApiError } from "@/lib/api/errors";
 
 /**
  * Client island that consumes the email-verification token from the
@@ -53,10 +54,7 @@ export function VerifyEmailClient({ token }: { token: string }) {
   }
 
   if (isError) {
-    const detail =
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ((error as any)?.response?.data?.detail as string | undefined) ??
-      "We couldn't verify this email. The link may have expired or already been used.";
+    const detail = error ? parseApiError(error).message : "Something went wrong.";
     return (
       <div className="flex flex-col gap-4 text-center">
         <h1 className="text-2xl font-bold text-primary-900 font-heading">
