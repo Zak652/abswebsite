@@ -47,6 +47,8 @@ LOCAL_APPS = [
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
+    # First so every downstream layer (and Sentry) sees a request id.
+    "apps.core.middleware.RequestIDMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -203,6 +205,58 @@ CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "UTC"
+
+# Periodic tasks. Beat picks these up via the DatabaseScheduler in production
+# (set in .do/app.yaml) so admins can edit them without a redeploy.
+CELERY_BEAT_SCHEDULE = {
+    "publish-scheduled-cms-content": {
+        "task": "apps.cms.tasks.publish_scheduled_content",
+        # Every 60 seconds — content scheduled for `now()` flips within the
+        # next minute. Matches the resolution promised in the build guide.
+        "schedule": 60.0,
+    },
+}
+
+# --------------------------------------------------------------------------
+# Logging — JSON to stdout so the docker logs stream is structured. Every
+# record carries a `request_id` (or "-" for non-request emitters like the
+# Celery worker) wired up by apps.core.middleware.RequestIDLogFilter.
+# --------------------------------------------------------------------------
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "filters": {
+        "request_id": {"()": "apps.core.middleware.RequestIDLogFilter"},
+    },
+    "formatters": {
+        "json": {
+            "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
+            "format": "%(asctime)s %(levelname)s %(name)s %(message)s %(request_id)s",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "filters": ["request_id"],
+            "formatter": "json",
+        },
+    },
+    "root": {"handlers": ["console"], "level": "INFO"},
+    "loggers": {
+        "django.server": {
+            # Don't double-emit the access log line via the root handler.
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}
+
+# Sentry DSN — populated only in production (see settings/production.py),
+# but defined here so any settings module can read SENTRY_ENVIRONMENT.
+SENTRY_DSN = env("SENTRY_DSN", default="")
+SENTRY_ENVIRONMENT = env("SENTRY_ENVIRONMENT", default="development")
+SENTRY_TRACES_SAMPLE_RATE = env.float("SENTRY_TRACES_SAMPLE_RATE", default=0.1)
 
 # MTN Mobile Money
 MTN_MOMO_API_KEY = env("MTN_MOMO_API_KEY", default="")

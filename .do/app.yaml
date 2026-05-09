@@ -97,6 +97,14 @@ services:
         value: abs-media
       - key: MEDIA_URL
         value: https://media.absplatform.com/
+      # Sentry — DSN tagged with environment + release SHA.
+      - key: SENTRY_DSN
+        scope: RUN_TIME
+        type: SECRET
+      - key: SENTRY_ENVIRONMENT
+        value: production
+      - key: SENTRY_TRACES_SAMPLE_RATE
+        value: "0.1"
       # Wired by App Platform from the `databases` block below.
       - key: POSTGRES_DB
         value: ${db.DATABASE}
@@ -156,6 +164,27 @@ services:
         scope: RUN_TIME
         # Internal App Platform alias so /media/* rewrites stay inside the VPC.
         value: http://web:8080
+      # Sentry — same project as the backend; DSN is public so it lives in
+      # NEXT_PUBLIC_*. Auth token + org/project are build-time-only and
+      # only needed if we want source-map upload.
+      - key: NEXT_PUBLIC_SENTRY_DSN
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+      - key: NEXT_PUBLIC_SENTRY_ENVIRONMENT
+        scope: RUN_AND_BUILD_TIME
+        value: production
+      - key: NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE
+        scope: RUN_AND_BUILD_TIME
+        value: "0.1"
+      - key: SENTRY_AUTH_TOKEN
+        scope: BUILD_TIME
+        type: SECRET
+      - key: SENTRY_ORG
+        scope: BUILD_TIME
+        type: SECRET
+      - key: SENTRY_PROJECT
+        scope: BUILD_TIME
+        type: SECRET
 
 # --------------------------------------------------------------------------
 # Workers — Celery (no HTTP port, just consume the broker)
@@ -198,6 +227,13 @@ workers:
       - key: FLUTTERWAVE_WEBHOOK_SECRET
         scope: RUN_TIME
         type: SECRET
+      - key: SENTRY_DSN
+        scope: RUN_TIME
+        type: SECRET
+      - key: SENTRY_ENVIRONMENT
+        value: production
+      - key: SENTRY_TRACES_SAMPLE_RATE
+        value: "0.1"
       - key: POSTGRES_DB
         value: ${db.DATABASE}
       - key: POSTGRES_USER

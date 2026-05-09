@@ -3,8 +3,38 @@ from django.core.exceptions import ImproperlyConfigured
 import environ
 
 from .base import *  # noqa: F401, F403
+from .base import SENTRY_DSN, SENTRY_ENVIRONMENT, SENTRY_TRACES_SAMPLE_RATE
 
 env = environ.Env()
+
+
+# --------------------------------------------------------------------------
+# Sentry — error + performance tracing (decision 2026-05-08, see § 3.5).
+# Only initialised in production so dev exceptions don't pollute the project.
+# --------------------------------------------------------------------------
+if SENTRY_DSN:
+    import sentry_sdk
+    from sentry_sdk.integrations.celery import CeleryIntegration
+    from sentry_sdk.integrations.django import DjangoIntegration
+    from sentry_sdk.integrations.logging import LoggingIntegration
+    from sentry_sdk.integrations.redis import RedisIntegration
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[
+            DjangoIntegration(),
+            CeleryIntegration(monitor_beat_tasks=True),
+            RedisIntegration(),
+            # Capture WARNING+ as breadcrumbs, ERROR+ as events.
+            LoggingIntegration(level="WARNING", event_level="ERROR"),
+        ],
+        environment=SENTRY_ENVIRONMENT,
+        traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE,
+        # PII scrubbing — never ship request bodies or auth headers.
+        send_default_pii=False,
+        # Tag every event with the deploy SHA if the platform exposes it.
+        release=env("SENTRY_RELEASE", default=None),
+    )
 
 DEBUG = False
 

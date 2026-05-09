@@ -18,6 +18,8 @@ boto3==1.35.0
 bleach==6.1.0
 django-axes==7.0.0
 django-ratelimit==4.1.0
+sentry-sdk[django]==2.18.0
+python-json-logger==2.0.7
 pytest==8.3.3
 pytest-django==4.9.0
 factory-boy==3.3.1

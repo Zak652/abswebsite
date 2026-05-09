@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 /** Origin of the Django backend used for /media/* and (optionally) for the
  *  API. Falls back to localhost:8000 for dev. */
@@ -27,7 +28,7 @@ const cspProd = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: blob: https://*.r2.cloudflarestorage.com https://media.absplatform.com",
-  `connect-src 'self' ${apiOrigin} https://api.flutterwave.com`,
+  `connect-src 'self' ${apiOrigin} https://api.flutterwave.com https://*.sentry.io https://*.ingest.sentry.io`,
   "frame-src https://checkout.flutterwave.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
@@ -100,4 +101,22 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Wrap with Sentry only when a DSN is set, so dev / test / forks without
+// Sentry credentials still build cleanly. The wrapper handles source-map
+// upload and instruments the Next.js runtime.
+const exportedConfig =
+  process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN
+    ? withSentryConfig(nextConfig, {
+        // Org / project read from env (SENTRY_ORG, SENTRY_PROJECT).
+        // Auth token (SENTRY_AUTH_TOKEN) only needed for source-map upload at
+        // build time — App Platform sets it at deploy time.
+        silent: !process.env.CI,
+        widenClientFileUpload: true,
+        disableLogger: true,
+        // Strip the SDK's debug logger from the browser bundle and keep
+        // source maps server-side only — clients should never download them.
+        sourcemaps: { disable: false, deleteSourcemapsAfterUpload: true },
+      })
+    : nextConfig;
+
+export default exportedConfig;
