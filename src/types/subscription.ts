@@ -11,12 +11,29 @@ export const trialSignupSchema = z.object({
 
 export type TrialSignupFormData = z.infer<typeof trialSignupSchema>;
 
+export type SubscriptionStatus =
+  | "pending"
+  | "provisioned"
+  | "active"
+  | "converted"
+  | "expired"
+  | "cancelled";
+
+// Statuses from which the user can cancel their own trial. Mirrors
+// `ArcplusTrialSignup.CANCELLABLE_STATUSES` on the backend.
+export const CANCELLABLE_STATUSES: ReadonlySet<SubscriptionStatus> = new Set([
+  "pending",
+  "provisioned",
+  "active",
+]);
+
 export interface TrialSignup {
   id: string;
   email: string;
   company_name: string;
   full_name: string;
   plan: "starter" | "growth" | "professional" | "enterprise";
-  status: "pending" | "provisioned" | "active" | "converted" | "expired";
+  status: SubscriptionStatus;
+  cancelled_at: string | null;
   created_at: string;
 }

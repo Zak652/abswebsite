@@ -182,6 +182,18 @@ def send_trial_expiry_notification(signup):
     _send(to=signup.email, subject=subject, html=html)
 
 
+def send_trial_cancellation_notification(signup):
+    """Triggered: when a user cancels their own trial via the portal."""
+    ctx = {"signup": signup}
+    db_result = _render_db_template("trial_cancellation", ctx)
+    if db_result:
+        subject, html = db_result
+    else:
+        html = render_to_string("trial_cancellation.html", ctx)
+        subject = "Your Arcplus trial has been cancelled"
+    _send(to=signup.email, subject=subject, html=html)
+
+
 def send_training_confirmation(registration):
     """
     Triggered: after Flutterwave webhook confirms payment

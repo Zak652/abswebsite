@@ -9,7 +9,13 @@ class ArcplusTrialSignup(models.Model):
         ("active", "Active Trial"),
         ("converted", "Converted"),
         ("expired", "Expired"),
+        ("cancelled", "Cancelled"),
     ]
+
+    # Statuses past which a user-initiated cancel is a no-op.
+    TERMINAL_STATUSES = ("converted", "expired", "cancelled")
+    # Statuses from which a user can request cancellation themselves.
+    CANCELLABLE_STATUSES = ("pending", "provisioned", "active")
 
     PLAN_CHOICES = [
         ("starter", "Starter"),
@@ -38,6 +44,8 @@ class ArcplusTrialSignup(models.Model):
     provisioned_by = models.CharField(max_length=255, blank=True)
     trial_start = models.DateTimeField(null=True, blank=True)
     trial_expiry = models.DateTimeField(null=True, blank=True)
+    cancelled_at = models.DateTimeField(null=True, blank=True)
+    cancellation_reason = models.CharField(max_length=255, blank=True)
     reminder_sent_day7 = models.BooleanField(default=False)
     reminder_sent_day3 = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
