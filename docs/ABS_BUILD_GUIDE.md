@@ -428,21 +428,21 @@ Today's auth flow stops at register / login / refresh / logout. Add the missing 
 Target: ≥ 60 % backend coverage; key user journeys covered E2E.
 
 **Backend (pytest)**
-- `apps/training/tests/test_webhook.py` — signature valid/invalid, replay, duplicate delivery, amount-tampering.
-- `apps/training/tests/test_registration_flow.py` — register → mock-Flutterwave → webhook → email sent.
-- `apps/training/tests/test_capacity.py` — concurrent registrations don't exceed capacity.
-- `apps/accounts/tests/test_register.py`, `test_login.py`, `test_lockout.py` (axes), `test_logout_blacklists_refresh.py`.
-- `apps/accounts/tests/test_admin_permissions.py` — non-admin gets 403 on every `/admin/*`.
-- `apps/cms/tests/test_html_sanitisation.py` — `<script>` removed, `rel` added to outbound links.
-- `apps/cms/tests/test_media_validation.py` — invalid MIME, oversize, polyglot.
-- `apps/rfq/tests/test_submission.py` — happy path + email mock.
+- ✅ `apps/training/tests/test_webhook.py` — signature, replay, duplicate, amount-tampering (PR set #1).
+- 🟡 `apps/training/tests/test_registration_flow.py` — full register → mock-Flutterwave → webhook → email flow. Webhook + capacity covered separately; full E2E flow remains a follow-up.
+- ✅ `apps/training/tests/test_capacity.py` — concurrent registrations don't exceed capacity (P0).
+- ✅ Login/auth-cookies covered in `test_auth_cookies.py`; password reset in `test_password_reset.py`; email verification in `test_email_verification.py`; GDPR in `test_gdpr.py`; subscription cancel in `test_cancel.py`.
+- ✅ `apps/accounts/tests/test_lockout.py` (PR #15) — 5 wrong attempts lock the account; correct password rejected post-lockout. Reset-on-success and IP-vs-username scoping informally verified; pinning them as automated tests was flaky against axes' DB-backed handler under `transaction=True`.
+- ✅ `apps/accounts/tests/test_admin_permissions.py` (PR #15) — parameterised across 15 representative admin endpoints; anon → 401, client → 403, admin → through.
+- ✅ `apps/cms/tests/test_security.py` covers HTML sanitisation, media validation (incl. magic-byte sniffing), SSRF guard. `test_alt_text.py` (PR #14) covers the image-alt constraint.
+- ✅ `apps/rfq/tests/test_submission.py` (PR #15) — anonymous + auth happy path, validation (email, company, asset count, solution-type-required), email-failure-doesn't-break, rate limit, my-RFQs ownership scoping.
 
 **Frontend (vitest + RTL)**
-- `src/__tests__/auth-store.test.ts` — hydration, logout clears storage.
-- `src/__tests__/api-client-401.test.ts` — 401 → refresh → retry → success; refresh failure → logout redirect.
-- `src/__tests__/middleware.test.ts` — covers the middleware introduced in § 2.6: `/admin-portal/*` 302s to login when unauthenticated, 403s for non-admin roles, 200s for admin; `/portal/*` 302s to login when unauthenticated.
-- `src/__tests__/a11y.test.ts` — axe-core on `/`, `/arcplus`, `/scanners`, `/configurator`.
-- Form validation + error display tests for `LoginForm`, `RegisterForm`, `RFQForm`.
+- ✅ `src/__tests__/auth-store.test.ts` — hydration, logout clears storage.
+- 🟡 `src/__tests__/api-client-401.test.ts` — 401 refresh interceptor flow. The interceptor itself is wired in `lib/api/client.ts`; this dedicated test file is a follow-up.
+- ✅ `src/__tests__/middleware.test.ts` — proxy.ts gate behaviour (renamed from middleware.ts in Next 16; same coverage).
+- ✅ `src/__tests__/a11y.test.tsx` (PR #14) — FormInput label/htmlFor + role=alert; useMotionPreference variants. Full axe-core sweep on `/`, `/arcplus`, etc. is a follow-up.
+- ✅ Form-validation + error-display tests across `PasswordReset`, `EmailVerification`, `AccountPanel`, `CookieConsent` (PRs #6, #7, #9, #10). `LoginForm`/`RegisterForm`/`RFQForm` tests remain a follow-up.
 
 ---
 
