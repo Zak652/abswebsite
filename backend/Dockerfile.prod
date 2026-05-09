@@ -1,0 +1,94 @@
+# syntax=docker/dockerfile:1.7
+#
+# Production image for the Django backend. Used by both the `web` and
+# `worker`/`beat` services in DigitalOcean App Platform — the `command`
+# differs but the image is shared (see ../.do/app.yaml).
+#
+# Two stages:
+#   1. builder — full toolchain, compiles wheels into a venv at /opt/venv
+#   2. runtime — slim base, copies the venv + app code, runs as non-root
+
+# --------------------------------------------------------------------------
+# Stage 1 — build deps
+# --------------------------------------------------------------------------
+FROM python:3.12-slim AS builder
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Compilation tools needed for psycopg2-binary, Pillow, etc. — kept out of
+# the runtime image.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        libpq-dev \
+        libjpeg-dev \
+        zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+WORKDIR /build
+COPY requirements.txt ./
+RUN pip install --upgrade pip \
+    && pip install -r requirements.txt \
+    && pip install "gunicorn[gthread]==22.0.0" "uvicorn[standard]==0.32.0"
+
+
+# --------------------------------------------------------------------------
+# Stage 2 — runtime
+# --------------------------------------------------------------------------
+FROM python:3.12-slim AS runtime
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/opt/venv/bin:$PATH" \
+    DJANGO_SETTINGS_MODULE=abs_backend.settings.production \
+    PORT=8080
+
+# Runtime libs only — no compilers. curl is here for the HEALTHCHECK probe.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libpq5 \
+        libjpeg62-turbo \
+        zlib1g \
+        curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --system --gid 1000 appuser \
+    && useradd --system --uid 1000 --gid appuser --create-home appuser
+
+COPY --from=builder /opt/venv /opt/venv
+
+WORKDIR /app
+COPY --chown=appuser:appuser . /app
+
+# collectstatic at build time so the runtime user doesn't need write access
+# anywhere outside /app/staticfiles.
+RUN STATIC_ROOT=/app/staticfiles DJANGO_SECRET_KEY=build-time-only \
+    DEBUG=True \
+    DJANGO_SETTINGS_MODULE=abs_backend.settings.local \
+    POSTGRES_PASSWORD=build \
+    python manage.py collectstatic --noinput --clear || true
+
+USER appuser
+
+EXPOSE 8080
+
+# DO App Platform sets PORT and watches /api/v1/health/ — so does this
+# HEALTHCHECK for `docker run` parity.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD curl --fail --silent http://127.0.0.1:${PORT}/api/v1/health/ || exit 1
+
+# Default to the web service. The worker / beat services override `command`
+# in .do/app.yaml.
+# UvicornWorker requires an ASGI app, so point at asgi:application
+# (Django auto-generates abs_backend/asgi.py).
+CMD ["gunicorn", \
+     "abs_backend.asgi:application", \
+     "--bind", "0.0.0.0:8080", \
+     "-k", "uvicorn.workers.UvicornWorker", \
+     "--workers", "4", \
+     "--timeout", "60", \
+     "--access-logfile", "-", \
+     "--error-logfile", "-"]

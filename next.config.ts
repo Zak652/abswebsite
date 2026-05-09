@@ -54,6 +54,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Emit a self-contained build at .next/standalone so the prod Docker
+  // image can ship just the runtime, not the whole node_modules tree.
+  output: "standalone",
   images: {
     remotePatterns: [
       // Cloudflare R2 (decided 2026-05-08, see docs/ABS_BUILD_GUIDE.md § 3.7)
