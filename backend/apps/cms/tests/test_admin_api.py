@@ -359,3 +359,67 @@ class TestAuditLogging:
         )
         logs = AuditLog.objects.filter(performed_by=admin_user, action="cms_submit")
         assert logs.exists()
+
+
+# ---------------------------------------------------------------------------
+# Audit Mixin Coverage (build guide § 3.9 B7)
+# ---------------------------------------------------------------------------
+
+
+class TestAuditMixinCoverage:
+    """Sanity checks that the AuditedAdminMixin contract holds.
+
+    The CI lint at backend/scripts/check_audit_coverage.py is the real
+    enforcement, but these tests catch regressions locally and pin the
+    mechanism in place.
+    """
+
+    def test_every_mutating_admin_view_inherits_mixin(self):
+        import inspect
+
+        from apps.cms import admin_views
+        from apps.cms.admin_mixins import AuditedAdminMixin
+
+        offenders = []
+        for name, obj in inspect.getmembers(admin_views, inspect.isclass):
+            if obj.__module__ != admin_views.__name__:
+                continue
+            has_write = any(
+                m in obj.__dict__ and callable(obj.__dict__[m])
+                for m in ("post", "put", "patch", "delete")
+            )
+            if not has_write:
+                continue
+            if not issubclass(obj, AuditedAdminMixin):
+                offenders.append(name)
+        assert not offenders, (
+            "Mutating admin views missing AuditedAdminMixin: "
+            f"{', '.join(offenders)}"
+        )
+
+    def test_nav_reorder_writes_audit_row(self, admin_client, admin_user, db):
+        from apps.accounts.models import AuditLog
+
+        item = NavigationItemFactory()
+        resp = admin_client.post(
+            "/api/v1/admin/cms/navigation/reorder/",
+            [{"id": str(item.pk), "order": 1}],
+            format="json",
+        )
+        assert resp.status_code == 200, resp.data
+        assert AuditLog.objects.filter(
+            performed_by=admin_user, action="cms_nav_reorder"
+        ).exists()
+
+    def test_asset_tag_create_writes_audit_row(self, admin_client, admin_user, db):
+        from apps.accounts.models import AuditLog
+
+        resp = admin_client.post(
+            "/api/v1/admin/cms/media/tags/",
+            {"name": "Audit-Tag", "slug": "audit-tag"},
+            format="json",
+        )
+        assert resp.status_code == 201, resp.data
+        assert AuditLog.objects.filter(
+            performed_by=admin_user, action="cms_asset_tag_create"
+        ).exists()

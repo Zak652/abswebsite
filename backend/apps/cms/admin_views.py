@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.accounts.admin_views import IsAdmin
-from apps.accounts.models import log_admin_action
+from apps.cms.admin_mixins import AuditedAdminMixin
 from apps.cms.cache import invalidate_model
 from apps.cms.validators import validate_for_publish, PublishValidationError
 from apps.cms.models import (
@@ -100,7 +100,7 @@ ACTION_MAP = {
 }
 
 
-class PublishableTransitionView(APIView):
+class PublishableTransitionView(AuditedAdminMixin, APIView):
     """Generic transition view for any publishable model.
 
     POST body: {"action": "submit" | "approve" | "publish" | "archive" | "unpublish"}
@@ -139,14 +139,7 @@ class PublishableTransitionView(APIView):
         except ValueError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        log_admin_action(
-            user=request.user,
-            action=f"cms_{action}",
-            resource_type=self.model.__name__,
-            resource_id=str(instance.pk),
-            changes={"status": new_status},
-            request=request,
-        )
+        self.audit(f"cms_{action}", instance.pk, {"status": new_status})
 
         return Response({"status": instance.status, "version": instance.version})
 
@@ -156,8 +149,9 @@ class PublishableTransitionView(APIView):
 # ---------------------------------------------------------------------------
 
 
-class AdminSiteSettingsView(APIView):
+class AdminSiteSettingsView(AuditedAdminMixin, APIView):
     permission_classes = [IsAdmin]
+    audit_resource_type = "SiteSettings"
 
     def get(self, request):
         settings = SiteSettings.objects.get()
@@ -170,14 +164,7 @@ class AdminSiteSettingsView(APIView):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save(updated_by=request.user)
-        log_admin_action(
-            request.user,
-            "cms_settings_update",
-            "SiteSettings",
-            "1",
-            request.data,
-            request,
-        )
+        self.audit("cms_settings_update", "1", request.data)
         return Response(serializer.data)
 
 
@@ -186,8 +173,10 @@ class AdminSiteSettingsView(APIView):
 # ---------------------------------------------------------------------------
 
 
-class AdminPageMetaListView(APIView):
+class AdminPageMetaListView(AuditedAdminMixin, APIView):
     permission_classes = [IsAdmin]
+    audit_resource_type = "PageMeta"
+    audit_action_prefix = "meta"
 
     def get(self, request):
         metas = PageMeta.objects.all()
@@ -197,19 +186,14 @@ class AdminPageMetaListView(APIView):
         serializer = PageMetaAdminSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        log_admin_action(
-            request.user,
-            "cms_meta_create",
-            "PageMeta",
-            str(serializer.instance.pk),
-            request.data,
-            request,
-        )
+        self.audit_create(serializer.instance, request.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class AdminPageMetaDetailView(APIView):
+class AdminPageMetaDetailView(AuditedAdminMixin, APIView):
     permission_classes = [IsAdmin]
+    audit_resource_type = "PageMeta"
+    audit_action_prefix = "meta"
 
     def patch(self, request, pk):
         try:
@@ -219,14 +203,7 @@ class AdminPageMetaDetailView(APIView):
         serializer = PageMetaAdminSerializer(meta, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        log_admin_action(
-            request.user,
-            "cms_meta_update",
-            "PageMeta",
-            str(pk),
-            request.data,
-            request,
-        )
+        self.audit_update(pk, request.data)
         return Response(serializer.data)
 
     def delete(self, request, pk):
@@ -235,14 +212,7 @@ class AdminPageMetaDetailView(APIView):
         except PageMeta.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         meta.delete()
-        log_admin_action(
-            request.user,
-            "cms_meta_delete",
-            "PageMeta",
-            str(pk),
-            {},
-            request,
-        )
+        self.audit_delete(pk)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -251,13 +221,13 @@ class AdminPageMetaDetailView(APIView):
 # ---------------------------------------------------------------------------
 
 
-class PublishableCRUDListView(APIView):
+class PublishableCRUDListView(AuditedAdminMixin, APIView):
     """List and create for publishable models."""
 
     permission_classes = [IsAdmin]
     model = None
     serializer_class = None
-    action_prefix = ""
+    audit_action_prefix = ""
 
     def get(self, request):
         qs = self.model.objects.all().order_by("-created_at")
@@ -270,24 +240,17 @@ class PublishableCRUDListView(APIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(created_by=request.user, updated_by=request.user)
-        log_admin_action(
-            request.user,
-            f"cms_{self.action_prefix}_create",
-            self.model.__name__,
-            str(serializer.instance.pk),
-            request.data,
-            request,
-        )
+        self.audit_create(serializer.instance, request.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class PublishableCRUDDetailView(APIView):
+class PublishableCRUDDetailView(AuditedAdminMixin, APIView):
     """Update and delete for publishable models."""
 
     permission_classes = [IsAdmin]
     model = None
     serializer_class = None
-    action_prefix = ""
+    audit_action_prefix = ""
 
     def get_object(self, pk):
         try:
@@ -307,14 +270,7 @@ class PublishableCRUDDetailView(APIView):
         serializer = self.serializer_class(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save(updated_by=request.user)
-        log_admin_action(
-            request.user,
-            f"cms_{self.action_prefix}_update",
-            self.model.__name__,
-            str(pk),
-            request.data,
-            request,
-        )
+        self.audit_update(pk, request.data)
         return Response(serializer.data)
 
     def delete(self, request, pk):
@@ -322,14 +278,7 @@ class PublishableCRUDDetailView(APIView):
         if instance is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
         instance.delete()
-        log_admin_action(
-            request.user,
-            f"cms_{self.action_prefix}_delete",
-            self.model.__name__,
-            str(pk),
-            {},
-            request,
-        )
+        self.audit_delete(pk)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -341,13 +290,13 @@ class PublishableCRUDDetailView(APIView):
 class AdminHeroListView(PublishableCRUDListView):
     model = HeroSection
     serializer_class = HeroSectionAdminSerializer
-    action_prefix = "hero"
+    audit_action_prefix = "hero"
 
 
 class AdminHeroDetailView(PublishableCRUDDetailView):
     model = HeroSection
     serializer_class = HeroSectionAdminSerializer
-    action_prefix = "hero"
+    audit_action_prefix = "hero"
 
 
 class AdminHeroTransitionView(PublishableTransitionView):
@@ -362,13 +311,13 @@ class AdminHeroTransitionView(PublishableTransitionView):
 class AdminBlockListView(PublishableCRUDListView):
     model = PageBlock
     serializer_class = PageBlockAdminSerializer
-    action_prefix = "block"
+    audit_action_prefix = "block"
 
 
 class AdminBlockDetailView(PublishableCRUDDetailView):
     model = PageBlock
     serializer_class = PageBlockAdminSerializer
-    action_prefix = "block"
+    audit_action_prefix = "block"
 
 
 class AdminBlockTransitionView(PublishableTransitionView):
@@ -380,8 +329,10 @@ class AdminBlockTransitionView(PublishableTransitionView):
 # ---------------------------------------------------------------------------
 
 
-class AdminNavigationListView(APIView):
+class AdminNavigationListView(AuditedAdminMixin, APIView):
     permission_classes = [IsAdmin]
+    audit_resource_type = "NavigationItem"
+    audit_action_prefix = "nav"
 
     def get(self, request):
         items = NavigationItem.objects.all().order_by("location", "order")
@@ -391,19 +342,14 @@ class AdminNavigationListView(APIView):
         serializer = NavigationItemAdminSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        log_admin_action(
-            request.user,
-            "cms_nav_create",
-            "NavigationItem",
-            str(serializer.instance.pk),
-            request.data,
-            request,
-        )
+        self.audit_create(serializer.instance, request.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class AdminNavigationDetailView(APIView):
+class AdminNavigationDetailView(AuditedAdminMixin, APIView):
     permission_classes = [IsAdmin]
+    audit_resource_type = "NavigationItem"
+    audit_action_prefix = "nav"
 
     def patch(self, request, pk):
         try:
@@ -415,14 +361,7 @@ class AdminNavigationDetailView(APIView):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        log_admin_action(
-            request.user,
-            "cms_nav_update",
-            "NavigationItem",
-            str(pk),
-            request.data,
-            request,
-        )
+        self.audit_update(pk, request.data)
         return Response(serializer.data)
 
     def delete(self, request, pk):
@@ -431,19 +370,13 @@ class AdminNavigationDetailView(APIView):
         except NavigationItem.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         item.delete()
-        log_admin_action(
-            request.user,
-            "cms_nav_delete",
-            "NavigationItem",
-            str(pk),
-            {},
-            request,
-        )
+        self.audit_delete(pk)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class AdminNavigationReorderView(APIView):
+class AdminNavigationReorderView(AuditedAdminMixin, APIView):
     permission_classes = [IsAdmin]
+    audit_resource_type = "NavigationItem"
 
     def post(self, request):
         items = request.data
@@ -455,6 +388,7 @@ class AdminNavigationReorderView(APIView):
         for item in items:
             NavigationItem.objects.filter(pk=item["id"]).update(order=item["order"])
         invalidate_model("navigation")
+        self.audit("cms_nav_reorder", "*", {"count": len(items)})
         return Response({"detail": "Reordered successfully."})
 
 
@@ -463,9 +397,10 @@ class AdminNavigationReorderView(APIView):
 # ---------------------------------------------------------------------------
 
 
-class AdminMediaListView(APIView):
+class AdminMediaListView(AuditedAdminMixin, APIView):
     permission_classes = [IsAdmin]
     parser_classes = [MultiPartParser, FormParser]
+    audit_resource_type = "MediaAsset"
 
     def get(self, request):
         qs = MediaAsset.objects.all()
@@ -483,21 +418,15 @@ class AdminMediaListView(APIView):
         )
         serializer.is_valid(raise_exception=True)
         asset = serializer.save()
-        log_admin_action(
-            request.user,
-            "cms_media_upload",
-            "MediaAsset",
-            str(asset.pk),
-            {"filename": asset.filename},
-            request,
-        )
+        self.audit("cms_media_upload", asset.pk, {"filename": asset.filename})
         return Response(
             MediaAssetSerializer(asset).data, status=status.HTTP_201_CREATED
         )
 
 
-class AdminMediaDetailView(APIView):
+class AdminMediaDetailView(AuditedAdminMixin, APIView):
     permission_classes = [IsAdmin]
+    audit_resource_type = "MediaAsset"
 
     def get(self, request, pk):
         try:
@@ -518,14 +447,7 @@ class AdminMediaDetailView(APIView):
         tag_ids = request.data.get("tag_ids")
         if tag_ids is not None:
             asset.tags.set(tag_ids)
-        log_admin_action(
-            request.user,
-            "cms_media_update",
-            "MediaAsset",
-            str(pk),
-            request.data,
-            request,
-        )
+        self.audit("cms_media_update", pk, request.data)
         return Response(MediaAssetSerializer(asset).data)
 
     def delete(self, request, pk):
@@ -542,19 +464,13 @@ class AdminMediaDetailView(APIView):
                 status=status.HTTP_409_CONFLICT,
             )
         asset.delete()
-        log_admin_action(
-            request.user,
-            "cms_media_delete",
-            "MediaAsset",
-            str(pk),
-            {},
-            request,
-        )
+        self.audit("cms_media_delete", pk)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class AdminAssetTagListView(APIView):
+class AdminAssetTagListView(AuditedAdminMixin, APIView):
     permission_classes = [IsAdmin]
+    audit_resource_type = "AssetTag"
 
     def get(self, request):
         return Response(AssetTagSerializer(AssetTag.objects.all(), many=True).data)
@@ -563,6 +479,11 @@ class AdminAssetTagListView(APIView):
         serializer = AssetTagSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        self.audit(
+            "cms_asset_tag_create",
+            serializer.instance.pk,
+            request.data,
+        )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -571,8 +492,9 @@ class AdminAssetTagListView(APIView):
 # ---------------------------------------------------------------------------
 
 
-class AdminProductGalleryListView(APIView):
+class AdminProductGalleryListView(AuditedAdminMixin, APIView):
     permission_classes = [IsAdmin]
+    audit_resource_type = "ProductImage"
 
     def get(self, request, product_pk):
         images = ProductImage.objects.filter(product_id=product_pk).select_related(
@@ -586,19 +508,17 @@ class AdminProductGalleryListView(APIView):
         serializer = ProductImageSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        log_admin_action(
-            request.user,
+        self.audit(
             "cms_gallery_add",
-            "ProductImage",
-            str(serializer.instance.pk),
+            serializer.instance.pk,
             {"product": str(product_pk)},
-            request,
         )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class AdminProductGalleryDetailView(APIView):
+class AdminProductGalleryDetailView(AuditedAdminMixin, APIView):
     permission_classes = [IsAdmin]
+    audit_resource_type = "ProductImage"
 
     def patch(self, request, product_pk, pk):
         try:
@@ -608,6 +528,7 @@ class AdminProductGalleryDetailView(APIView):
         serializer = ProductImageSerializer(image, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        self.audit("cms_gallery_update", pk, request.data)
         return Response(serializer.data)
 
     def delete(self, request, product_pk, pk):
@@ -616,11 +537,13 @@ class AdminProductGalleryDetailView(APIView):
         except ProductImage.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         image.delete()
+        self.audit("cms_gallery_delete", pk)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class AdminProductGalleryReorderView(APIView):
+class AdminProductGalleryReorderView(AuditedAdminMixin, APIView):
     permission_classes = [IsAdmin]
+    audit_resource_type = "ProductImage"
 
     def post(self, request, product_pk):
         items = request.data
@@ -633,6 +556,11 @@ class AdminProductGalleryReorderView(APIView):
             ProductImage.objects.filter(pk=item["id"], product_id=product_pk).update(
                 order=item["order"]
             )
+        self.audit(
+            "cms_gallery_reorder",
+            str(product_pk),
+            {"count": len(items)},
+        )
         return Response({"detail": "Reordered successfully."})
 
 
@@ -644,13 +572,13 @@ class AdminProductGalleryReorderView(APIView):
 class AdminServiceListView(PublishableCRUDListView):
     model = ServiceOffering
     serializer_class = ServiceOfferingAdminSerializer
-    action_prefix = "service"
+    audit_action_prefix = "service"
 
 
 class AdminServiceDetailView(PublishableCRUDDetailView):
     model = ServiceOffering
     serializer_class = ServiceOfferingAdminSerializer
-    action_prefix = "service"
+    audit_action_prefix = "service"
 
 
 class AdminServiceTransitionView(PublishableTransitionView):
@@ -665,13 +593,13 @@ class AdminServiceTransitionView(PublishableTransitionView):
 class AdminModuleListView(PublishableCRUDListView):
     model = ArcplusModule
     serializer_class = ArcplusModuleAdminSerializer
-    action_prefix = "module"
+    audit_action_prefix = "module"
 
 
 class AdminModuleDetailView(PublishableCRUDDetailView):
     model = ArcplusModule
     serializer_class = ArcplusModuleAdminSerializer
-    action_prefix = "module"
+    audit_action_prefix = "module"
 
 
 class AdminModuleTransitionView(PublishableTransitionView):
@@ -686,13 +614,13 @@ class AdminModuleTransitionView(PublishableTransitionView):
 class AdminPricingListView(PublishableCRUDListView):
     model = PricingPlan
     serializer_class = PricingPlanAdminSerializer
-    action_prefix = "pricing"
+    audit_action_prefix = "pricing"
 
 
 class AdminPricingDetailView(PublishableCRUDDetailView):
     model = PricingPlan
     serializer_class = PricingPlanAdminSerializer
-    action_prefix = "pricing"
+    audit_action_prefix = "pricing"
 
 
 class AdminPricingTransitionView(PublishableTransitionView):
@@ -704,8 +632,9 @@ class AdminPricingTransitionView(PublishableTransitionView):
 # ---------------------------------------------------------------------------
 
 
-class AdminPlanFeatureListView(APIView):
+class AdminPlanFeatureListView(AuditedAdminMixin, APIView):
     permission_classes = [IsAdmin]
+    audit_resource_type = "PlanFeature"
 
     def get(self, request):
         return Response(
@@ -716,11 +645,17 @@ class AdminPlanFeatureListView(APIView):
         serializer = PlanFeatureSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        self.audit(
+            "cms_plan_feature_create",
+            serializer.instance.pk,
+            request.data,
+        )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class AdminPlanFeatureValueListView(APIView):
+class AdminPlanFeatureValueListView(AuditedAdminMixin, APIView):
     permission_classes = [IsAdmin]
+    audit_resource_type = "PlanFeatureValue"
 
     def get(self, request):
         plan_id = request.query_params.get("plan")
@@ -733,6 +668,11 @@ class AdminPlanFeatureValueListView(APIView):
         serializer = PlanFeatureValueAdminSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        self.audit(
+            "cms_plan_feature_value_set",
+            serializer.instance.pk,
+            request.data,
+        )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -744,21 +684,22 @@ class AdminPlanFeatureValueListView(APIView):
 class AdminSupportTierListView(PublishableCRUDListView):
     model = SupportTier
     serializer_class = SupportTierAdminSerializer
-    action_prefix = "support_tier"
+    audit_action_prefix = "support_tier"
 
 
 class AdminSupportTierDetailView(PublishableCRUDDetailView):
     model = SupportTier
     serializer_class = SupportTierAdminSerializer
-    action_prefix = "support_tier"
+    audit_action_prefix = "support_tier"
 
 
 class AdminSupportTierTransitionView(PublishableTransitionView):
     model = SupportTier
 
 
-class AdminSupportFeatureListView(APIView):
+class AdminSupportFeatureListView(AuditedAdminMixin, APIView):
     permission_classes = [IsAdmin]
+    audit_resource_type = "SupportFeature"
 
     def get(self, request):
         return Response(
@@ -769,11 +710,17 @@ class AdminSupportFeatureListView(APIView):
         serializer = SupportFeatureSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        self.audit(
+            "cms_support_feature_create",
+            serializer.instance.pk,
+            request.data,
+        )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class AdminSupportFeatureValueListView(APIView):
+class AdminSupportFeatureValueListView(AuditedAdminMixin, APIView):
     permission_classes = [IsAdmin]
+    audit_resource_type = "SupportFeatureValue"
 
     def get(self, request):
         tier_id = request.query_params.get("tier")
@@ -786,6 +733,11 @@ class AdminSupportFeatureValueListView(APIView):
         serializer = SupportFeatureValueAdminSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        self.audit(
+            "cms_support_feature_value_set",
+            serializer.instance.pk,
+            request.data,
+        )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -797,13 +749,13 @@ class AdminSupportFeatureValueListView(APIView):
 class AdminCaseStudyListView(PublishableCRUDListView):
     model = CaseStudy
     serializer_class = CaseStudyAdminSerializer
-    action_prefix = "case_study"
+    audit_action_prefix = "case_study"
 
 
 class AdminCaseStudyDetailView(PublishableCRUDDetailView):
     model = CaseStudy
     serializer_class = CaseStudyAdminSerializer
-    action_prefix = "case_study"
+    audit_action_prefix = "case_study"
 
 
 class AdminCaseStudyTransitionView(PublishableTransitionView):
@@ -832,7 +784,7 @@ class AdminRevisionListView(APIView):
         return Response(ContentRevisionSerializer(revisions, many=True).data)
 
 
-class AdminRevisionRollbackView(APIView):
+class AdminRevisionRollbackView(AuditedAdminMixin, APIView):
     permission_classes = [IsAdmin]
 
     def post(self, request, pk):
@@ -870,13 +822,11 @@ class AdminRevisionRollbackView(APIView):
         instance.updated_by = request.user
         instance.save()
 
-        log_admin_action(
-            request.user,
+        self.audit(
             "cms_rollback",
-            model_class.__name__,
-            str(instance.pk),
+            instance.pk,
             {"rolled_back_to_revision": revision.revision_number},
-            request,
+            resource_type=model_class.__name__,
         )
 
         return Response(
@@ -895,13 +845,13 @@ class AdminRevisionRollbackView(APIView):
 class AdminDocumentationListView(PublishableCRUDListView):
     model = DocumentationPage
     serializer_class = DocumentationPageAdminSerializer
-    action_prefix = "documentation"
+    audit_action_prefix = "documentation"
 
 
 class AdminDocumentationDetailView(PublishableCRUDDetailView):
     model = DocumentationPage
     serializer_class = DocumentationPageAdminSerializer
-    action_prefix = "documentation"
+    audit_action_prefix = "documentation"
 
 
 class AdminDocumentationTransitionView(PublishableTransitionView):
@@ -913,8 +863,10 @@ class AdminDocumentationTransitionView(PublishableTransitionView):
 # ---------------------------------------------------------------------------
 
 
-class AdminAPIEndpointGroupListView(APIView):
+class AdminAPIEndpointGroupListView(AuditedAdminMixin, APIView):
     permission_classes = [IsAdmin]
+    audit_resource_type = "APIEndpointGroup"
+    audit_action_prefix = "api_group"
 
     def get(self, request):
         groups = APIEndpointGroup.objects.prefetch_related("endpoints").order_by(
@@ -926,19 +878,14 @@ class AdminAPIEndpointGroupListView(APIView):
         serializer = APIEndpointGroupAdminSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        log_admin_action(
-            request.user,
-            "cms_api_group_create",
-            "APIEndpointGroup",
-            str(serializer.instance.pk),
-            request.data,
-            request,
-        )
+        self.audit_create(serializer.instance, request.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class AdminAPIEndpointGroupDetailView(APIView):
+class AdminAPIEndpointGroupDetailView(AuditedAdminMixin, APIView):
     permission_classes = [IsAdmin]
+    audit_resource_type = "APIEndpointGroup"
+    audit_action_prefix = "api_group"
 
     def patch(self, request, pk):
         try:
@@ -950,14 +897,7 @@ class AdminAPIEndpointGroupDetailView(APIView):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        log_admin_action(
-            request.user,
-            "cms_api_group_update",
-            "APIEndpointGroup",
-            str(pk),
-            request.data,
-            request,
-        )
+        self.audit_update(pk, request.data)
         return Response(serializer.data)
 
     def delete(self, request, pk):
@@ -966,19 +906,14 @@ class AdminAPIEndpointGroupDetailView(APIView):
         except APIEndpointGroup.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         group.delete()
-        log_admin_action(
-            request.user,
-            "cms_api_group_delete",
-            "APIEndpointGroup",
-            str(pk),
-            {},
-            request,
-        )
+        self.audit_delete(pk)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class AdminAPIEndpointListView(APIView):
+class AdminAPIEndpointListView(AuditedAdminMixin, APIView):
     permission_classes = [IsAdmin]
+    audit_resource_type = "APIEndpoint"
+    audit_action_prefix = "api_endpoint"
 
     def get(self, request):
         group_id = request.query_params.get("group")
@@ -991,19 +926,14 @@ class AdminAPIEndpointListView(APIView):
         serializer = APIEndpointAdminSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        log_admin_action(
-            request.user,
-            "cms_api_endpoint_create",
-            "APIEndpoint",
-            str(serializer.instance.pk),
-            request.data,
-            request,
-        )
+        self.audit_create(serializer.instance, request.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class AdminAPIEndpointDetailView(APIView):
+class AdminAPIEndpointDetailView(AuditedAdminMixin, APIView):
     permission_classes = [IsAdmin]
+    audit_resource_type = "APIEndpoint"
+    audit_action_prefix = "api_endpoint"
 
     def patch(self, request, pk):
         try:
@@ -1015,6 +945,7 @@ class AdminAPIEndpointDetailView(APIView):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        self.audit_update(pk, request.data)
         return Response(serializer.data)
 
     def delete(self, request, pk):
@@ -1023,6 +954,7 @@ class AdminAPIEndpointDetailView(APIView):
         except APIEndpoint.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         endpoint.delete()
+        self.audit_delete(pk)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -1031,8 +963,10 @@ class AdminAPIEndpointDetailView(APIView):
 # ---------------------------------------------------------------------------
 
 
-class AdminBlogCategoryListView(APIView):
+class AdminBlogCategoryListView(AuditedAdminMixin, APIView):
     permission_classes = [IsAdmin]
+    audit_resource_type = "BlogCategory"
+    audit_action_prefix = "blog_category"
 
     def get(self, request):
         return Response(
@@ -1045,19 +979,14 @@ class AdminBlogCategoryListView(APIView):
         serializer = BlogCategorySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        log_admin_action(
-            request.user,
-            "cms_blog_category_create",
-            "BlogCategory",
-            str(serializer.instance.pk),
-            request.data,
-            request,
-        )
+        self.audit_create(serializer.instance, request.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class AdminBlogCategoryDetailView(APIView):
+class AdminBlogCategoryDetailView(AuditedAdminMixin, APIView):
     permission_classes = [IsAdmin]
+    audit_resource_type = "BlogCategory"
+    audit_action_prefix = "blog_category"
 
     def patch(self, request, pk):
         try:
@@ -1067,14 +996,7 @@ class AdminBlogCategoryDetailView(APIView):
         serializer = BlogCategorySerializer(cat, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        log_admin_action(
-            request.user,
-            "cms_blog_category_update",
-            "BlogCategory",
-            str(pk),
-            request.data,
-            request,
-        )
+        self.audit_update(pk, request.data)
         return Response(serializer.data)
 
     def delete(self, request, pk):
@@ -1083,14 +1005,7 @@ class AdminBlogCategoryDetailView(APIView):
         except BlogCategory.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         cat.delete()
-        log_admin_action(
-            request.user,
-            "cms_blog_category_delete",
-            "BlogCategory",
-            str(pk),
-            {},
-            request,
-        )
+        self.audit_delete(pk)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -1102,13 +1017,13 @@ class AdminBlogCategoryDetailView(APIView):
 class AdminBlogPostListView(PublishableCRUDListView):
     model = BlogPost
     serializer_class = BlogPostAdminSerializer
-    action_prefix = "blog_post"
+    audit_action_prefix = "blog_post"
 
 
 class AdminBlogPostDetailView(PublishableCRUDDetailView):
     model = BlogPost
     serializer_class = BlogPostAdminSerializer
-    action_prefix = "blog_post"
+    audit_action_prefix = "blog_post"
 
 
 class AdminBlogPostTransitionView(PublishableTransitionView):
@@ -1123,13 +1038,13 @@ class AdminBlogPostTransitionView(PublishableTransitionView):
 class AdminEmailTemplateListView(PublishableCRUDListView):
     model = EmailTemplate
     serializer_class = EmailTemplateAdminSerializer
-    action_prefix = "email_template"
+    audit_action_prefix = "email_template"
 
 
 class AdminEmailTemplateDetailView(PublishableCRUDDetailView):
     model = EmailTemplate
     serializer_class = EmailTemplateAdminSerializer
-    action_prefix = "email_template"
+    audit_action_prefix = "email_template"
 
 
 class AdminEmailTemplateTransitionView(PublishableTransitionView):
@@ -1144,13 +1059,13 @@ class AdminEmailTemplateTransitionView(PublishableTransitionView):
 class AdminTestimonialListView(PublishableCRUDListView):
     model = Testimonial
     serializer_class = TestimonialAdminSerializer
-    action_prefix = "testimonial"
+    audit_action_prefix = "testimonial"
 
 
 class AdminTestimonialDetailView(PublishableCRUDDetailView):
     model = Testimonial
     serializer_class = TestimonialAdminSerializer
-    action_prefix = "testimonial"
+    audit_action_prefix = "testimonial"
 
 
 class AdminTestimonialTransitionView(PublishableTransitionView):
@@ -1162,8 +1077,10 @@ class AdminTestimonialTransitionView(PublishableTransitionView):
 # ---------------------------------------------------------------------------
 
 
-class AdminRegionalVariantListView(APIView):
+class AdminRegionalVariantListView(AuditedAdminMixin, APIView):
     permission_classes = [IsAdmin]
+    audit_resource_type = "RegionalVariant"
+    audit_action_prefix = "regional_variant"
 
     def get(self, request):
         qs = RegionalVariant.objects.all()
@@ -1179,19 +1096,14 @@ class AdminRegionalVariantListView(APIView):
         serializer = RegionalVariantAdminSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        log_admin_action(
-            request.user,
-            "cms_regional_variant_create",
-            "RegionalVariant",
-            str(serializer.instance.pk),
-            request.data,
-            request,
-        )
+        self.audit_create(serializer.instance, request.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class AdminRegionalVariantDetailView(APIView):
+class AdminRegionalVariantDetailView(AuditedAdminMixin, APIView):
     permission_classes = [IsAdmin]
+    audit_resource_type = "RegionalVariant"
+    audit_action_prefix = "regional_variant"
 
     def patch(self, request, pk):
         try:
@@ -1203,14 +1115,7 @@ class AdminRegionalVariantDetailView(APIView):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        log_admin_action(
-            request.user,
-            "cms_regional_variant_update",
-            "RegionalVariant",
-            str(pk),
-            request.data,
-            request,
-        )
+        self.audit_update(pk, request.data)
         return Response(serializer.data)
 
     def delete(self, request, pk):
@@ -1219,14 +1124,7 @@ class AdminRegionalVariantDetailView(APIView):
         except RegionalVariant.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         variant.delete()
-        log_admin_action(
-            request.user,
-            "cms_regional_variant_delete",
-            "RegionalVariant",
-            str(pk),
-            {},
-            request,
-        )
+        self.audit_delete(pk)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -1238,39 +1136,38 @@ class AdminRegionalVariantDetailView(APIView):
 class AdminTagCategoryListView(PublishableCRUDListView):
     model = TagCategory
     serializer_class = TagCategoryAdminSerializer
-    log_prefix = "cms_tag_category"
+    audit_action_prefix = "tag_category"
 
 
 class AdminTagCategoryDetailView(PublishableCRUDDetailView):
     model = TagCategory
     serializer_class = TagCategoryAdminSerializer
-    log_prefix = "cms_tag_category"
+    audit_action_prefix = "tag_category"
 
 
 class AdminTagCategoryTransitionView(PublishableTransitionView):
     model = TagCategory
-    log_prefix = "cms_tag_category"
 
 
 class AdminScannerFeatureListView(PublishableCRUDListView):
     model = ScannerFeature
     serializer_class = ScannerFeatureAdminSerializer
-    log_prefix = "cms_scanner_feature"
+    audit_action_prefix = "scanner_feature"
 
 
 class AdminScannerFeatureDetailView(PublishableCRUDDetailView):
     model = ScannerFeature
     serializer_class = ScannerFeatureAdminSerializer
-    log_prefix = "cms_scanner_feature"
+    audit_action_prefix = "scanner_feature"
 
 
 class AdminScannerFeatureTransitionView(PublishableTransitionView):
     model = ScannerFeature
-    log_prefix = "cms_scanner_feature"
 
 
-class AdminTrainingPageSettingsView(APIView):
+class AdminTrainingPageSettingsView(AuditedAdminMixin, APIView):
     permission_classes = [IsAdmin]
+    audit_resource_type = "TrainingPageSettings"
 
     def get(self, request):
         obj = TrainingPageSettings.objects.get()
@@ -1284,12 +1181,5 @@ class AdminTrainingPageSettingsView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save(updated_by=request.user)
         invalidate_model("training_page_settings")
-        log_admin_action(
-            request.user,
-            "cms_training_settings_update",
-            "TrainingPageSettings",
-            "1",
-            request.data,
-            request,
-        )
+        self.audit("cms_training_settings_update", "1", request.data)
         return Response(serializer.data)
