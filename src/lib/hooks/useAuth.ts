@@ -77,3 +77,27 @@ export function useCurrentUser() {
     enabled: isAuthenticated,
   });
 }
+
+export function useRequestPasswordReset() {
+  return useMutation({
+    mutationFn: (email: string) =>
+      authService.requestPasswordReset(email).then((r) => r.data),
+  });
+}
+
+export function useConfirmPasswordReset() {
+  return useMutation({
+    mutationFn: (data: {
+      token: string;
+      new_password: string;
+      new_password_confirm: string;
+    }) =>
+      authService
+        .confirmPasswordReset(
+          data.token,
+          data.new_password,
+          data.new_password_confirm,
+        )
+        .then((r) => r.data),
+  });
+}

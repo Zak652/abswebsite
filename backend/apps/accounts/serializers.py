@@ -67,3 +67,29 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError("Account is disabled.")
         data["user"] = user
         return data
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    """Request body for ``POST /auth/password/reset/``.
+
+    Only the email is collected here. Whether or not it maps to an
+    account is intentionally not surfaced in the response — see the
+    view docstring for the enumeration-protection rationale.
+    """
+
+    email = serializers.EmailField()
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    """Request body for ``POST /auth/password/reset/confirm/``."""
+
+    token = serializers.CharField()
+    new_password = serializers.CharField(write_only=True, min_length=8)
+    new_password_confirm = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        if data["new_password"] != data["new_password_confirm"]:
+            raise serializers.ValidationError(
+                {"new_password_confirm": "Passwords do not match."}
+            )
+        return data

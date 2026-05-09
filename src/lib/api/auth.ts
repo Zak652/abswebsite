@@ -21,4 +21,18 @@ export const authService = {
     apiClient.post<{ access: string }>("/auth/token/refresh/", {}),
 
   me: () => apiClient.get<User>("/auth/me/"),
+
+  requestPasswordReset: (email: string) =>
+    apiClient.post<{ detail: string }>("/auth/password/reset/", { email }),
+
+  confirmPasswordReset: (
+    token: string,
+    new_password: string,
+    new_password_confirm: string,
+  ) =>
+    apiClient.post<{ detail: string }>("/auth/password/reset/confirm/", {
+      token,
+      new_password,
+      new_password_confirm,
+    }),
 };

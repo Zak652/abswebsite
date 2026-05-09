@@ -194,6 +194,30 @@ def send_trial_cancellation_notification(signup):
     _send(to=signup.email, subject=subject, html=html)
 
 
+def send_password_reset_email(user, token: str):
+    """Triggered: when a user requests a password reset.
+
+    The reset URL points at the Next.js frontend (configured via
+    ``FRONTEND_URL`` in settings); the frontend page extracts the
+    token from the path and POSTs it back to
+    ``/auth/password/reset/confirm/`` with a new password.
+    """
+    reset_url = f"{settings.FRONTEND_URL.rstrip('/')}/auth/reset-password/{token}"
+    ctx = {
+        "user": user,
+        "full_name": user.full_name,
+        "reset_url": reset_url,
+        "ttl_hours": 1,
+    }
+    db_result = _render_db_template("password_reset", ctx)
+    if db_result:
+        subject, html = db_result
+    else:
+        html = render_to_string("password_reset.html", ctx)
+        subject = "Reset your ABS password"
+    _send(to=user.email, subject=subject, html=html)
+
+
 def send_training_confirmation(registration):
     """
     Triggered: after Flutterwave webhook confirms payment
