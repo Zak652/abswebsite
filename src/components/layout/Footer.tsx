@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Mail, Phone, MapPin } from "lucide-react";
 import type { NavigationItemData, SiteSettingsData } from "@/types/cms";
+import { clearConsent } from "@/lib/cookies";
 
 interface FooterProps {
     platformLinks?: NavigationItemData[];
@@ -139,9 +140,15 @@ export default function Footer({
                 <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 text-xs text-white/40">
                     <p>&copy; {currentYear} Asset Business Solutions Ltd. All rights reserved.</p>
                     <div className="flex space-x-6">
-                        <Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link>
-                        <Link href="#" className="hover:text-white transition-colors">Terms of Service</Link>
-                        <Link href="#" className="hover:text-white transition-colors">Cookie Settings</Link>
+                        <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+                        <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+                        <button
+                            type="button"
+                            onClick={clearConsent}
+                            className="hover:text-white transition-colors cursor-pointer"
+                        >
+                            Cookie Settings
+                        </button>
                     </div>
                 </div>
 

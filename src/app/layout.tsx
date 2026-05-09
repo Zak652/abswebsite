@@ -3,6 +3,7 @@ import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import { DraftModeBanner } from "@/components/layout/DraftModeBanner";
 import { Providers } from "./providers";
 import {
@@ -87,6 +88,7 @@ export default async function RootLayout({
             resourceLinks={footerResources}
             settings={settings}
           />
+          <CookieConsentBanner />
         </Providers>
       </body>
     </html>
