@@ -1,0 +1,19 @@
+# Gitleaks configuration for the ABS website repo.
+#
+# Extends gitleaks' default rule pack. The allowlists below silence
+# false-positives from test fixtures — pytest/vitest test cases use
+# literal "passwords" as inputs to assert that the password-reset and
+# auth flows behave correctly. They are not real secrets, never reach
+# production, and gitleaks' generic-api-key heuristic flags them solely
+# because they appear next to the word `password`.
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Test fixtures using literal example passwords as input data"
+paths = [
+  '''backend/apps/accounts/tests/test_password_reset\.py''',
+  '''backend/apps/accounts/tests/test_auth_cookies\.py''',
+  '''src/__tests__/PasswordReset\.test\.tsx''',
+]
