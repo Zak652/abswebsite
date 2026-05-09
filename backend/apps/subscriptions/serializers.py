@@ -14,9 +14,15 @@ class TrialSignupSerializer(serializers.ModelSerializer):
             "plan",
             "asset_count_estimate",
             "status",
+            "cancelled_at",
             "created_at",
         ]
-        read_only_fields = ["id", "status", "created_at"]
+        read_only_fields = [
+            "id",
+            "status",
+            "cancelled_at",
+            "created_at",
+        ]
 
 
 class TrialSignupAdminSerializer(serializers.ModelSerializer):
