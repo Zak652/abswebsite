@@ -1,9 +1,11 @@
 from django.contrib.contenttypes.models import ContentType
-from django.db.models.signals import post_save, post_delete
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
 
 from apps.cms.cache import invalidate_model, revalidate_frontend
 from apps.cms.mixins import PublishableMixin
+from apps.cms.security import sanitise_html, validate_public_url
 from apps.cms.models import (
     ContentRevision,
     MediaAsset,
@@ -147,3 +149,50 @@ def trigger_image_processing(sender, instance, created, **kwargs):
         from apps.cms.tasks import process_media_asset
 
         process_media_asset.delay(str(instance.pk))
+
+
+# ---------------------------------------------------------------------------
+# Sanitise CMS HTML and validate public URLs before save (§ 2.4.2, § 2.4.3)
+# ---------------------------------------------------------------------------
+
+# (model class, field name) pairs for HTML body fields.
+HTML_FIELDS_TO_SANITISE = [
+    (PageBlock, "body"),
+    (DocumentationPage, "content"),
+    (BlogPost, "body"),
+    (EmailTemplate, "body_html"),
+]
+
+# (model class, field name) pairs for URL fields that admins paste raw URLs into.
+URL_FIELDS_TO_VALIDATE = [
+    (PageMeta, "canonical_url"),
+    (PageBlock, "video_url"),
+    (PageBlock, "link_url"),
+]
+
+
+def _sanitise_html_handler(sender, instance, **kwargs):
+    for model, field in HTML_FIELDS_TO_SANITISE:
+        if sender is model:
+            value = getattr(instance, field, None)
+            if value:
+                setattr(instance, field, sanitise_html(value))
+
+
+def _validate_url_handler(sender, instance, **kwargs):
+    for model, field in URL_FIELDS_TO_VALIDATE:
+        if sender is model:
+            value = getattr(instance, field, None)
+            if value:
+                try:
+                    validate_public_url(value)
+                except DjangoValidationError as exc:
+                    # Re-raise so the admin save aborts with a clear error.
+                    raise DjangoValidationError({field: exc.messages}) from exc
+
+
+for _model, _field in HTML_FIELDS_TO_SANITISE:
+    pre_save.connect(_sanitise_html_handler, sender=_model)
+
+for _model, _field in URL_FIELDS_TO_VALIDATE:
+    pre_save.connect(_validate_url_handler, sender=_model)

@@ -2,14 +2,22 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { User } from "@/types/auth";
 
+/**
+ * Auth store. Refresh tokens live in an HttpOnly cookie on the backend
+ * (see backend/apps/accounts/views.py — abs_refresh) and are never visible
+ * to JavaScript. Only the access token is held client-side, in memory.
+ *
+ * Persisted to sessionStorage: user profile + isAuthenticated flag, so the
+ * UI can hydrate without a network round-trip. The access token is *not*
+ * persisted — on reload we hit /auth/token/refresh/ which reads the cookie.
+ */
 interface AuthState {
   accessToken: string | null;
-  refreshToken: string | null;
   user: User | null;
   isAuthenticated: boolean;
-  setTokens: (access: string, refresh: string) => void;
+  setAccessToken: (token: string | null) => void;
   setUser: (user: User) => void;
-  setAccessToken: (token: string) => void;
+  setAuthenticated: (value: boolean) => void;
   logout: () => void;
 }
 
@@ -17,21 +25,19 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       accessToken: null,
-      refreshToken: null,
       user: null,
       isAuthenticated: false,
 
-      setTokens: (access, refresh) =>
-        set({ accessToken: access, refreshToken: refresh, isAuthenticated: true }),
+      setAccessToken: (token) =>
+        set({ accessToken: token, isAuthenticated: !!token }),
 
-      setUser: (user) => set({ user }),
+      setUser: (user) => set({ user, isAuthenticated: true }),
 
-      setAccessToken: (token) => set({ accessToken: token }),
+      setAuthenticated: (value) => set({ isAuthenticated: value }),
 
       logout: () =>
         set({
           accessToken: null,
-          refreshToken: null,
           user: null,
           isAuthenticated: false,
         }),
@@ -42,14 +48,14 @@ export const useAuthStore = create<AuthState>()(
         typeof window !== "undefined"
           ? sessionStorage
           : {
-            getItem: () => null,
-            setItem: () => { },
-            removeItem: () => { },
-          }
+              getItem: () => null,
+              setItem: () => { },
+              removeItem: () => { },
+            }
       ),
-      // Only persist refresh token + user to storage — access token stays in memory only
+      // Only the user profile + flag are persisted. Access token is in-memory
+      // only; refresh token never touches storage (lives in HttpOnly cookie).
       partialize: (state) => ({
-        refreshToken: state.refreshToken,
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),

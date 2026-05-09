@@ -12,28 +12,63 @@ const BACKEND_ORIGIN = (() => {
   return raw.replace(/\/api\/v\d+\/?$/, "").replace(/\/$/, "");
 })();
 
+const isProd = process.env.NODE_ENV === "production";
+
+// connect-src: include the API origin (prod) or both dev origins so fetches
+// don't get blocked. NEXT_PUBLIC_API_URL is the canonical client-facing URL.
+const apiOrigin = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/v\d+\/?$/, "").replace(/\/$/, "")
+  ?? BACKEND_ORIGIN;
+
+const cspProd = [
+  "default-src 'self'",
+  // Next.js + framer-motion currently need 'unsafe-inline' for hydration scripts
+  // and inlined critical CSS. Tighten with nonces in P1.
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' https://fonts.gstatic.com",
+  "img-src 'self' data: blob: https://*.r2.cloudflarestorage.com https://media.absplatform.com",
+  `connect-src 'self' ${apiOrigin} https://api.flutterwave.com`,
+  "frame-src https://checkout.flutterwave.com",
+  "frame-ancestors 'none'",
+  "base-uri 'self'",
+  "form-action 'self' https://checkout.flutterwave.com",
+].join("; ");
+
+// Looser CSP in dev so HMR (websockets, eval) and turbopack work. Still
+// blocks the obvious XSS sinks.
+const cspDev = [
+  "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: ws: wss: http://localhost:* http://127.0.0.1:*",
+  "frame-ancestors 'none'",
+].join("; ");
+
+const securityHeaders = [
+  { key: "Content-Security-Policy", value: isProd ? cspProd : cspDev },
+  { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "same-origin" },
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+  // Cross-origin isolation defaults — relax per-route if a third-party widget
+  // needs popups or cross-origin resources.
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+];
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
-      // AWS S3 buckets (any region)
-      {
-        protocol: "https",
-        hostname: "**.amazonaws.com",
-        pathname: "/**",
-      },
-      // Cloudflare R2 / Workers
+      // Cloudflare R2 (decided 2026-05-08, see docs/ABS_BUILD_GUIDE.md § 3.7)
       {
         protocol: "https",
         hostname: "**.r2.cloudflarestorage.com",
         pathname: "/**",
       },
-      // Generic CDN subdomain pattern (e.g. cdn.absplatform.com)
+      // Cloudflare-proxied media subdomain (set up in production)
       {
         protocol: "https",
-        hostname: "cdn.absplatform.com",
+        hostname: "media.absplatform.com",
         pathname: "/**",
       },
-      // Allow local dev images
+      // Allow local dev images (Django /media/* via rewrite below)
       {
         protocol: "http",
         hostname: "localhost",
@@ -49,6 +84,14 @@ const nextConfig: NextConfig = {
       {
         source: "/media/:path*",
         destination: `${BACKEND_ORIGIN}/media/:path*`,
+      },
+    ];
+  },
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: securityHeaders,
       },
     ];
   },

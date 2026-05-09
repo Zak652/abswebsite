@@ -1,5 +1,6 @@
 from rest_framework import generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.throttling import ScopedRateThrottle
 
 from .models import ArcplusTrialSignup
 from .serializers import TrialSignupSerializer
@@ -9,6 +10,8 @@ from apps.notifications.service import send_trial_signup_notification
 class TrialSignupCreateView(generics.CreateAPIView):
     serializer_class = TrialSignupSerializer
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "trial_signup"
 
     def perform_create(self, serializer):
         user = self.request.user if self.request.user.is_authenticated else None

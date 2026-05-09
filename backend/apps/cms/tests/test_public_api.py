@@ -219,8 +219,14 @@ class TestCacheHeaders:
     def test_cache_control_header_set(self, anon_client, db):
         SiteSettingsFactory(company_email="cache@test.com")
         resp = anon_client.get("/api/v1/cms/settings/")
-        assert "max-age=600" in resp["Cache-Control"]
-        assert "s-maxage=3600" in resp["Cache-Control"]
+        cc = resp["Cache-Control"]
+        # Short browser/CDN cache (60s) — on-demand ISR revalidation handles
+        # editor changes — with a longer SWR window so a brief origin outage
+        # falls back to stale content rather than failing.
+        assert "public" in cc
+        assert "max-age=60" in cc
+        assert "s-maxage=60" in cc
+        assert "stale-while-revalidate=600" in cc
 
 
 # ---------------------------------------------------------------------------
