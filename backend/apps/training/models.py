@@ -81,6 +81,11 @@ class TrainingRegistration(models.Model):
     amount_paid = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
+    # Server-side snapshot at registration time, locked against tampering.
+    # Webhook compares incoming amount against this and rejects mismatches.
+    expected_amount = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
     currency = models.CharField(max_length=10, default="USD")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

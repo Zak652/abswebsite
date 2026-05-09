@@ -36,6 +36,5 @@ export interface User {
 
 export interface AuthTokens {
   access: string;
-  refresh: string;
   user: User;
 }

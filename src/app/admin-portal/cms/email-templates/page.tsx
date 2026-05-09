@@ -57,14 +57,19 @@ const EMPTY: FormData = {
 /* ------------------------------------------------------------------ */
 
 function PreviewPanel({ html }: { html: string }) {
+    // Render the preview inside a sandboxed iframe so any <script>, inline
+    // event handler, or window.* access in the CMS-stored HTML cannot reach
+    // the admin's session (§ 2.4.4). `sandbox=""` blocks scripts entirely.
     return (
         <div className="bg-white border border-neutral-200 rounded-xl p-4">
             <h3 className="text-xs font-semibold text-neutral-600 mb-3 flex items-center gap-1.5">
                 <Eye className="w-3.5 h-3.5" />Preview
             </h3>
-            <div
-                className="border rounded-lg p-4 text-sm max-h-[400px] overflow-y-auto"
-                dangerouslySetInnerHTML={{ __html: html }}
+            <iframe
+                title="Email template preview"
+                sandbox=""
+                srcDoc={html}
+                className="w-full border rounded-lg max-h-[400px] min-h-[200px] bg-white"
             />
         </div>
     );

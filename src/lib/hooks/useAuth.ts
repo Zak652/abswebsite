@@ -8,14 +8,14 @@ import { useAuthStore } from "@/lib/store/authStore";
 import type { LoginFormData, RegisterFormData } from "@/types/auth";
 
 export function useLogin() {
-  const { setTokens, setUser } = useAuthStore();
+  const { setAccessToken, setUser } = useAuthStore();
   const router = useRouter();
 
   return useMutation({
     mutationFn: (data: LoginFormData) =>
       authService.login(data).then((r) => r.data),
     onSuccess: (data) => {
-      setTokens(data.access, data.refresh);
+      setAccessToken(data.access);
       setUser(data.user);
       router.push("/portal");
     },
@@ -23,14 +23,14 @@ export function useLogin() {
 }
 
 export function useRegister() {
-  const { setTokens, setUser } = useAuthStore();
+  const { setAccessToken, setUser } = useAuthStore();
   const router = useRouter();
 
   return useMutation({
     mutationFn: (data: RegisterFormData) =>
       authService.register(data).then((r) => r.data),
     onSuccess: (data) => {
-      setTokens(data.access, data.refresh);
+      setAccessToken(data.access);
       setUser(data.user);
       router.push("/portal");
     },
@@ -38,13 +38,11 @@ export function useRegister() {
 }
 
 export function useLogout() {
-  const { logout, refreshToken } = useAuthStore();
+  const { logout } = useAuthStore();
   const router = useRouter();
 
   return useMutation({
-    mutationFn: async () => {
-      if (refreshToken) await authService.logout(refreshToken);
-    },
+    mutationFn: () => authService.logout(),
     onSettled: () => {
       logout();
       router.push("/");
@@ -52,14 +50,18 @@ export function useLogout() {
   });
 }
 
+/**
+ * On mount, exchange the HttpOnly refresh cookie for a new access token so
+ * a returning user with a persisted profile picks up where they left off.
+ * Failure clears local state — a stale cookie shouldn't keep us authenticated.
+ */
 export function useRehydrateAuth() {
-  const { setAccessToken, refreshToken, isAuthenticated, logout } =
-    useAuthStore();
+  const { setAccessToken, isAuthenticated, logout } = useAuthStore();
 
   useEffect(() => {
-    if (!isAuthenticated || !refreshToken) return;
+    if (!isAuthenticated) return;
     authService
-      .refreshToken(refreshToken)
+      .refreshToken()
       .then((r) => setAccessToken(r.data.access))
       .catch(() => logout());
     // Only run once on mount

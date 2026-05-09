@@ -32,31 +32,39 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-// Response interceptor: on 401 → try to refresh the access token → retry original request
+// Response interceptor: on 401 → call /auth/token/refresh/ which reads the
+// HttpOnly refresh cookie server-side → retry original request.
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const original = error.config;
-    if (error.response?.status === 401 && !original._retry) {
+    if (
+      error.response?.status === 401 &&
+      !original._retry &&
+      // Don't loop if the refresh endpoint itself returned 401.
+      !original.url?.includes("/auth/token/refresh/")
+    ) {
       original._retry = true;
-      const store = getAuthStore();
-      if (store) {
-        const refreshToken = store.getState().refreshToken;
-        if (refreshToken) {
-          try {
-            const res = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, {
-              refresh: refreshToken,
-            });
-            const newAccess: string = res.data.access;
-            store.getState().setAccessToken(newAccess);
-            original.headers.Authorization = `Bearer ${newAccess}`;
-            return apiClient(original);
-          } catch {
-            store.getState().logout();
-            if (typeof window !== "undefined") {
-              window.location.href = "/auth/login";
-            }
-          }
+      try {
+        const res = await axios.post(
+          `${API_BASE_URL}/auth/token/refresh/`,
+          {},
+          { withCredentials: true },
+        );
+        const newAccess: string = res.data.access;
+        const store = getAuthStore();
+        if (store) {
+          store.getState().setAccessToken(newAccess);
+        }
+        original.headers.Authorization = `Bearer ${newAccess}`;
+        return apiClient(original);
+      } catch {
+        const store = getAuthStore();
+        if (store) {
+          store.getState().logout();
+        }
+        if (typeof window !== "undefined") {
+          window.location.href = "/auth/login";
         }
       }
     }

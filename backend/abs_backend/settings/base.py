@@ -30,6 +30,7 @@ THIRD_PARTY_APPS = [
     "corsheaders",
     "django_celery_beat",
     "django_celery_results",
+    "axes",
 ]
 
 LOCAL_APPS = [
@@ -40,7 +41,6 @@ LOCAL_APPS = [
     "apps.notifications",
     "apps.products",
     "apps.services",
-    "apps.payments",
     "apps.cms",
 ]
 
@@ -55,7 +55,26 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # django-axes must be the LAST middleware so it sees the final user state.
+    "axes.middleware.AxesMiddleware",
 ]
+
+AUTHENTICATION_BACKENDS = [
+    # AxesStandaloneBackend MUST be first; it short-circuits authenticate() on
+    # locked-out (username, ip) pairs.
+    "axes.backends.AxesStandaloneBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+# django-axes: 5 failures within 15 min cool-off, scoped to (username, IP).
+AXES_FAILURE_LIMIT = 5
+AXES_COOLOFF_TIME = 0.25  # hours
+AXES_LOCKOUT_PARAMETERS = ["username", "ip_address"]
+AXES_RESET_ON_SUCCESS = True
+AXES_LOCKOUT_CALLABLE = None
+# Treat the X-Forwarded-For header as authoritative behind DO App Platform /
+# Cloudflare. The proxy strips client-supplied XFF and appends the real IP.
+AXES_IPWARE_PROXY_COUNT = 1
 
 ROOT_URLCONF = "abs_backend.urls"
 
@@ -124,6 +143,21 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "60/min",
+        "user": "240/min",
+        "login": "10/min",
+        "register": "5/min",
+        "rfq": "10/min",
+        "training_register": "10/min",
+        "trial_signup": "5/min",
+        "webhook": "120/min",
+        "password_reset": "5/hour",
+    },
 }
 
 SIMPLE_JWT = {
@@ -169,10 +203,6 @@ CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "UTC"
-
-# Stripe
-STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY", default="")
-STRIPE_WEBHOOK_SECRET = env("STRIPE_WEBHOOK_SECRET", default="")
 
 # MTN Mobile Money
 MTN_MOMO_API_KEY = env("MTN_MOMO_API_KEY", default="")

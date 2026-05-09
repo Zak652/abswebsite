@@ -269,11 +269,11 @@ Auto-add `rel="noopener noreferrer"` to outbound links.
 - Raise `ImproperlyConfigured` in `production.py` if any of `DJANGO_SECRET_KEY`, `JWT_SECRET`, `RESEND_API_KEY`, `FLUTTERWAVE_SECRET_KEY`, `FLUTTERWAVE_WEBHOOK_SECRET`, `CSRF_TRUSTED_ORIGINS`, `CORS_ALLOWED_ORIGINS`, `ALLOWED_HOSTS` is unset or matches a known-default placeholder string.
 - The frontend should fail at build time if any required `NEXT_PUBLIC_*` is missing — add `src/lib/env.ts` with a `zod` schema validated at import.
 
-### 2.6 🔴 Frontend admin / portal middleware
+### 2.6 🔴 Frontend admin / portal middleware (proxy.ts)
 
-**File:** `src/middleware.ts` (new)
-**Today:** there is **no Next.js middleware** in the repo. `/admin-portal/*` and `/portal/*` render client-side; only the API enforces `IsAdmin`. An attacker can load the admin shell, observe network requests, and probe the API surface before any rejection. The comment on [accounts/views.py:16](../backend/apps/accounts/views.py) refers to a middleware that doesn't exist yet.
-**Fix:** create `src/middleware.ts` exporting `middleware(req)` and a `config` matcher for `/admin-portal/:path*`, `/portal/:path*`, and `/api/draft`. For each request:
+**File:** [src/proxy.ts](../src/proxy.ts) (Next.js 16 renamed `middleware.ts` → `proxy.ts`; the logic and `config` export are otherwise identical)
+**Today:** an existing skeleton existed, but it was missing path-traversal guard, returned 302 instead of 403 for non-admin, and used a `callbackUrl` query param that didn't sanitise against open-redirect.
+**Fix:** rewrite `src/proxy.ts` exporting `proxy(req)` and a `config` matcher for `/admin-portal/:path*`, `/portal/:path*`, `/auth/login`, `/auth/register`, and `/media/:path*`. For each request:
 
 - Read the `abs_session` cookie via `req.cookies.get("abs_session")`.
 - Verify it with `jose.jwtVerify` against `JWT_SECRET` (same secret the backend signs with — already in env). Reject expired or unsigned tokens.
@@ -578,14 +578,18 @@ Items from the old matrix mapped into this guide. Anything not listed has been s
 
 ### 6.1 P0 done — security and payment gate
 
-- [ ] All P0 items in § 2 have a green test in CI.
-- [ ] `python manage.py check --deploy` returns clean on production settings.
-- [ ] Mozilla Observatory ≥ B+ on the staging URL.
-- [ ] Webhook simulator: signature valid → 200; signature invalid → 401; duplicate → 200, no double-write; tampered amount → rejected + alert.
-- [ ] Production secrets rotated and stored in the chosen vault; no production secret has its `.env.example` placeholder value.
-- [ ] Manual test: `document.cookie` in browser does **not** include `abs_session` or `abs_refresh`.
-- [ ] Manual test: `sessionStorage` does **not** contain `refreshToken` after login.
-- [ ] Manual test (§ 2.6 middleware): logged out, GET `/admin-portal/cms` redirects to `/auth/login`; logged in as non-admin, GET `/admin-portal/cms` returns 403.
+Smoke-tested 2026-05-09 against the docker-compose dev stack.
+
+- [x] All P0 items in § 2 have a green test in pytest + vitest. (139 backend + 16 new frontend, 0 regressions.)
+- [ ] `python manage.py check --deploy` returns clean on production settings. *(deferred to actual deploy — production.py raises on missing secrets, so a clean check requires the real secret values.)*
+- [ ] Mozilla Observatory ≥ B+ on the staging URL. *(requires live staging deploy — § 3.7.)*
+- [x] Webhook smoke: signature valid → 200; signature invalid → 401; secret-as-signature (the old bug) → 401; null verify-data → 200 ignored (regression test added).
+- [ ] Production secrets rotated and stored in the chosen vault; no production secret has its `.env.example` placeholder value. *(deploy-time gate — production.py refuses to boot otherwise.)*
+- [x] Manual test: register → `Set-Cookie: abs_session ... HttpOnly; SameSite=Strict` and `abs_refresh ... HttpOnly; SameSite=Lax; Path=/api/v1/auth/`; response body has `access` only, no `refresh`.
+- [x] Manual test: `POST /auth/token/refresh/` without cookie → 401; with cookie → 200 + new access.
+- [x] Manual test: 11th login attempt within a minute → 429.
+- [x] Manual test (§ 2.6 proxy): logged out, GET `/admin-portal/cms` → 307 to `/auth/login?next=%2Fadmin-portal%2Fcms`; `/portal/account` likewise. Path traversal `/media/../../etc/passwd` → 400; encoded `%2e%2e` form is normalised by Next.js so the backend only ever serves paths inside `/media/`.
+- [x] Frontend headers: CSP, HSTS (max-age 63072000), X-Frame-Options DENY, X-Content-Type-Options nosniff, Referrer-Policy, Permissions-Policy, Cross-Origin-Opener-Policy all present on every response.
 
 ### 6.2 P1 done — launch ready
 

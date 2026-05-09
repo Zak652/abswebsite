@@ -21,8 +21,16 @@ vi.mock("next/server", () => ({
 }));
 
 // Helper to create mock requests
+let _ipCounter = 0;
 function createMockRequest(body: unknown) {
-    return { json: async () => body } as never;
+    // Each test gets a fresh "IP" so the per-IP rate limiter doesn't leak
+    // state across tests in the same file.
+    const ip = `10.0.0.${++_ipCounter}`;
+    const headers = new Map<string, string>([["x-forwarded-for", ip]]);
+    return {
+        json: async () => body,
+        headers: { get: (k: string) => headers.get(k.toLowerCase()) ?? null },
+    } as never;
 }
 
 // Set env var BEFORE dynamic import so the module captures it

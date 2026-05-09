@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from apps.cms.security import validate_uploaded_media
 from apps.cms.models import (
     ContentRevision,
     MediaAsset,
@@ -94,6 +95,17 @@ class MediaAssetUploadSerializer(serializers.ModelSerializer):
     class Meta:
         model = MediaAsset
         fields = ["file", "asset_type", "alt_text", "caption", "tag_ids"]
+
+    def validate(self, attrs):
+        uploaded_file = attrs.get("file")
+        asset_type = attrs.get("asset_type")
+        if uploaded_file is not None and asset_type:
+            from django.core.exceptions import ValidationError as DjangoValidationError
+            try:
+                validate_uploaded_media(uploaded_file, asset_type)
+            except DjangoValidationError as exc:
+                raise serializers.ValidationError({"file": exc.messages})
+        return attrs
 
     def create(self, validated_data):
         tag_ids = validated_data.pop("tag_ids", [])
