@@ -326,12 +326,12 @@ Auto-add `rel="noopener noreferrer"` to outbound links.
 
 | Item | Where | Fix |
 |---|---|---|
-| Pick **one** animation library | repo-wide | Audit GSAP usage. If <3 timelines, remove and use Framer Motion only. The vision allows both, but bundle weight is a P1 concern. |
-| Dynamic-import heavy client routes | `src/app/configurator/*`, `src/app/compare/*` | `dynamic(() => import(...), { loading: <Skeleton /> })`. Drops initial bundle for users who don't visit those paths. |
-| Tighten `images.remotePatterns` | `next.config.ts` | Replace `**.amazonaws.com` with the actual R2 bucket subdomain (decision 2026-05-08: media on Cloudflare R2, see § 3.7). |
-| Conditional `priority` on hero images | `src/components/patterns/HeroSection.tsx:126` | Only the homepage hero is LCP; pass `priority` as a prop (default `false`). |
-| Use CMS-provided variants via Next.js Image | `src/lib/api/cms-server.ts` | Originals on R2; Next.js Image handles resize/format on demand, cached behind Cloudflare. When `MediaAsset` includes `file_webp`/`file_large`/`file_medium` from the CMS, prefer those over runtime transforms for non-hero slots. No third-party transform vendor (Cloudinary/Imgix). |
-| Tune TanStack Query staleTime per query type | `src/app/providers.tsx` | Pricing & availability: 30 s. CMS content: 5 min. Static catalogs: 1 h. |
+| Pick **one** animation library | ✅ shipped (PR #13) | Audit found zero GSAP imports across the codebase — the dependency was dead weight. Removed via `npm uninstall gsap`. Framer Motion is now the sole animation library. |
+| Dynamic-import heavy client routes | ✅ shipped (PR #13) | Both `/configurator` and `/compare` page roots now use `next/dynamic` with a Skeleton-style loading state. The interactive client chunks no longer ship to users who never visit those paths. |
+| Tighten `images.remotePatterns` | ✅ already tight | `next.config.ts` is already restricted to `**.r2.cloudflarestorage.com` + `media.absplatform.com` + `localhost` (dev). No `**.amazonaws.com` wildcard to remove. |
+| Conditional `priority` on hero images | ✅ shipped (PR #13) | `HeroSection` now takes a `priority?: boolean` prop (default `false`) that flows into `next/image`'s `priority` attr. `CMSHero` propagates it. The homepage `HomePageClient` opts in (`priority`); every other page uses the safer default so we don't preload an off-screen image and regress LCP. |
+| Use CMS-provided variants via Next.js Image | 🟡 partial | The CMS already serializes `file_webp`/`file_large`/`file_medium` on `MediaAsset`. Wiring the renderer to prefer those over runtime transforms is a follow-up — it touches every `<Image>` site that consumes a CMS asset and benefits from a small picker helper (`pickMediaVariant(asset, slot)`). |
+| Tune TanStack Query staleTime per query type | ✅ shipped (PR #13) | [`providers.tsx`](../src/app/providers.tsx) exports `STALE_PRICING` (30 s), `STALE_USER_SCOPED` (1 min), `STALE_CMS_CONTENT` (5 min, default), and `STALE_STATIC_CATALOG` (1 h). Existing user-scoped queries (`useMySubscriptions`, `useMyTrainingRegistrations`) and the availability query (`useTrainingSessions`) now use the right tier. New `useQuery` calls pick a constant from the same module. |
 
 **Acceptance:** Lighthouse mobile ≥ 90 on `/`, `/arcplus`, `/scanners`, `/configurator`. Bundle analyzer shows configurator chunk loaded only on `/configurator`.
 

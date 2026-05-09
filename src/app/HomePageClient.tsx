@@ -231,6 +231,7 @@ export function HomePageClient({ hero, blocks, testimonials = [] }: HomePageClie
         fallbackImageSrc="/images/hardware_software_hero_1772490241653.png"
         fallbackImageAlt="Hardware and software blended imagery"
         minHeight="90vh"
+        priority
       />
 
       {/* 2. PRODUCT GALLERY (Apple-Style Horizontal Scroll) */}

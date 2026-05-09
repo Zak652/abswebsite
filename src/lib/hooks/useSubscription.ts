@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { STALE_USER_SCOPED } from "@/app/providers";
 import { subscriptionService } from "@/lib/api/subscriptions";
 import { useAuthStore } from "@/lib/store/authStore";
 import type { TrialSignupFormData } from "@/types/subscription";
@@ -18,6 +19,7 @@ export function useMySubscriptions() {
     queryKey: ["subscriptions", "mine"],
     queryFn: () => subscriptionService.listMine().then((r) => r.data.results),
     enabled: isAuthenticated,
+    staleTime: STALE_USER_SCOPED,
   });
 }
 

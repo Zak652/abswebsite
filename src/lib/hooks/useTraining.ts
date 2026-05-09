@@ -1,14 +1,18 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { STALE_PRICING, STALE_USER_SCOPED } from "@/app/providers";
 import { trainingService } from "@/lib/api/training";
 import { useAuthStore } from "@/lib/store/authStore";
 import { safeRedirect } from "@/lib/redirect";
 
 export function useTrainingSessions() {
+  // Sessions carry seat counts — they fall in the pricing/availability
+  // tier where staleness costs the user a misleading "Available" pill.
   return useQuery({
     queryKey: ["training", "sessions"],
     queryFn: () => trainingService.getSessions().then((r) => r.data.results),
+    staleTime: STALE_PRICING,
   });
 }
 
@@ -32,5 +36,6 @@ export function useMyTrainingRegistrations() {
     queryKey: ["training", "registrations"],
     queryFn: () => trainingService.listMyRegistrations().then((r) => r.data.results),
     enabled: isAuthenticated,
+    staleTime: STALE_USER_SCOPED,
   });
 }
