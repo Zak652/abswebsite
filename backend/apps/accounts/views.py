@@ -12,9 +12,11 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import OutstandingToken, RefreshToken
 
+from apps.accounts.gdpr import delete_user, export_user_data
 from apps.core.signing import InvalidToken as InvalidSignedToken
 from apps.core.signing import make_token, read_token
 from apps.notifications.service import (
+    send_account_deletion_confirmation,
     send_email_verification,
     send_password_reset_email,
 )
@@ -466,3 +468,104 @@ class EmailVerifyConfirmView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+class MeDataExportView(APIView):
+    """GDPR Article 15 — return the user's complete data set.
+
+    GET returns a JSON document with everything tied to the user's
+    identity (profile, RFQs, training, subscriptions, service requests,
+    audit log). The frontend offers it as a download. We also write
+    an audit row for compliance trace.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        data = export_user_data(request.user)
+        AuditLog.objects.create(
+            performed_by=request.user,
+            action="user_data_exported",
+            resource_type="User",
+            resource_id=str(request.user.id),
+            changes={"records": {
+                "rfqs": len(data["rfqs"]),
+                "training": len(data["training_registrations"]),
+                "subscriptions": len(data["subscriptions"]),
+                "services": len(data["service_requests"]),
+            }},
+            ip_address=_client_ip(request),
+        )
+        return Response(data)
+
+
+class MeDeleteView(APIView):
+    """GDPR Article 17 — self-service account deletion.
+
+    The body must include ``confirm: true`` so a misclick on the
+    frontend can't take an account down. On success: anonymises PII
+    in linked records via ``apps.accounts.gdpr.delete_user``,
+    blacklists every outstanding refresh token, sends a final
+    confirmation email to the original address, and clears auth
+    cookies on the response.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if request.data.get("confirm") is not True:
+            return Response(
+                {
+                    "detail": (
+                        "Account deletion requires explicit confirmation. "
+                        "Send {\"confirm\": true} to proceed."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user = request.user
+        original_email = user.email
+        original_full_name = user.full_name
+
+        delete_user(user, request=request)
+
+        # Blacklist refresh tokens after the user row is anonymised so
+        # any concurrent request stops being able to refresh.
+        try:
+            for outstanding in OutstandingToken.objects.filter(user=user):
+                try:
+                    RefreshToken(outstanding.token).blacklist()
+                except (TokenError, Exception):
+                    continue
+        except Exception:
+            logger.exception(
+                "blacklist_after_self_delete failed for user %s", user.id
+            )
+
+        # Send confirmation to the *original* address — by the time
+        # this runs the User row's email column is the redacted
+        # placeholder, so we hand the address explicitly to the sender.
+        try:
+            send_account_deletion_confirmation(
+                to_email=original_email,
+                full_name=original_full_name,
+            )
+        except Exception:
+            logger.exception(
+                "send_account_deletion_confirmation failed for %s", original_email
+            )
+
+        response = Response(
+            {"detail": "Account deleted. We're sorry to see you go."},
+            status=status.HTTP_200_OK,
+        )
+        _clear_auth_cookies(response)
+        return response
+
+
+def _client_ip(request) -> str | None:
+    fwd = request.META.get("HTTP_X_FORWARDED_FOR")
+    if fwd:
+        return fwd.split(",")[0].strip()
+    return request.META.get("REMOTE_ADDR")

@@ -78,6 +78,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     email_verified_at = models.DateTimeField(null=True, blank=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -106,6 +107,8 @@ class AuditLog(models.Model):
         ("user_deactivated", "User Deactivated"),
         ("user_role_change", "User Role Changed"),
         ("email_verified", "Email Verified"),
+        ("user_data_exported", "User Data Exported"),
+        ("user_self_deleted", "User Self-Deleted"),
         ("product_created", "Product Created"),
         ("product_updated", "Product Updated"),
         ("product_deleted", "Product Deleted"),

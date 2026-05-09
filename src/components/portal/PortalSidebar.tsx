@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, FileText, Layers, GraduationCap, LogOut } from "lucide-react";
+import { LayoutDashboard, FileText, Layers, GraduationCap, LogOut, UserCog } from "lucide-react";
 import { useLogout } from "@/lib/hooks/useAuth";
 import { useAuthStore } from "@/lib/store/authStore";
 
@@ -11,6 +11,7 @@ const navItems = [
   { href: "/portal/quotes", label: "My Quotes", icon: FileText, exact: false },
   { href: "/portal/subscriptions", label: "Subscription", icon: Layers, exact: false },
   { href: "/portal/training", label: "Training", icon: GraduationCap, exact: false },
+  { href: "/portal/account", label: "Account", icon: UserCog, exact: false },
 ];
 
 export function PortalSidebar() {

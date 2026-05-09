@@ -47,4 +47,11 @@ export const authService = {
       "/auth/email/verify/confirm/",
       { token },
     ),
+
+  exportMyData: () => apiClient.get<unknown>("/auth/me/export/"),
+
+  deleteMyAccount: () =>
+    apiClient.post<{ detail: string }>("/auth/me/delete/", {
+      confirm: true,
+    }),
 };

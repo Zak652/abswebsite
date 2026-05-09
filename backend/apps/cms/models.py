@@ -764,6 +764,7 @@ class EmailTemplate(PublishableMixin):
         ("payment_receipt", "Payment Receipt"),
         ("password_reset", "Password Reset"),
         ("email_verification", "Email Verification"),
+        ("account_deletion", "Account Deletion"),
     ]
 
     name = models.CharField(max_length=150)
