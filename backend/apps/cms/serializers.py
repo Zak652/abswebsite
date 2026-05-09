@@ -99,6 +99,19 @@ class MediaAssetUploadSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         uploaded_file = attrs.get("file")
         asset_type = attrs.get("asset_type")
+        alt_text = (attrs.get("alt_text") or "").strip()
+        # Build guide § 3.1 — accessibility requires alt text on every
+        # image. Non-image assets (PDFs, videos, etc.) don't need it
+        # since they aren't rendered through <img>.
+        if asset_type == "image" and not alt_text:
+            raise serializers.ValidationError(
+                {
+                    "alt_text": (
+                        "Alt text is required for image uploads — describe "
+                        "what the image conveys for screen-reader users."
+                    )
+                }
+            )
         if uploaded_file is not None and asset_type:
             from django.core.exceptions import ValidationError as DjangoValidationError
             try:
