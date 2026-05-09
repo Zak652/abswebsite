@@ -1,4 +1,5 @@
 import axios from "axios";
+import { safeRedirect } from "@/lib/redirect";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
@@ -63,9 +64,7 @@ apiClient.interceptors.response.use(
         if (store) {
           store.getState().logout();
         }
-        if (typeof window !== "undefined") {
-          window.location.href = "/auth/login";
-        }
+        safeRedirect("/auth/login");
       }
     }
     return Promise.reject(error);

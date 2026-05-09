@@ -10,6 +10,7 @@ import {
 } from "@/types/auth";
 import { FormInput } from "@/components/ui/FormInput";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { parseApiError } from "@/lib/api/errors";
 
 export function ResetPasswordForm({ token }: { token: string }) {
   const { mutate, isPending, isSuccess, error } = useConfirmPasswordReset();
@@ -29,15 +30,9 @@ export function ResetPasswordForm({ token }: { token: string }) {
       new_password_confirm: data.new_password_confirm,
     });
 
-  // Pull a single line of feedback from the API. We never echo raw
-  // backend messages other than the curated "invalid or expired" case
-  // — anything else collapses to a generic try-again line.
-  const apiError =
-    error && "response" in error
-      ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ((error as any).response?.data?.detail as string | undefined) ??
-        "Something went wrong. Please try again."
-      : null;
+  // Curated message via parseApiError — raw backend `detail` strings
+  // are only echoed when they appear in the safe-detail allowlist.
+  const apiError = error ? parseApiError(error).message : null;
 
   if (isSuccess) {
     return (
