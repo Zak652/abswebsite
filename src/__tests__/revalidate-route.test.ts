@@ -39,7 +39,7 @@ let POST: (req: unknown) => Promise<{ status: number; data: unknown }>;
 beforeAll(async () => {
     process.env.REVALIDATION_SECRET = "test-secret-123";
     const mod = await import("@/app/api/revalidate/route");
-    POST = mod.POST as typeof POST;
+    POST = mod.POST as unknown as typeof POST;
 });
 
 beforeEach(() => {

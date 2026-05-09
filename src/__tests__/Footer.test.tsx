@@ -44,7 +44,7 @@ describe("Footer", () => {
         it("renders default platform links", () => {
             render(<Footer />);
             expect(screen.getByText("Arcplus Software")).toBeInTheDocument();
-            expect(screen.getByText("Industrial Scanners")).toBeInTheDocument();
+            expect(screen.getByText("RFID & Barcode Scanners")).toBeInTheDocument();
             expect(screen.getByText("RFID & Barcode Tags")).toBeInTheDocument();
         });
 
@@ -57,8 +57,10 @@ describe("Footer", () => {
 
         it("renders default contact info", () => {
             render(<Footer />);
-            expect(screen.getByText("contact@abssystems.com")).toBeInTheDocument();
-            expect(screen.getByText("+1 (800) 555-0199")).toBeInTheDocument();
+            // Match the current fallback values in Footer.tsx — keep these in
+            // sync if the company email/phone defaults change.
+            expect(screen.getByText("info@absasset.com")).toBeInTheDocument();
+            expect(screen.getByText("+256 414 698346")).toBeInTheDocument();
         });
     });
 
