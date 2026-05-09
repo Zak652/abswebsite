@@ -4,6 +4,8 @@ from .models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
+    email_verified = serializers.BooleanField(read_only=True)
+
     class Meta:
         model = User
         fields = [
@@ -13,9 +15,10 @@ class UserSerializer(serializers.ModelSerializer):
             "company_name",
             "phone",
             "role",
+            "email_verified",
             "created_at",
         ]
-        read_only_fields = ["id", "role", "created_at"]
+        read_only_fields = ["id", "role", "email_verified", "created_at"]
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -93,3 +96,9 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
                 {"new_password_confirm": "Passwords do not match."}
             )
         return data
+
+
+class EmailVerifyConfirmSerializer(serializers.Serializer):
+    """Request body for ``POST /auth/email/verify/confirm/``."""
+
+    token = serializers.CharField()

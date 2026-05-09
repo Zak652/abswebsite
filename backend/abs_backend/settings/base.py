@@ -159,6 +159,7 @@ REST_FRAMEWORK = {
         "trial_signup": "5/min",
         "webhook": "120/min",
         "password_reset": "5/hour",
+        "email_verify_request": "5/hour",
     },
 }
 

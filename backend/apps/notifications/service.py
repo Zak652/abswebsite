@@ -194,6 +194,29 @@ def send_trial_cancellation_notification(signup):
     _send(to=signup.email, subject=subject, html=html)
 
 
+def send_email_verification(user, token: str):
+    """Triggered: on user register, and when the user re-requests it.
+
+    The link points at the Next.js frontend (configured via
+    ``FRONTEND_URL`` in settings); the page POSTs the token back to
+    ``/auth/email/verify/confirm/``.
+    """
+    verify_url = f"{settings.FRONTEND_URL.rstrip('/')}/auth/verify-email/{token}"
+    ctx = {
+        "user": user,
+        "full_name": user.full_name,
+        "verify_url": verify_url,
+        "ttl_hours": 24,
+    }
+    db_result = _render_db_template("email_verification", ctx)
+    if db_result:
+        subject, html = db_result
+    else:
+        html = render_to_string("email_verification.html", ctx)
+        subject = "Verify your ABS email address"
+    _send(to=user.email, subject=subject, html=html)
+
+
 def send_password_reset_email(user, token: str):
     """Triggered: when a user requests a password reset.
 

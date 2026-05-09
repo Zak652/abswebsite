@@ -101,3 +101,17 @@ export function useConfirmPasswordReset() {
         .then((r) => r.data),
   });
 }
+
+export function useResendEmailVerification() {
+  return useMutation({
+    mutationFn: () =>
+      authService.resendEmailVerification().then((r) => r.data),
+  });
+}
+
+export function useConfirmEmailVerification() {
+  return useMutation({
+    mutationFn: (token: string) =>
+      authService.confirmEmailVerification(token).then((r) => r.data),
+  });
+}
