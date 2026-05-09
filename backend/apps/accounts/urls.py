@@ -2,6 +2,8 @@ from django.urls import path
 
 from .views import (
     CookieTokenRefreshView,
+    EmailVerifyConfirmView,
+    EmailVerifyRequestView,
     LoginView,
     LogoutView,
     MeView,
@@ -25,5 +27,15 @@ urlpatterns = [
         "password/reset/confirm/",
         PasswordResetConfirmView.as_view(),
         name="auth-password-reset-confirm",
+    ),
+    path(
+        "email/verify/request/",
+        EmailVerifyRequestView.as_view(),
+        name="auth-email-verify-request",
+    ),
+    path(
+        "email/verify/confirm/",
+        EmailVerifyConfirmView.as_view(),
+        name="auth-email-verify-confirm",
     ),
 ]

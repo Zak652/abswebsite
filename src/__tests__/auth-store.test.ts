@@ -42,6 +42,7 @@ describe("auth store", () => {
             full_name: "X",
             company_name: "Co",
             role: "client",
+            email_verified: false,
             created_at: new Date().toISOString(),
         });
         const raw = window.sessionStorage.getItem("abs-auth") ?? "";

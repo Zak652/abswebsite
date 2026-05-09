@@ -77,8 +77,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    email_verified_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def email_verified(self) -> bool:
+        return self.email_verified_at is not None
 
     objects = UserManager()
 
@@ -100,6 +105,7 @@ class AuditLog(models.Model):
         ("trial_status_change", "Trial Status Changed"),
         ("user_deactivated", "User Deactivated"),
         ("user_role_change", "User Role Changed"),
+        ("email_verified", "Email Verified"),
         ("product_created", "Product Created"),
         ("product_updated", "Product Updated"),
         ("product_deleted", "Product Deleted"),

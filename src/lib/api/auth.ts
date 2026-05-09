@@ -35,4 +35,16 @@ export const authService = {
       new_password,
       new_password_confirm,
     }),
+
+  resendEmailVerification: () =>
+    apiClient.post<{ detail: string; verified: boolean }>(
+      "/auth/email/verify/request/",
+      {},
+    ),
+
+  confirmEmailVerification: (token: string) =>
+    apiClient.post<{ detail: string; verified: boolean; verified_at?: string }>(
+      "/auth/email/verify/confirm/",
+      { token },
+    ),
 };

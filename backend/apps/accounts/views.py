@@ -14,10 +14,14 @@ from rest_framework_simplejwt.tokens import OutstandingToken, RefreshToken
 
 from apps.core.signing import InvalidToken as InvalidSignedToken
 from apps.core.signing import make_token, read_token
-from apps.notifications.service import send_password_reset_email
+from apps.notifications.service import (
+    send_email_verification,
+    send_password_reset_email,
+)
 
-from .models import User
+from .models import AuditLog, User
 from .serializers import (
+    EmailVerifyConfirmSerializer,
     LoginSerializer,
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
@@ -31,6 +35,9 @@ logger = logging.getLogger(__name__)
 PASSWORD_RESET_PURPOSE = "password_reset"
 PASSWORD_RESET_TTL_SECONDS = 60 * 60  # 1 hour
 
+EMAIL_VERIFY_PURPOSE = "email_verify"
+EMAIL_VERIFY_TTL_SECONDS = 24 * 60 * 60  # 24 hours
+
 
 def _password_hash_fingerprint(user: User) -> str:
     """Short stable fingerprint of the user's password hash.
@@ -42,6 +49,25 @@ def _password_hash_fingerprint(user: User) -> str:
     """
     digest = hashlib.sha256(user.password.encode("utf-8")).hexdigest()
     return digest[:16]
+
+
+def _make_email_verify_token(user: User) -> str:
+    """Sign a single-use email verification token.
+
+    The ``vfp`` field is a fingerprint of ``email + email_verified_at``.
+    Once a verification succeeds, ``email_verified_at`` flips from None
+    to a timestamp and the same token can no longer be redeemed —
+    enforces single-use without a separate token table.
+    """
+    raw = f"{user.email}|{user.email_verified_at or ''}".encode("utf-8")
+    vfp = hashlib.sha256(raw).hexdigest()[:16]
+    return make_token(
+        {
+            "uid": str(user.id),
+            "purpose": EMAIL_VERIFY_PURPOSE,
+            "vfp": vfp,
+        }
+    )
 
 
 SESSION_COOKIE_NAME = "abs_session"
@@ -98,6 +124,13 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+
+        try:
+            send_email_verification(user, _make_email_verify_token(user))
+        except Exception:
+            logger.exception(
+                "send_email_verification failed for user %s on register", user.id
+            )
 
         refresh = RefreshToken.for_user(user)
         response = Response(
@@ -322,3 +355,114 @@ class PasswordResetConfirmView(APIView):
         )
         _clear_auth_cookies(response)
         return response
+
+
+class EmailVerifyRequestView(APIView):
+    """Re-send the email-verification link for the authenticated user.
+
+    The very first link is sent automatically by ``RegisterView.create``;
+    this endpoint exists so a user who lost the email (spam folder,
+    expired link) can ask for a fresh one. Already-verified accounts
+    return 200 with a noop response so an idempotent retry from the
+    frontend is safe.
+    """
+
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "email_verify_request"
+
+    def post(self, request):
+        user = request.user
+        if user.email_verified_at is not None:
+            return Response(
+                {"detail": "Email is already verified.", "verified": True},
+                status=status.HTTP_200_OK,
+            )
+
+        try:
+            send_email_verification(user, _make_email_verify_token(user))
+        except Exception:
+            logger.exception(
+                "send_email_verification failed for user %s", user.id
+            )
+
+        return Response(
+            {
+                "detail": "A verification email has been sent.",
+                "verified": False,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class EmailVerifyConfirmView(APIView):
+    """Consume an email-verification token and mark the email verified.
+
+    Idempotent for the originally-issued user — replaying a stale token
+    after the email has already been verified is a 400 (the embedded
+    ``vfp`` fingerprint changes when ``email_verified_at`` flips), so
+    the frontend should treat 400 as "this link was already used or has
+    expired" and offer a re-send button.
+    """
+
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = EmailVerifyConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        token = serializer.validated_data["token"]
+
+        try:
+            payload = read_token(token, max_age_seconds=EMAIL_VERIFY_TTL_SECONDS)
+        except InvalidSignedToken:
+            return Response(
+                {"detail": "This verification link is invalid or has expired."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if payload.get("purpose") != EMAIL_VERIFY_PURPOSE:
+            return Response(
+                {"detail": "This verification link is invalid or has expired."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            user = User.objects.get(pk=payload["uid"], is_active=True)
+        except (User.DoesNotExist, KeyError, ValueError):
+            return Response(
+                {"detail": "This verification link is invalid or has expired."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Verify the fingerprint matches current state — guards against
+        # a stale token being replayed after the user's email changed
+        # or after a previous verification already flipped the flag.
+        raw = f"{user.email}|{user.email_verified_at or ''}".encode("utf-8")
+        expected_vfp = hashlib.sha256(raw).hexdigest()[:16]
+        if payload.get("vfp") != expected_vfp:
+            return Response(
+                {"detail": "This verification link has already been used."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        from django.utils import timezone
+
+        user.email_verified_at = timezone.now()
+        user.save(update_fields=["email_verified_at", "updated_at"])
+
+        AuditLog.objects.create(
+            performed_by=user,
+            action="email_verified",
+            resource_type="User",
+            resource_id=str(user.id),
+            changes={"email_verified_at": user.email_verified_at.isoformat()},
+        )
+
+        return Response(
+            {
+                "detail": "Email verified.",
+                "verified": True,
+                "verified_at": user.email_verified_at.isoformat(),
+            },
+            status=status.HTTP_200_OK,
+        )
