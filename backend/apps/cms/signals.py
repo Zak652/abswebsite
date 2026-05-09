@@ -4,7 +4,6 @@ from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
 
 from apps.cms.cache import invalidate_model, revalidate_frontend
-from apps.cms.mixins import PublishableMixin
 from apps.cms.security import sanitise_html, validate_public_url
 from apps.cms.models import (
     ContentRevision,

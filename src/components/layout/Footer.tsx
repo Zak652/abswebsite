@@ -13,8 +13,8 @@ interface FooterProps {
 
 const DEFAULT_PLATFORM_LINKS = [
     { label: "Arcplus Software", url: "/arcplus" },
-    { label: "RFID & Barode Scanners", url: "/scanners" },
-    { label: "RFID & Barode Tags", url: "/tags" },
+    { label: "RFID & Barcode Scanners", url: "/scanners" },
+    { label: "RFID & Barcode Tags", url: "/tags" },
     { label: "Field Services", url: "/services" },
     { label: "A.M Training", url: "/training" },
 ];

@@ -21,13 +21,14 @@ export function RegisterForm() {
 
   const onSubmit = (data: RegisterFormData) => register(data);
 
-  const apiError =
-    error && "response" in error
-      ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (error as any).response?.data?.email?.[0] ??
-      (error as any).response?.data?.non_field_errors?.[0] ??
-      "Registration failed. Please try again."
-      : null;
+  const apiError = (() => {
+    if (!error || !("response" in error)) return null;
+    const response = (error as { response?: { data?: Record<string, unknown> } }).response;
+    const data = response?.data ?? {};
+    const fieldError = (data.email as string[] | undefined)?.[0];
+    const nonFieldError = (data.non_field_errors as string[] | undefined)?.[0];
+    return fieldError ?? nonFieldError ?? "Registration failed. Please try again.";
+  })();
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">

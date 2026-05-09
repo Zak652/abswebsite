@@ -39,7 +39,7 @@ vi.mock("framer-motion", async () => {
             get: (_target, prop: string) => {
                 // Return a forwardRef component that renders the HTML element directly
                 return ({ children, initial, animate, exit, variants, transition, whileHover, whileTap, whileInView, viewport, layout, layoutId, ...rest }: Record<string, unknown>) => {
-                    const Tag = prop as keyof JSX.IntrinsicElements;
+                    const Tag = prop as keyof React.JSX.IntrinsicElements;
                     return <Tag {...rest}>{children as React.ReactNode}</Tag>;
                 };
             },

@@ -1,7 +1,6 @@
 """Factories for CMS models using factory_boy."""
 
 import factory
-from django.utils import timezone
 
 from apps.accounts.models import User
 from apps.cms.models import (
@@ -14,13 +13,10 @@ from apps.cms.models import (
     PageBlock,
     PageMeta,
     PlanFeature,
-    PlanFeatureValue,
     PricingPlan,
-    ProductImage,
     ServiceOffering,
     SiteSettings,
     SupportFeature,
-    SupportFeatureValue,
     SupportTier,
     DocumentationPage,
     APIEndpointGroup,

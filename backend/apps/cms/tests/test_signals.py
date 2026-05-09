@@ -1,11 +1,10 @@
 """Tests for CMS signals: auto-revisions, cache invalidation, image processing trigger."""
 
-import pytest
 from unittest.mock import patch
 
 from django.contrib.contenttypes.models import ContentType
 
-from apps.cms.models import ContentRevision, HeroSection, MediaAsset
+from apps.cms.models import ContentRevision, HeroSection
 from apps.cms.tests.factories import HeroSectionFactory, MediaAssetFactory, UserFactory
 
 

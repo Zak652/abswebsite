@@ -4,11 +4,8 @@ import pytest
 from django.db import IntegrityError
 
 from apps.cms.models import (
-    ContentRevision,
-    HeroSection,
     PageBlock,
     SiteSettings,
-    NavigationItem,
 )
 from apps.cms.tests.factories import (
     HeroSectionFactory,

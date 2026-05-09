@@ -1,13 +1,10 @@
 """Tests for CMS Celery tasks: scheduled publishing, media processing."""
 
 import io
-import pytest
-from unittest.mock import patch, MagicMock
 from datetime import timedelta
 
 from django.utils import timezone
 
-from apps.cms.models import HeroSection, MediaAsset
 from apps.cms.tasks import publish_scheduled_content, process_media_asset
 from apps.cms.tests.factories import HeroSectionFactory, MediaAssetFactory, UserFactory
 

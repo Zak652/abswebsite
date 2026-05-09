@@ -2,7 +2,6 @@ import io
 import logging
 
 from celery import shared_task
-from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
@@ -15,7 +14,6 @@ def publish_scheduled_content():
     Runs every 60 seconds via Celery Beat. Follows existing pattern
     in subscriptions/tasks.py (check_trial_expiry).
     """
-    from apps.cms.mixins import PublishableMixin
     from apps.cms.models import (
         HeroSection,
         PageBlock,
