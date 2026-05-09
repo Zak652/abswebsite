@@ -23,6 +23,10 @@ interface CMSHeroProps {
     minHeight?: string;
     overlay?: boolean;
     className?: string;
+    /** Set ``true`` only on the page where this hero is the LCP image
+     * (i.e. the homepage). Defaulting to true regresses Lighthouse on
+     * every other page that uses CMSHero. */
+    priority?: boolean;
 }
 
 interface CMSBadge {
@@ -57,6 +61,7 @@ export function CMSHero({
     minHeight,
     overlay = true,
     className,
+    priority = false,
 }: CMSHeroProps) {
     const variant: "overlay" | "split" = forcedVariant ?? (hero?.variant === "split" ? "split" : "overlay");
 
@@ -107,6 +112,7 @@ export function CMSHero({
             {...(minHeight ? { minHeight } : {})}
             overlay={overlay}
             {...(className ? { className } : {})}
+            priority={priority}
         />
     );
 }

@@ -30,6 +30,14 @@ interface HeroSectionProps {
   overlay?: boolean;
   className?: string;
   minHeight?: string;
+  /**
+   * When ``true``, mark the hero image as the LCP image (`<Image priority>`)
+   * so the browser fetches it eagerly and Next emits a `<link rel=preload>`.
+   * Use only on the page where this hero is genuinely the first thing the
+   * user sees — defaulting to ``true`` regresses Lighthouse on every other
+   * page that uses HeroSection. See § 3.3.
+   */
+  priority?: boolean;
 }
 
 const badgeClasses = {
@@ -56,6 +64,7 @@ export function HeroSection({
   overlay = true,
   className = "",
   minHeight = "70vh",
+  priority = false,
 }: HeroSectionProps) {
   if (variant === "split") {
     return (
@@ -116,7 +125,7 @@ export function HeroSection({
                 transition={{ duration: 0.7, delay: 0.15, ease: "easeOut" }}
                 className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-xl border border-neutral-200"
               >
-                <Image src={imageSrc} alt={imageAlt} fill className="object-cover" priority sizes="(max-width: 768px) 100vw, 50vw" />
+                <Image src={imageSrc} alt={imageAlt} fill className="object-cover" priority={priority} sizes="(max-width: 768px) 100vw, 50vw" />
               </motion.div>
             )}
           </div>
@@ -133,7 +142,7 @@ export function HeroSection({
     >
       {imageSrc && (
         <div className="absolute inset-0 z-0">
-          <Image src={imageSrc} alt={imageAlt} fill className="object-cover object-center" priority sizes="100vw" />
+          <Image src={imageSrc} alt={imageAlt} fill className="object-cover object-center" priority={priority} sizes="100vw" />
           {overlay && (
             <>
               <div className="absolute inset-0 bg-primary-900/60 mix-blend-multiply" />
