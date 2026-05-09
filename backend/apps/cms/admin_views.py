@@ -440,6 +440,24 @@ class AdminMediaDetailView(AuditedAdminMixin, APIView):
             asset = MediaAsset.objects.get(pk=pk)
         except MediaAsset.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+        # Build guide § 3.1 — every image asset must keep a non-blank
+        # alt_text. Block the PATCH if the proposed end-state for an
+        # image would have empty alt_text.
+        proposed_asset_type = request.data.get("asset_type", asset.asset_type)
+        proposed_alt = (
+            request.data.get("alt_text", asset.alt_text) or ""
+        ).strip()
+        if proposed_asset_type == "image" and not proposed_alt:
+            return Response(
+                {
+                    "alt_text": [
+                        "Alt text is required for image assets."
+                    ]
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         for field in ("alt_text", "caption", "asset_type"):
             if field in request.data:
                 setattr(asset, field, request.data[field])
