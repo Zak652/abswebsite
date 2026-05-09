@@ -117,36 +117,50 @@ These are the most consequential issues surfaced by the audit. All are addressed
 
 #### 2.2.1 🔴 `abs_session` cookie must be `HttpOnly`
 **File:** [backend/apps/accounts/views.py:25-33](../backend/apps/accounts/views.py)
-**Today:** `httponly=False`. The comment in [accounts/views.py:16](../backend/apps/accounts/views.py) says "read by Next.js middleware" — but middleware reads the cookie server-side, not via JavaScript. `HttpOnly` is correct here.
-**Fix:** `httponly=True`, `samesite="Lax"` (allows top-level navigation cookies; `Strict` may break some flows), `secure=True` in production (do not gate on `DEBUG` alone — drive from settings).
-**Acceptance:** browser devtools shows `HttpOnly`; Next.js middleware still reads cookie via `request.cookies` (server-side); manual `document.cookie` returns no `abs_session`.
+**Today:** `httponly=False`. The comment on [accounts/views.py:16](../backend/apps/accounts/views.py) says "read by Next.js middleware" — but no `src/middleware.ts` exists in the repo today (see § 2.6). The cookie is currently read by *nothing*. Setting `HttpOnly` is correct, and § 2.6 introduces the middleware that will read it server-side.
+**Fix:** `httponly=True`, `samesite="Strict"` (already in code; safe because we have no cross-site auth flow yet — downgrade to `Lax` if/when OAuth or external return-paths are introduced), `secure=True` in production (do not gate on `DEBUG` alone — drive from settings).
+**Acceptance:** browser devtools shows `HttpOnly`; the new Next.js middleware (§ 2.6) reads the cookie via `request.cookies` (server-side); manual `document.cookie` returns no `abs_session`.
 
 #### 2.2.2 🔴 Refresh token must not live in `sessionStorage`
-**File:** [src/lib/store/authStore.ts:39-55](../src/lib/store/authStore.ts)
+**File:** [src/lib/store/authStore.ts:39-55](../src/lib/store/authStore.ts), [backend/apps/accounts/views.py](../backend/apps/accounts/views.py) (login + refresh endpoints)
 **Today:** `partialize` includes `refreshToken` and the storage is `sessionStorage`. Any successful XSS exfiltrates a long-lived refresh token.
-**Fix (recommended):** stop persisting the refresh token. Issue it as an `HttpOnly`, `Secure`, `SameSite=Lax` cookie from Django. Have the access-token refresh endpoint read it from the cookie. Frontend keeps only the access token, in memory.
-**Alternative (acceptable):** keep the refresh token client-side **in memory only** (no `partialize`), and accept the UX cost of "logged out on tab close."
-**Acceptance:** after login, `sessionStorage.getItem("abs-auth")` does not contain `refreshToken`; refresh flow still works after page reload (cookie path) or requires re-login (in-memory path).
+**Fix (decided 2026-05-08):** issue the refresh token as an `HttpOnly`, `Secure`, `SameSite=Lax` cookie named `abs_refresh` from `LoginView` and `TokenRefreshView`. The refresh endpoint reads `request.COOKIES["abs_refresh"]` (not the request body). On logout, clear the cookie and blacklist the token. Frontend keeps only the access token, in memory — drop `refreshToken` from `partialize` entirely.
+
+- Cookie path: `/api/v1/auth/` so it isn't sent on every request.
+- `SameSite=Lax` (not `Strict`) is intentional here so a login redirect from an external site still carries the cookie; the access-token cookie is independent.
+
+**Acceptance:**
+
+- After login, `sessionStorage.getItem("abs-auth")` contains no `refreshToken` field.
+- `document.cookie` does not include `abs_refresh` (HttpOnly).
+- `POST /api/v1/auth/refresh/` succeeds when the cookie is present and returns 401 when it isn't (test by clearing the cookie in DevTools).
+- Page reload preserves the session; closing the browser does not (cookie is `Max-Age` ~7 days, refresh tokens rotate on each use).
 
 #### 2.2.3 🟠 Production security settings
 **File:** [backend/abs_backend/settings/production.py](../backend/abs_backend/settings/production.py)
-Add explicitly:
+The current `production.py` is ~18 lines; some lines below already exist (marked `# already set`), the rest are deltas. Don't paste the whole block over the existing file — add/keep individual lines as marked:
 
 ```python
+# Already in production.py (verify, don't overwrite):
+SECURE_SSL_REDIRECT = True            # already set
+SECURE_HSTS_SECONDS = 31536000        # already set (1 year)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True # already set
+SESSION_COOKIE_SECURE = True          # already set
+CSRF_COOKIE_SECURE = True             # already set
+
+# Add:
 SECURE_HSTS_PRELOAD = True
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "same-origin"
 X_FRAME_OPTIONS = "DENY"
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")  # required behind DO App Platform
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = "Lax"
-CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS")  # required, no default
+SESSION_COOKIE_SAMESITE = "Strict"    # match abs_session cookie (§ 2.2.1)
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS")        # required, no default
+CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS")        # required, no default — see § 5.2
 ```
 
-Also: assert `len(ALLOWED_HOSTS) > 0` and `DEBUG is False` in `production.py` so a misconfigured deploy fails closed.
+Also: assert `len(ALLOWED_HOSTS) > 0`, `DEBUG is False`, and `len(CSRF_TRUSTED_ORIGINS) > 0` and `len(CORS_ALLOWED_ORIGINS) > 0` in `production.py` so a misconfigured deploy fails closed.
 **Acceptance:** `python manage.py check --deploy` returns clean on production settings.
 
 #### 2.2.4 🟠 Strict security headers on the frontend
@@ -159,7 +173,7 @@ Also: assert `len(ALLOWED_HOSTS) > 0` and `DEBUG is False` in `production.py` so
     "script-src 'self' 'unsafe-inline'; " +    // remove 'unsafe-inline' when feasible
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
     "font-src 'self' https://fonts.gstatic.com; " +
-    "img-src 'self' data: blob: https://cdn.absplatform.com https://*.amazonaws.com https://*.r2.cloudflarestorage.com; " +
+    "img-src 'self' data: blob: https://*.r2.cloudflarestorage.com https://media.absplatform.com; " +  // R2 origin + Cloudflare-proxied media subdomain
     "connect-src 'self' https://api.absplatform.com; " +
     "frame-ancestors 'none'; base-uri 'self';"
 }
@@ -191,12 +205,13 @@ REST_FRAMEWORK = {
         "register": "5/min",
         "rfq": "10/min",
         "training_register": "10/min",
+        "trial_signup": "5/min",
         "webhook": "120/min",
     },
 }
 ```
 
-Apply scoped throttles (`ScopedRateThrottle`) to the relevant views (`LoginView`, `RegisterView`, `RFQCreateView`, `TrainingRegistrationCreateView`, `FlutterwaveWebhookView`).
+Apply scoped throttles (`ScopedRateThrottle`) to the relevant views (`LoginView`, `RegisterView`, `RFQCreateView`, `TrainingRegistrationCreateView`, `TrialSignupCreateView`, `FlutterwaveWebhookView`).
 **Acceptance:** integration test floods login endpoint with 11 attempts/min; the 11th returns 429.
 
 #### 2.3.2 🟠 Account lockout
@@ -251,8 +266,28 @@ Auto-add `rel="noopener noreferrer"` to outbound links.
 
 ### 2.5 Production gating
 
-- Raise `ImproperlyConfigured` in `production.py` if any of `DJANGO_SECRET_KEY`, `JWT_SECRET`, `RESEND_API_KEY`, `FLUTTERWAVE_SECRET_KEY`, `FLUTTERWAVE_WEBHOOK_SECRET`, `CSRF_TRUSTED_ORIGINS`, `ALLOWED_HOSTS` is unset or matches a known-default placeholder string.
+- Raise `ImproperlyConfigured` in `production.py` if any of `DJANGO_SECRET_KEY`, `JWT_SECRET`, `RESEND_API_KEY`, `FLUTTERWAVE_SECRET_KEY`, `FLUTTERWAVE_WEBHOOK_SECRET`, `CSRF_TRUSTED_ORIGINS`, `CORS_ALLOWED_ORIGINS`, `ALLOWED_HOSTS` is unset or matches a known-default placeholder string.
 - The frontend should fail at build time if any required `NEXT_PUBLIC_*` is missing — add `src/lib/env.ts` with a `zod` schema validated at import.
+
+### 2.6 🔴 Frontend admin / portal middleware
+
+**File:** `src/middleware.ts` (new)
+**Today:** there is **no Next.js middleware** in the repo. `/admin-portal/*` and `/portal/*` render client-side; only the API enforces `IsAdmin`. An attacker can load the admin shell, observe network requests, and probe the API surface before any rejection. The comment on [accounts/views.py:16](../backend/apps/accounts/views.py) refers to a middleware that doesn't exist yet.
+**Fix:** create `src/middleware.ts` exporting `middleware(req)` and a `config` matcher for `/admin-portal/:path*`, `/portal/:path*`, and `/api/draft`. For each request:
+
+- Read the `abs_session` cookie via `req.cookies.get("abs_session")`.
+- Verify it with `jose.jwtVerify` against `JWT_SECRET` (same secret the backend signs with — already in env). Reject expired or unsigned tokens.
+- For `/admin-portal/*`: require `payload.role === "admin"`; redirect to `/auth/login?next=...` if missing, return a `403` JSON response if the role is wrong.
+- For `/portal/*`: require `payload.sub` (any authenticated user); redirect to `/auth/login?next=...` if missing.
+- Use `safeRedirect` (§ 3.8) for the `next=` value so we don't introduce an open-redirect vector.
+
+**Acceptance:**
+
+- Logged out, GET `/admin-portal/cms` → 302 to `/auth/login?next=/admin-portal/cms`.
+- Logged in as `role=user`, GET `/admin-portal/cms` → 403.
+- Logged in as `role=admin`, GET `/admin-portal/cms` → 200.
+- Edit `JWT_SECRET` mid-session → middleware rejects the now-invalid cookie on the next protected request.
+- Vitest suite `src/__tests__/middleware.test.ts` covers all four cases.
 
 ---
 
@@ -293,9 +328,9 @@ Auto-add `rel="noopener noreferrer"` to outbound links.
 |---|---|---|
 | Pick **one** animation library | repo-wide | Audit GSAP usage. If <3 timelines, remove and use Framer Motion only. The vision allows both, but bundle weight is a P1 concern. |
 | Dynamic-import heavy client routes | `src/app/configurator/*`, `src/app/compare/*` | `dynamic(() => import(...), { loading: <Skeleton /> })`. Drops initial bundle for users who don't visit those paths. |
-| Tighten `images.remotePatterns` | `next.config.ts` | Replace `**.amazonaws.com` with the actual bucket subdomain(s). |
+| Tighten `images.remotePatterns` | `next.config.ts` | Replace `**.amazonaws.com` with the actual R2 bucket subdomain (decision 2026-05-08: media on Cloudflare R2, see § 3.7). |
 | Conditional `priority` on hero images | `src/components/patterns/HeroSection.tsx:126` | Only the homepage hero is LCP; pass `priority` as a prop (default `false`). |
-| Use CMS-provided variants | `src/lib/api/cms-server.ts` | When `MediaAsset` includes `file_webp`/`file_large`/`file_medium`, pick the right size for the rendered slot. |
+| Use CMS-provided variants via Next.js Image | `src/lib/api/cms-server.ts` | Originals on R2; Next.js Image handles resize/format on demand, cached behind Cloudflare. When `MediaAsset` includes `file_webp`/`file_large`/`file_medium` from the CMS, prefer those over runtime transforms for non-hero slots. No third-party transform vendor (Cloudinary/Imgix). |
 | Tune TanStack Query staleTime per query type | `src/app/providers.tsx` | Pricing & availability: 30 s. CMS content: 5 min. Static catalogs: 1 h. |
 
 **Acceptance:** Lighthouse mobile ≥ 90 on `/`, `/arcplus`, `/scanners`, `/configurator`. Bundle analyzer shows configurator chunk loaded only on `/configurator`.
@@ -307,12 +342,14 @@ Auto-add `rel="noopener noreferrer"` to outbound links.
 | Image-first hero on `/scanners` and `/tags` index | "Images ARE the primary communication layer" | Add a hero band above each list with one large environment image and the category headline. |
 | Sticky summary bar on configurator | § 7 in vision | Fixed-bottom bar with running total, selected options, "Add to Quote" CTA. Keep visible on mobile. |
 | "Recommended" highlight in compare | § 8 in vision + `recommended: true` flag exists | Visual treatment: subtle accent border, badge, slight `bg` shift. Keep `recommended` data-driven. |
-| Wire CMS data into compare and configurator | duplicates audit finding #43 | Replace hardcoded fallback arrays in `ComparePageClient`, `ConfiguratorPageClient`, `ArcplusPageClient` with CMS reads; keep the arrays as the seeder's source so dev still works without DB content. |
+| Wire CMS data into compare and configurator | (current state: hardcoded fallback arrays) | Replace hardcoded fallback arrays in `ComparePageClient`, `ConfiguratorPageClient`, `ArcplusPageClient` with CMS reads; keep the arrays as the seeder's source so dev still works without DB content. |
 | Pricing toggle uses `layoutId` for smooth animation | § 6 in vision ("price animates smoothly") | Wrap each price in `<motion.span layoutId={tier.id} />`. |
 
 **Acceptance:** a designer review confirms the four hero routes "feel like a showroom"; no PR merges if compare/configurator regress in image quality vs. screenshots filed in `docs/`.
 
 ### 3.5 Observability
+
+Decision 2026-05-08: **Sentry only** for P1. No additional metrics vendor (Grafana Cloud / Datadog) yet — revisit when we have real traffic and a clear question Sentry can't answer.
 
 | Item | Where | Fix |
 |---|---|---|
@@ -322,8 +359,9 @@ Auto-add `rel="noopener noreferrer"` to outbound links.
 | Request-ID middleware | new `apps/core/middleware.py` | Generate UUID per request, set in log context, return as `X-Request-ID` header; thread through Celery via task headers. |
 | `/api/v1/health/` | `apps/core/views.py` | Returns 200 with `{db: ok, redis: ok, celery: ok, time}`; checks DB connection, Redis ping, Celery via `inspect.ping()` (timeboxed). 503 if any fails. Wire into Docker `HEALTHCHECK` and any orchestrator probe. |
 | Celery task result monitoring | settings + `apps/core/celery.py` | Enable result backend; alert on `task_failure` signal (Sentry receives by default). |
+| Celery beat schedule registered | `backend/abs_backend/celery.py` + settings | `cms.tasks.publish_scheduled_content` is implemented but no `CELERY_BEAT_SCHEDULE` entry exists. Register it (every 1 min) plus any future periodic tasks (trial-expiry, audit-log retention). Verify the beat container is running in DO App Platform. |
 
-**Acceptance:** triggering an exception locally lands in Sentry within 60 s; `curl /api/v1/health/` returns 200 when stack is healthy and 503 if redis is stopped.
+**Acceptance:** triggering an exception locally lands in Sentry within 60 s; `curl /api/v1/health/` returns 200 when stack is healthy and 503 if redis is stopped; a CMS post scheduled for `now() + 90s` flips to `published` automatically.
 
 ### 3.6 CI/CD
 
@@ -340,17 +378,21 @@ Branch protection on `main`: require all jobs green + 1 review.
 
 ### 3.7 Production deployment
 
+Decision 2026-05-08: **DigitalOcean App Platform** for both Django and Next.js, **DO Managed Postgres** + **DO Managed Redis**, **Cloudflare** in front (CDN, DDoS, WAF) + **Cloudflare R2** for media. R2 chosen over DO Spaces because egress to the Cloudflare CDN we're already proxying through is free.
+
 | Item | Where | Fix |
 |---|---|---|
-| `Dockerfile.prod` for backend | `backend/Dockerfile.prod` (new) | Multi-stage; non-root user `appuser`; `gunicorn abs_backend.wsgi:application -k uvicorn.workers.UvicornWorker -w 4`; add `HEALTHCHECK`. |
-| `Dockerfile.prod` for frontend | `Dockerfile.prod` (new) | Build with `output: "standalone"`; copy `.next/standalone` only; non-root. |
+| `Dockerfile.prod` for backend | `backend/Dockerfile.prod` (new) | Multi-stage; non-root user `appuser`; `gunicorn abs_backend.wsgi:application -k uvicorn.workers.UvicornWorker -w 4 --bind 0.0.0.0:8080`; add `HEALTHCHECK` hitting `/api/v1/health/`. |
+| `Dockerfile.prod` for frontend | `Dockerfile.prod` (new) | Build with `output: "standalone"`; copy `.next/standalone` only; non-root; serve on `:3000`. |
 | `output: "standalone"` | `next.config.ts` | Add. |
-| Reverse proxy | `infra/nginx/nginx.conf` (new) | TLS termination, gzip, security headers (mirror Next.js header config), `/api/` upstream → gunicorn, `/` upstream → next standalone. Or use a hosted equivalent (Caddy / Traefik / Vercel + Railway). |
-| Media to object storage | settings + `django-storages` | S3 or R2 bucket; `MEDIA_URL` points at CDN domain. Container volume becomes a dev-only convenience. |
-| Postgres backup | runbook + cron | Document `pg_dump` strategy; verify a restore in staging quarterly. |
+| App Platform spec | `.do/app.yaml` (new) | Three services: `web` (Django), `worker` (`celery -A abs_backend worker`), `beat` (`celery -A abs_backend beat`); two databases (Postgres, Redis); one static site (Next.js). One env var group shared across services. |
+| Cloudflare in front | DNS + Cloudflare dashboard | Proxy the apex + `www` through Cloudflare. Enable Full (Strict) TLS, Always Use HTTPS, HSTS preload (after § 2.2.4 lands). Add a WAF rule to block known-bad webhook signatures. |
+| Media to object storage | settings + `django-storages[s3]` (R2 is S3-compatible) | `DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"`, `AWS_S3_ENDPOINT_URL` → R2 endpoint, `MEDIA_URL` points at the Cloudflare-proxied bucket subdomain. Container volume is dev-only. |
+| Email sender authentication | DNS (apex domain) | Add Resend's required SPF and DKIM TXT/CNAME records before any production email goes out — otherwise transactional mail (RFQ replies, training receipts, password resets) lands in spam. Verify in Resend dashboard. Document the records in `docs/runbooks/email-deliverability.md` (P2). |
+| Postgres backup | DO Managed Postgres handles daily backups; runbook | DO automatically retains 7 days of backups. Document a quarterly drill: restore latest backup to a new DB, run `python manage.py check`, run a smoke test. |
 | Zero-downtime migrations | runbook | Document the additive-migration pattern (add column → backfill → switch reads → drop in next release); never block a deploy on a destructive migration. |
 
-**Acceptance:** a clean deploy from `main` reaches green health on first request; rollback path documented.
+**Acceptance:** a clean deploy from `main` reaches green health on first request; rollback path documented (DO App Platform: redeploy a prior commit from the dashboard or CLI); a transactional email passes SPF + DKIM checks via `mail-tester.com`.
 
 ### 3.8 Account lifecycle (auth completeness)
 
@@ -363,8 +405,9 @@ Today's auth flow stops at register / login / refresh / logout. Add the missing 
 | Signed links generally | shared util `apps/core/signing.py` | Use `django.core.signing.TimestampSigner` for any one-click email action so tokens can't be forged or reused after expiry. |
 | Frontend safe-redirect helper | `src/lib/redirect.ts` (new) | Whitelist of internal-only paths; export `safeRedirect(url)` and use it everywhere we currently hardcode `window.location.href`. Pre-empts the "open redirect on logout" attack vector if logout is ever extended with a `?next=` param. |
 | Sanitised client error display | `src/lib/api/client.ts` | Map upstream errors to a small typed enum; never render raw backend `detail` strings unless they're known-safe. Server logs the full exception (with request ID, § 3.5). |
+| Subscription cancellation | new view in `apps/subscriptions/views.py` | `POST /subscriptions/{id}/cancel/` (`IsAuthenticated`, owner-only): flip status to `cancelled`, set `cancelled_at`, queue cancellation email, prevent further trial extensions. Admin-side cancel via the existing CMS admin. Today only `TrialSignupCreateView` and `TrialSignupListView` exist — there's no path for a user to end their own trial. |
 
-**Acceptance:** a user who forgets their password can recover via email in < 5 min; an unverified user can't access the portal payment flow.
+**Acceptance:** a user who forgets their password can recover via email in < 5 min; an unverified user can't access the portal payment flow; a user can cancel their own active trial from `/portal/subscription` and stops receiving lifecycle emails.
 
 ### 3.9 Compliance and privacy
 
@@ -375,7 +418,7 @@ Today's auth flow stops at register / login / refresh / logout. Add the missing 
 | `GET/POST /auth/me/export/` | Returns user's data (profile, RFQs, registrations, subscriptions) as a downloadable JSON. |
 | `POST /auth/me/delete/` | Soft-delete user; anonymise PII in linked records; cancel active subscriptions; email confirmation. |
 | PCI scope statement | Add `docs/COMPLIANCE.md`: confirm SAQ-A scope (Flutterwave hosted, no card data on our infra). |
-| Audit log for admin actions | Wire all CMS mutations through `cms.AuditLog` (model exists). |
+| Audit log for admin actions | Wire all CMS mutations through `cms.AuditLog` (model exists). **Mechanism:** an `AuditedModelMixin` for the admin viewsets that calls `AuditLog.record(actor, action, instance, before, after)` from `perform_create` / `perform_update` / `perform_destroy`. Avoid Django signals for this — they're hard to test and easy to skip with `bulk_update`. Add a CI lint that fails if a new admin viewset doesn't extend the mixin. |
 | Data-retention notes | RFQ: 24 months. Trial signup data: 12 months. Logs: 12 months. Documented in privacy policy. |
 
 **Acceptance:** a test user can export and then delete their account end-to-end via the portal.
@@ -397,7 +440,7 @@ Target: ≥ 60 % backend coverage; key user journeys covered E2E.
 **Frontend (vitest + RTL)**
 - `src/__tests__/auth-store.test.ts` — hydration, logout clears storage.
 - `src/__tests__/api-client-401.test.ts` — 401 → refresh → retry → success; refresh failure → logout redirect.
-- `src/__tests__/middleware.test.ts` — protected routes redirect to `/auth/login`; admin routes 403 for non-admin role.
+- `src/__tests__/middleware.test.ts` — covers the middleware introduced in § 2.6: `/admin-portal/*` 302s to login when unauthenticated, 403s for non-admin roles, 200s for admin; `/portal/*` 302s to login when unauthenticated.
 - `src/__tests__/a11y.test.ts` — axe-core on `/`, `/arcplus`, `/scanners`, `/configurator`.
 - Form validation + error display tests for `LoginForm`, `RegisterForm`, `RFQForm`.
 
@@ -456,7 +499,6 @@ These items elevate the site from "ships well" to "feels like apple.com." Tackle
 |---|---|---|---|
 | backend/apps/accounts | 0 % | 80 % | 90 % |
 | backend/apps/training (incl. webhook) | 0 % | 90 % | 95 % |
-| backend/apps/payments | 0 % | 70 % | 90 % |
 | backend/apps/rfq | 0 % | 70 % | 85 % |
 | backend/apps/subscriptions | 0 % | 70 % | 85 % |
 | backend/apps/cms | partial | 60 % | 80 % |
@@ -476,6 +518,7 @@ Source of truth lives in `backend/.env.example` and the new `.env.example` at th
 | `DJANGO_SETTINGS_MODULE` | Django | `abs_backend.settings.local` | `abs_backend.settings.production` | |
 | `ALLOWED_HOSTS` | Django prod | n/a | yes (≥ 1) | Comma-list; assert non-empty. |
 | `CSRF_TRUSTED_ORIGINS` | Django prod | n/a | yes | Comma-list of full origins. |
+| `CORS_ALLOWED_ORIGINS` | Django prod | n/a | yes | Comma-list of frontend origins (e.g. `https://abs.com,https://www.abs.com`). Asserted non-empty in `production.py` (§ 2.5). |
 | `POSTGRES_*` | Django, postgres container | — | yes | DB / USER / PASSWORD / HOST / PORT. |
 | `REDIS_URL` | Django, Celery | `redis://redis:6379/0` | yes | |
 | `JWT_SECRET` | Django + Next.js middleware | `dev-jwt-secret` | yes | Must match across services. |
@@ -524,7 +567,7 @@ Items from the old matrix mapped into this guide. Anything not listed has been s
 | Scanners / Tags Pages | Hero treatment (P1 § 3.4); gallery system (P2 § 4.1) |
 | RFQ Engine | Done; tests (P1 § 3.10) |
 | Sales Email Inbox | Done (Resend); verify production deliverability (P1 deploy) |
-| Production Server | Dockerfile.prod, Nginx (P1 § 3.7) |
+| Production Server | Dockerfile.prod + DO App Platform (P1 § 3.7) |
 | Deployment Pipeline | GitHub Actions (P1 § 3.6) |
 | Database Backup | Runbook (P1 § 3.7) |
 | Monitoring | Sentry + structured logs + health (P1 § 3.5) |
@@ -540,8 +583,9 @@ Items from the old matrix mapped into this guide. Anything not listed has been s
 - [ ] Mozilla Observatory ≥ B+ on the staging URL.
 - [ ] Webhook simulator: signature valid → 200; signature invalid → 401; duplicate → 200, no double-write; tampered amount → rejected + alert.
 - [ ] Production secrets rotated and stored in the chosen vault; no production secret has its `.env.example` placeholder value.
-- [ ] Manual test: `document.cookie` in browser does **not** include `abs_session`.
+- [ ] Manual test: `document.cookie` in browser does **not** include `abs_session` or `abs_refresh`.
 - [ ] Manual test: `sessionStorage` does **not** contain `refreshToken` after login.
+- [ ] Manual test (§ 2.6 middleware): logged out, GET `/admin-portal/cms` redirects to `/auth/login`; logged in as non-admin, GET `/admin-portal/cms` returns 403.
 
 ### 6.2 P1 done — launch ready
 
@@ -569,11 +613,11 @@ Items from the old matrix mapped into this guide. Anything not listed has been s
 
 ## 7. Open questions (decide once, then delete from this section)
 
-- **Hosting target.** AWS vs Cloudflare (Pages + Workers + R2) vs Railway/Fly. Drives Dockerfile.prod, secrets vault, media storage choices.
-- **Monitoring vendor.** Sentry only (free tier covers small teams) vs Sentry + a metrics tool (Grafana Cloud / Datadog). Affects § 3.5 implementation.
-- **Refresh-token strategy.** § 2.2.2 lists two acceptable approaches; pick one before P0 close so the frontend doesn't churn.
-- **CDN / image transform.** Use Next.js's image optimizer behind the CDN, or push to a transform service (Cloudinary / Imgix)? Affects § 3.3.
-- **Stripe?** `STRIPE_WEBHOOK_SECRET` is referenced in settings but no handler exists. If never adopted, remove the setting; if adopted, build the handler with the same care as Flutterwave (P0 rules apply).
+Items marked **(P0-blocking)** must be decided before any Phase 0 PR is opened, because they change *what* a P0 fix looks like, not just where it lives. Resolved items move to § 8 (Decision Log) and disappear from here.
+
+All five original open questions were resolved on 2026-05-08 — see § 8. New open questions, log here as they arise.
+
+(none currently)
 
 ---
 
@@ -586,11 +630,60 @@ YYYY-MM-DD — Title
 Decided: <one-line>. Why: <one-line>. Alternative considered: <one-line>.
 ```
 
-(empty)
+```
+2026-05-08 — Refresh-token strategy
+Decided: Issue refresh token as HttpOnly, Secure, SameSite=Lax cookie (`abs_refresh`); frontend keeps only the access token in memory.
+Why: Eliminates the XSS exfiltration vector and preserves "stay logged in across reload" UX.
+Alternative considered: Keep refresh token in memory only (acceptable but worse UX — logged out on tab close).
+```
+
+```
+2026-05-08 — abs_session SameSite
+Decided: Keep `SameSite=Strict` (matches code today).
+Why: We have no cross-site auth flow (no OAuth, no payment redirect that reads the session). Strict is strictly safer.
+Alternative considered: Downgrade to `Lax` per original guide draft — rejected as premature.
+```
+
+```
+2026-05-08 — Payments app
+Decided: Delete `backend/apps/payments/` (models, providers, migrations) and remove `STRIPE_*` settings + env vars. Training keeps using its own Flutterwave path.
+Why: The app is a stub — no views, no urls, dead `StripeProvider` class. Re-introducing a payments abstraction is cheap when a second real provider arrives; carrying dead code now is a security and maintenance cost.
+Alternative considered: Build the Stripe webhook to P0 standards now. Rejected — no business need for Stripe yet, and Flutterwave is the launch provider.
+```
+
+```
+2026-05-08 — Hosting platform
+Decided: DigitalOcean App Platform (web + worker + beat services), DO Managed Postgres, DO Managed Redis, Cloudflare CDN/WAF in front, Cloudflare R2 for media.
+Why: Single platform for Django + Next.js + DBs keeps admin/CI/CD/maintenance overhead low; DO is established enough for enterprise procurement; R2 zero-egress through Cloudflare beats Spaces on cost; Cloudflare proxy gives DDoS + WAF for free.
+Alternative considered: Railway (very similar UX, slightly less mature vendor); Cloudflare-only (rejected — Workers don't run Django, would need a second host); AWS ECS/Fargate (rejected — overkill for current scale).
+```
+
+```
+2026-05-08 — CDN + image transform
+Decided: Cloudflare CDN proxies the apex; Next.js Image handles resize/format on demand; CMS-provided variants used when available; no third-party image vendor.
+Why: Lowest cost and complexity. R2 origin + Cloudflare cache + Next.js Image covers our needs through P2.
+Alternative considered: Cloudflare Images (deferred until volume justifies); Cloudinary/Imgix (rejected — overkill).
+```
+
+```
+2026-05-08 — Monitoring vendor for P1
+Decided: Sentry only (frontend + backend). No metrics vendor in P1.
+Why: Free tier covers a small team; we don't yet have a metrics question Sentry can't answer. Avoid premature tool sprawl.
+Alternative considered: Sentry + Grafana Cloud free tier (deferred); Datadog (rejected — cost not justified at current scale).
+```
+
+```
+2026-05-08 — Frontend admin gating
+Decided: Add `src/middleware.ts` (P0, § 2.6) that verifies `abs_session` JWT and gates `/admin-portal/*` and `/portal/*` at the edge.
+Why: Today admin pages render client-side and only the API rejects unauthorised users. Defence in depth + the cookie comment in `accounts/views.py` already presumes middleware.
+Alternative considered: Rely on backend `IsAdmin` only (rejected — admin shell loads before any rejection).
+```
 
 ---
 
-## 9. Appendix — superseded documents
+## 9. Appendix — superseded documents and dead code
+
+### Superseded docs
 
 These are kept in the repo for history. Don't update them; update this guide instead.
 
@@ -600,3 +693,11 @@ These are kept in the repo for history. Don't update them; update this guide ins
 - `docs/plans/ABS_CMS_IMPLEMENTATION_PLAN.md` (CMS Phase 2 was completed; gaps fold into this guide)
 
 The vision and IA documents are *not* superseded — they describe intended product, not status, and remain canonical references.
+
+### Dead code scheduled for removal
+
+Per the 2026-05-08 decision (§ 8), the following are slated for deletion in a P0 cleanup PR. Do not add new references to them:
+
+- `backend/apps/payments/` — entire app (models, providers, migrations). The `StripeProvider` class was never wired (no views, no urls).
+- `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` in `backend/abs_backend/settings/base.py`.
+- Any `STRIPE_*` references in `.env.example`.
