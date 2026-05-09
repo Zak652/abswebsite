@@ -4,7 +4,9 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
+import { JsonLd } from "@/components/JsonLd";
 import { DraftModeBanner } from "@/components/layout/DraftModeBanner";
+import { buildOrganizationLd } from "@/lib/seo";
 import { Providers } from "./providers";
 import {
   fetchNavigation,
@@ -80,6 +82,7 @@ export default async function RootLayout({
         className={`${inter.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable} font-sans antialiased min-h-screen flex flex-col`}
       >
         <Providers>
+          <JsonLd data={buildOrganizationLd(settings)} id="ld-organization" />
           <DraftModeBanner />
           <Header cmsNavItems={headerNav} />
           <main className="pt-20 flex-1">{children}</main>

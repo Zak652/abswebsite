@@ -4,6 +4,8 @@ import Image from "next/image";
 import { ArrowLeft, Calendar, Clock, User, Tag } from "lucide-react";
 import { notFound } from "next/navigation";
 import { fetchBlogPost, fetchBlogPosts } from "@/lib/api/cms-server";
+import { JsonLd } from "@/components/JsonLd";
+import { buildArticleLd } from "@/lib/seo";
 
 /* ------------------------------------------------------------------ */
 /*  Metadata                                                          */
@@ -17,14 +19,17 @@ export async function generateMetadata({
     const { slug } = await params;
     const post = await fetchBlogPost(slug);
     if (!post) return { title: "Article Not Found | ABS Platform" };
+    const canonicalPath = `/resources/blog/${post.slug}`;
     return {
         title: `${post.title} | ABS Blog`,
         description: post.excerpt || undefined,
         keywords: post.seo_keywords || undefined,
+        alternates: { canonical: canonicalPath },
         openGraph: {
             title: post.title,
             description: post.excerpt || undefined,
             type: "article",
+            url: canonicalPath,
             publishedTime: post.published_at ?? undefined,
             authors: post.author_name ? [post.author_name] : undefined,
             images: post.featured_image
@@ -71,6 +76,10 @@ export default async function BlogPostPage({
 
     return (
         <div className="min-h-screen bg-surface pt-24 pb-32">
+            <JsonLd
+                data={buildArticleLd(post, `/resources/blog/${post.slug}`)}
+                id="ld-article"
+            />
             <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Back link */}
                 <Link
