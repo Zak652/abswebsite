@@ -442,7 +442,8 @@ Target: ≥ 60 % backend coverage; key user journeys covered E2E.
 - 🟡 `src/__tests__/api-client-401.test.ts` — 401 refresh interceptor flow. The interceptor itself is wired in `lib/api/client.ts`; this dedicated test file is a follow-up.
 - ✅ `src/__tests__/middleware.test.ts` — proxy.ts gate behaviour (renamed from middleware.ts in Next 16; same coverage).
 - ✅ `src/__tests__/a11y.test.tsx` (PR #14) — FormInput label/htmlFor + role=alert; useMotionPreference variants. Full axe-core sweep on `/`, `/arcplus`, etc. is a follow-up.
-- ✅ Form-validation + error-display tests across `PasswordReset`, `EmailVerification`, `AccountPanel`, `CookieConsent` (PRs #6, #7, #9, #10). `LoginForm`/`RegisterForm`/`RFQForm` tests remain a follow-up.
+- ✅ Form-validation + error-display tests across `PasswordReset`, `EmailVerification`, `AccountPanel`, `CookieConsent`, plus `LoginForm`/`RegisterForm`/`RFQ` (PRs #6, #7, #9, #10, #16).
+- ✅ `src/__tests__/useFocusTrap.test.tsx` (PR #16) — trap activation/deactivation, Tab + Shift+Tab cycling, Escape, focus restoration. Wired into `TrialSignupModal` and `TrainingRegistrationModal` with `role="dialog" aria-modal="true" aria-labelledby`.
 
 ---
 
