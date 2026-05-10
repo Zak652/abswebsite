@@ -23,7 +23,11 @@ from apps.subscriptions.models import ArcplusTrialSignup
 
 @pytest.fixture
 def alice(db):
-    return User.objects.create_user(
+    """Verified-email user — passes the IsEmailVerified gate on the
+    delete endpoint. The unverified case is exercised explicitly in
+    its own test below."""
+    from django.utils import timezone
+    user = User.objects.create_user(
         email="alice@example.com",
         password="alice-password-123",  # gitleaks:allow
         full_name="Alice Adams",
@@ -31,15 +35,34 @@ def alice(db):
         phone="+256700000000",
         role="client",
     )
+    user.email_verified_at = timezone.now()
+    user.save(update_fields=["email_verified_at"])
+    return user
 
 
 @pytest.fixture
 def bob(db):
-    return User.objects.create_user(
+    from django.utils import timezone
+    user = User.objects.create_user(
         email="bob@example.com",
         password="bob-password-456",  # gitleaks:allow
         full_name="Bob Brown",
         company_name="Beta Co",
+        role="client",
+    )
+    user.email_verified_at = timezone.now()
+    user.save(update_fields=["email_verified_at"])
+    return user
+
+
+@pytest.fixture
+def unverified_user(db):
+    """User with no verified email — for asserting the gate rejects."""
+    return User.objects.create_user(
+        email="unverified@example.com",
+        password="unverified-password-1",  # gitleaks:allow
+        full_name="Unverified User",
+        company_name="Co",
         role="client",
     )
 

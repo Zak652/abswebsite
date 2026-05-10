@@ -3,13 +3,17 @@ import logging
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import generics, status
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from .models import ArcplusTrialSignup
 from .serializers import TrialSignupSerializer
+from apps.accounts.permissions import (
+    AnonymousOrEmailVerified,
+    IsEmailVerified,
+)
 from apps.notifications.service import (
     send_trial_cancellation_notification,
     send_trial_signup_notification,
@@ -20,8 +24,18 @@ logger = logging.getLogger(__name__)
 
 
 class TrialSignupCreateView(generics.CreateAPIView):
+    """Public-friendly trial signup form for the Arcplus marketing surface.
+
+    Anonymous submissions stay allowed (the marketing-site flow is the
+    dominant traffic pattern). Authenticated requests must come from a
+    user whose email is verified so an impersonator sitting on an
+    unverified account can't trigger trial provisioning under the
+    victim's identity (see ``AnonymousOrEmailVerified`` for the threat
+    model).
+    """
+
     serializer_class = TrialSignupSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [AnonymousOrEmailVerified]
     throttle_classes = [ScopedRateThrottle]
     throttle_scope = "trial_signup"
 
@@ -49,9 +63,13 @@ class TrialSignupCancelView(APIView):
     of trials they shouldn't see. Already-cancelled or otherwise terminal
     signups return 409 so the UI can surface a clear "already finished"
     message instead of pretending the request worked.
+
+    Cancellation is a billable-obligation action (it stops a trial that
+    may have been provisioned), so the verified-email gate kicks in
+    here too — same threat model as ``TrialSignupCreateView``.
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsEmailVerified]
 
     def post(self, request, pk):
         try:

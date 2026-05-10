@@ -1,6 +1,7 @@
 "use client";
 
 import { PortalSidebar } from "@/components/portal/PortalSidebar";
+import { EmailVerificationBanner } from "@/components/auth/EmailVerificationBanner";
 import { useRehydrateAuth } from "@/lib/hooks/useAuth";
 
 export default function PortalLayout({
@@ -11,9 +12,12 @@ export default function PortalLayout({
   useRehydrateAuth();
 
   return (
-    <div className="min-h-screen bg-neutral-50 flex">
-      <PortalSidebar />
-      <main className="flex-1 min-w-0 p-6 lg:p-8">{children}</main>
+    <div className="min-h-screen bg-neutral-50 flex flex-col">
+      <EmailVerificationBanner />
+      <div className="flex-1 flex">
+        <PortalSidebar />
+        <main className="flex-1 min-w-0 p-6 lg:p-8">{children}</main>
+      </div>
     </div>
   );
 }

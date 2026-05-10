@@ -22,6 +22,7 @@ from apps.notifications.service import (
 )
 
 from .models import AuditLog, User
+from .permissions import IsEmailVerified
 from .serializers import (
     EmailVerifyConfirmSerializer,
     LoginSerializer,
@@ -508,9 +509,17 @@ class MeDeleteView(APIView):
     blacklists every outstanding refresh token, sends a final
     confirmation email to the original address, and clears auth
     cookies on the response.
+
+    Email-verified gate
+    -------------------
+    The verified-email check (``IsEmailVerified``) is a defence
+    against the impostor-signup case: someone who registered using
+    a victim's address and never proved control of it could otherwise
+    delete an account the victim doesn't know exists. The gate
+    forces them to demonstrate access to the inbox first.
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsEmailVerified]
 
     def post(self, request):
         if request.data.get("confirm") is not True:
