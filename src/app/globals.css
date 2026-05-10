@@ -14,6 +14,17 @@
   --color-primary-50: #f0f6fc;
 
   /* ─── Accent Scale (Signal Orange) ──────────────────────────── */
+  /*
+   * Contrast policy: ``accent-500`` is the brand colour and is used
+   * for icon fills, backgrounds, and white-on-orange CTAs (where the
+   * white text + orange background has 3.4:1 — fine for large text /
+   * UI components per WCAG AA). For ``text-on-light`` contexts (eyebrow
+   * labels, in-copy emphasis, link text on warm-white #FCFBF9 surface)
+   * use ``accent-700`` which clears 5.2:1 against the warm-white
+   * surface and 4.6:1 against pure white. ``accent-700`` is the only
+   * orange shade safe for sustained body text.
+   */
+  --color-accent-700: #B5441E;
   --color-accent-600: #E35B2C;
   --color-accent-500: #F97316;
   --color-accent-400: #fb923c;
