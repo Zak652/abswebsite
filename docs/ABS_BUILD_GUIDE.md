@@ -300,7 +300,7 @@ Auto-add `rel="noopener noreferrer"` to outbound links.
 | Item | Where | Fix |
 |---|---|---|
 | Alt-text required on every CMS media asset | ✅ shipped (PR #14) | `MediaAssetUploadSerializer.validate()` rejects image uploads with empty/whitespace-only `alt_text` (400 with field-keyed error). The bespoke patch handler in `AdminMediaDetailView` enforces the same end-state rule on PATCH, so a partial update can't blank an image's alt text. Documents/videos remain unconstrained. 7 backend tests pin the contract. |
-| Focus trap + return on modals (TrialSignupModal et al.) | 🟡 deferred | Existing modals (TrialSignupModal, etc.) close on overlay click and Escape via custom handlers but don't yet trap Tab focus. Wiring via `@radix-ui/react-dialog` or `react-aria` is a self-contained follow-up — touches only the modal components. |
+| Focus trap + return on modals (TrialSignupModal et al.) | ✅ shipped (PR #16) | New [`useFocusTrap`](../src/lib/hooks/useFocusTrap.ts) hook (~50 LoC, no new deps) wired into `TrialSignupModal` and `TrainingRegistrationModal`. Both now declare `role="dialog" aria-modal="true" aria-labelledby`. The hook activates on open, cycles Tab + Shift+Tab within the dialog, calls `onEscape` on Escape, and restores focus to the originally-focused element on close. 5 vitest cases pin the contract. |
 | `aria-label` on every icon-only button | ✅ public-facing audited (PR #14) | Public components (Header menu/close, configurator chevrons, compare tabs, TestimonialCarousel arrows + dots, TrialSignupModal close, ProductGallery prev/next) already carry `aria-label`. **Admin-portal pages still have unlabeled icon buttons** (Pencil/Trash/X across CMS dashboards) — separate audit, lower priority since admin is a closed user surface. Adding `jsx-a11y/control-has-associated-label` as a CI rule will surface them all at once when we tackle that tranche. |
 | `prefers-reduced-motion` respected by every motion component | ✅ shipped (PR #14) | New [`useMotionPreference()`](../src/lib/hooks/useMotionPreference.ts) reads the OS query natively (no framer-motion bundle pull-in). Sibling `useMotionVariant(reducedValue, animatedValue)` picks the right Framer Motion variant key. Existing `motion.*` usage continues to work — apply the hook as those components are touched for other reasons. |
 | Color contrast audited | 🟡 deferred | Needs an axe-core run (build guide § 3.10) — heavier follow-up. The Signal Orange on warm-white case-study background was flagged in the audit and stays on the watch list. |
@@ -429,7 +429,7 @@ Target: ≥ 60 % backend coverage; key user journeys covered E2E.
 
 **Backend (pytest)**
 - ✅ `apps/training/tests/test_webhook.py` — signature, replay, duplicate, amount-tampering (PR set #1).
-- 🟡 `apps/training/tests/test_registration_flow.py` — full register → mock-Flutterwave → webhook → email flow. Webhook + capacity covered separately; full E2E flow remains a follow-up.
+- ✅ `apps/training/tests/test_registration_flow.py` (PR #17) — full register → mocked Flutterwave checkout init → webhook → verify → confirmation email. Uses `transaction=True` so `transaction.on_commit` actually fires. Replay test pinned: a duplicate webhook for an already-paid registration returns `already=paid` without re-sending the confirmation email.
 - ✅ `apps/training/tests/test_capacity.py` — concurrent registrations don't exceed capacity (P0).
 - ✅ Login/auth-cookies covered in `test_auth_cookies.py`; password reset in `test_password_reset.py`; email verification in `test_email_verification.py`; GDPR in `test_gdpr.py`; subscription cancel in `test_cancel.py`.
 - ✅ `apps/accounts/tests/test_lockout.py` (PR #15) — 5 wrong attempts lock the account; correct password rejected post-lockout. Reset-on-success and IP-vs-username scoping informally verified; pinning them as automated tests was flaky against axes' DB-backed handler under `transaction=True`.
@@ -439,7 +439,7 @@ Target: ≥ 60 % backend coverage; key user journeys covered E2E.
 
 **Frontend (vitest + RTL)**
 - ✅ `src/__tests__/auth-store.test.ts` — hydration, logout clears storage.
-- 🟡 `src/__tests__/api-client-401.test.ts` — 401 refresh interceptor flow. The interceptor itself is wired in `lib/api/client.ts`; this dedicated test file is a follow-up.
+- ✅ `src/__tests__/api-client-401.test.ts` (PR #17) — 401 → refresh → retry interceptor. Module-level `vi.mock` on `axios` + `@/lib/redirect` so the interceptor's bound references hit the test doubles. 5 cases: happy-path retry (with adapter swap to capture the replayed config + bearer rewrite), refresh-fails-redirects, refresh-endpoint-itself-401-doesn't-loop, non-401-skips-refresh, `_retry`-flagged-doesn't-loop.
 - ✅ `src/__tests__/middleware.test.ts` — proxy.ts gate behaviour (renamed from middleware.ts in Next 16; same coverage).
 - ✅ `src/__tests__/a11y.test.tsx` (PR #14) — FormInput label/htmlFor + role=alert; useMotionPreference variants. Full axe-core sweep on `/`, `/arcplus`, etc. is a follow-up.
 - ✅ Form-validation + error-display tests across `PasswordReset`, `EmailVerification`, `AccountPanel`, `CookieConsent`, plus `LoginForm`/`RegisterForm`/`RFQ` (PRs #6, #7, #9, #10, #16).
