@@ -110,6 +110,7 @@ export function SubscriptionStatusCard({
           </label>
           <textarea
             id="cancel-reason"
+            aria-label="Cancellation reason"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             rows={2}

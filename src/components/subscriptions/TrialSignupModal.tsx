@@ -167,6 +167,7 @@ export function TrialSignupModal({
                       Full Name <span className="text-[var(--color-error)]">*</span>
                     </label>
                     <input
+                        aria-label="Full Name"
                       type="text"
                       value={formData.full_name}
                       onChange={(e) =>
@@ -193,6 +194,7 @@ export function TrialSignupModal({
                       Work Email <span className="text-[var(--color-error)]">*</span>
                     </label>
                     <input
+                        aria-label="Work Email"
                       type="email"
                       value={formData.email}
                       onChange={(e) =>
@@ -216,6 +218,7 @@ export function TrialSignupModal({
                       Company Name <span className="text-[var(--color-error)]">*</span>
                     </label>
                     <input
+                        aria-label="Company Name"
                       type="text"
                       value={formData.company_name}
                       onChange={(e) =>
@@ -242,6 +245,7 @@ export function TrialSignupModal({
                       Phone (optional)
                     </label>
                     <input
+                        aria-label="Phone (optional)"
                       type="tel"
                       value={formData.phone}
                       onChange={(e) =>

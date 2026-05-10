@@ -64,30 +64,30 @@ function ModuleForm({
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Name</label>
-                    <input value={form.name} onChange={(e) => set("name", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.name} onChange={(e) => set("name", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Name" />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Slug</label>
-                    <input value={form.slug} onChange={(e) => set("slug", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.slug} onChange={(e) => set("slug", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Slug" />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Order</label>
-                    <input type="number" value={form.order} onChange={(e) => set("order", parseInt(e.target.value) || 0)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input type="number" value={form.order} onChange={(e) => set("order", parseInt(e.target.value) || 0)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Order" />
                 </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Icon</label>
-                    <input value={form.icon} onChange={(e) => set("icon", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.icon} onChange={(e) => set("icon", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Icon" />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Tagline</label>
-                    <input value={form.tagline} onChange={(e) => set("tagline", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.tagline} onChange={(e) => set("tagline", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Tagline" />
                 </div>
             </div>
             <div>
                 <label className="block text-xs font-medium text-neutral-700 mb-1">Description</label>
-                <textarea value={form.description} onChange={(e) => set("description", e.target.value)} rows={3} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                <textarea value={form.description} onChange={(e) => set("description", e.target.value)} rows={3} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Description" />
             </div>
             <div className="flex justify-end gap-2 pt-2">
                 <button onClick={onCancel} className="text-xs px-4 py-2 rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-50 transition-colors">Cancel</button>
@@ -153,60 +153,60 @@ function PlanForm({
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Name</label>
-                    <input value={form.name} onChange={(e) => set("name", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.name} onChange={(e) => set("name", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Name" />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Slug</label>
-                    <input value={form.slug} onChange={(e) => set("slug", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.slug} onChange={(e) => set("slug", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Slug" />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Order</label>
-                    <input type="number" value={form.order} onChange={(e) => set("order", parseInt(e.target.value) || 0)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input type="number" value={form.order} onChange={(e) => set("order", parseInt(e.target.value) || 0)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Order" />
                 </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Tagline</label>
-                    <input value={form.tagline} onChange={(e) => set("tagline", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.tagline} onChange={(e) => set("tagline", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Tagline" />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Asset Range</label>
-                    <input value={form.asset_range} onChange={(e) => set("asset_range", e.target.value)} placeholder="1–500 assets" className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.asset_range} onChange={(e) => set("asset_range", e.target.value)} placeholder="1–500 assets" className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Asset Range" />
                 </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Price USD</label>
-                    <input type="number" value={form.price_usd} onChange={(e) => set("price_usd", parseFloat(e.target.value) || 0)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input type="number" value={form.price_usd} onChange={(e) => set("price_usd", parseFloat(e.target.value) || 0)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Price USD" />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Price UGX</label>
-                    <input type="number" value={form.price_ugx} onChange={(e) => set("price_ugx", parseFloat(e.target.value) || 0)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input type="number" value={form.price_ugx} onChange={(e) => set("price_ugx", parseFloat(e.target.value) || 0)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Price UGX" />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Price KES</label>
-                    <input type="number" value={form.price_kes} onChange={(e) => set("price_kes", parseFloat(e.target.value) || 0)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input type="number" value={form.price_kes} onChange={(e) => set("price_kes", parseFloat(e.target.value) || 0)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Price KES" />
                 </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Billing Period</label>
-                    <select value={form.billing_period} onChange={(e) => set("billing_period", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500">
+                    <select value={form.billing_period} onChange={(e) => set("billing_period", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Billing Period" >
                         <option value="annual">Annual</option>
                         <option value="monthly">Monthly</option>
                     </select>
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">CTA Text</label>
-                    <input value={form.cta_text} onChange={(e) => set("cta_text", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.cta_text} onChange={(e) => set("cta_text", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="CTA Text" />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">CTA Link</label>
-                    <input value={form.cta_link} onChange={(e) => set("cta_link", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.cta_link} onChange={(e) => set("cta_link", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="CTA Link" />
                 </div>
             </div>
             <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={form.is_recommended} onChange={(e) => set("is_recommended", e.target.checked)} className="rounded border-neutral-300" />
+                <input type="checkbox" aria-label="Recommended" checked={form.is_recommended} onChange={(e) => set("is_recommended", e.target.checked)} className="rounded border-neutral-300" />
                 <span className="text-xs font-medium text-neutral-700">Recommended</span>
             </label>
             <div className="flex justify-end gap-2 pt-2">

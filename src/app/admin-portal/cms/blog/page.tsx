@@ -48,11 +48,11 @@ function CategoryManager() {
                 <div className="flex items-end gap-2 mb-3">
                     <div>
                         <label className="block text-[10px] font-medium text-neutral-600 mb-0.5">Name</label>
-                        <input value={name} onChange={(e) => setName(e.target.value)} className="text-xs border border-neutral-300 rounded px-2 py-1.5 w-40" />
+                        <input value={name} onChange={(e) => setName(e.target.value)} className="text-xs border border-neutral-300 rounded px-2 py-1.5 w-40" aria-label="Name" />
                     </div>
                     <div>
                         <label className="block text-[10px] font-medium text-neutral-600 mb-0.5">Slug</label>
-                        <input value={slug} onChange={(e) => setSlug(e.target.value)} className="text-xs border border-neutral-300 rounded px-2 py-1.5 w-40" />
+                        <input value={slug} onChange={(e) => setSlug(e.target.value)} className="text-xs border border-neutral-300 rounded px-2 py-1.5 w-40" aria-label="Slug" />
                     </div>
                     <button
                         disabled={!name || !slug || createCat.isPending}
@@ -68,8 +68,8 @@ function CategoryManager() {
                 {cats.map((c: BlogCategoryData) =>
                     editId === c.id ? (
                         <div key={c.id} className="flex items-center gap-1 bg-neutral-50 rounded px-2 py-1 border">
-                            <input value={editName} onChange={(e) => setEditName(e.target.value)} className="text-xs border rounded px-1.5 py-0.5 w-24" />
-                            <input value={editSlug} onChange={(e) => setEditSlug(e.target.value)} className="text-xs border rounded px-1.5 py-0.5 w-24" />
+                            <input aria-label="Category name" value={editName} onChange={(e) => setEditName(e.target.value)} className="text-xs border rounded px-1.5 py-0.5 w-24" />
+                            <input aria-label="Category slug" value={editSlug} onChange={(e) => setEditSlug(e.target.value)} className="text-xs border rounded px-1.5 py-0.5 w-24" />
                             <button onClick={() => updateCat.mutate({ id: c.id, data: { name: editName, slug: editSlug } }, { onSuccess: () => setEditId(null) })} className="text-[10px] text-primary-700 hover:underline">Save</button>
                             <button onClick={() => setEditId(null)} className="text-[10px] text-neutral-400 hover:underline">Cancel</button>
                         </div>
@@ -138,15 +138,15 @@ function BlogPostForm({
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Title</label>
-                    <input value={form.title} onChange={(e) => set("title", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.title} onChange={(e) => set("title", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Title" />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Slug</label>
-                    <input value={form.slug} onChange={(e) => set("slug", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.slug} onChange={(e) => set("slug", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Slug" />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Category</label>
-                    <select value={form.category_id} onChange={(e) => set("category_id", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500">
+                    <select value={form.category_id} onChange={(e) => set("category_id", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Category" >
                         <option value="">— None —</option>
                         {cats.map((c: BlogCategoryData) => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
@@ -155,31 +155,31 @@ function BlogPostForm({
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Author Name</label>
-                    <input value={form.author_name} onChange={(e) => set("author_name", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.author_name} onChange={(e) => set("author_name", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Author Name" />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Reading Time (min)</label>
-                    <input type="number" value={form.reading_time_minutes} onChange={(e) => set("reading_time_minutes", parseInt(e.target.value) || 0)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input type="number" value={form.reading_time_minutes} onChange={(e) => set("reading_time_minutes", parseInt(e.target.value) || 0)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Reading Time (min)" />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Order</label>
-                    <input type="number" value={form.order} onChange={(e) => set("order", parseInt(e.target.value) || 0)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input type="number" value={form.order} onChange={(e) => set("order", parseInt(e.target.value) || 0)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Order" />
                 </div>
             </div>
             <div>
                 <label className="block text-xs font-medium text-neutral-700 mb-1">Excerpt</label>
-                <textarea value={form.excerpt} onChange={(e) => set("excerpt", e.target.value)} rows={2} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                <textarea value={form.excerpt} onChange={(e) => set("excerpt", e.target.value)} rows={2} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Excerpt" />
             </div>
             <div>
                 <label className="block text-xs font-medium text-neutral-700 mb-1">Body (HTML)</label>
-                <textarea value={form.body} onChange={(e) => set("body", e.target.value)} rows={8} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500 font-mono" />
+                <textarea value={form.body} onChange={(e) => set("body", e.target.value)} rows={8} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500 font-mono" aria-label="Body (HTML)" />
             </div>
             <div>
                 <label className="block text-xs font-medium text-neutral-700 mb-1">SEO Keywords</label>
-                <input value={form.seo_keywords} onChange={(e) => set("seo_keywords", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" placeholder="keyword1, keyword2, ..." />
+                <input value={form.seo_keywords} onChange={(e) => set("seo_keywords", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" placeholder="keyword1, keyword2, ..." aria-label="SEO Keywords" />
             </div>
             <div className="flex items-center gap-2">
-                <input type="checkbox" id="is_featured" checked={form.is_featured} onChange={(e) => set("is_featured", e.target.checked)} className="rounded border-neutral-300" />
+                <input type="checkbox" id="is_featured" aria-label="Featured post" checked={form.is_featured} onChange={(e) => set("is_featured", e.target.checked)} className="rounded border-neutral-300" />
                 <label htmlFor="is_featured" className="text-xs text-neutral-700">Featured post</label>
             </div>
             <div className="flex justify-end gap-2 pt-2">

@@ -60,6 +60,7 @@ function ServiceForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Title</label>
                     <input
+                        aria-label="Title"
                         value={form.title}
                         onChange={(e) => set("title", e.target.value)}
                         className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
@@ -68,6 +69,7 @@ function ServiceForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Slug</label>
                     <input
+                        aria-label="Slug"
                         value={form.slug}
                         onChange={(e) => set("slug", e.target.value)}
                         className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
@@ -76,6 +78,7 @@ function ServiceForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Order</label>
                     <input
+                        aria-label="Order"
                         type="number"
                         value={form.order}
                         onChange={(e) => set("order", parseInt(e.target.value) || 0)}
@@ -87,6 +90,7 @@ function ServiceForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Icon</label>
                     <input
+                        aria-label="Icon"
                         value={form.icon}
                         onChange={(e) => set("icon", e.target.value)}
                         placeholder="lucide icon name"
@@ -96,6 +100,7 @@ function ServiceForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Short Description</label>
                     <input
+                        aria-label="Short Description"
                         value={form.short_description}
                         onChange={(e) => set("short_description", e.target.value)}
                         className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
@@ -105,6 +110,7 @@ function ServiceForm({
             <div>
                 <label className="block text-xs font-medium text-neutral-700 mb-1">Problem</label>
                 <textarea
+                    aria-label="Problem"
                     value={form.problem}
                     onChange={(e) => set("problem", e.target.value)}
                     rows={2}
@@ -114,6 +120,7 @@ function ServiceForm({
             <div>
                 <label className="block text-xs font-medium text-neutral-700 mb-1">Process</label>
                 <textarea
+                    aria-label="Process"
                     value={form.process}
                     onChange={(e) => set("process", e.target.value)}
                     rows={2}
@@ -125,6 +132,7 @@ function ServiceForm({
                     Deliverables (comma-separated)
                 </label>
                 <input
+                    aria-label="Deliverables (comma-separated)"
                     value={form.deliverables}
                     onChange={(e) => set("deliverables", e.target.value)}
                     placeholder="Item 1, Item 2, Item 3"
@@ -134,6 +142,7 @@ function ServiceForm({
             <div>
                 <label className="block text-xs font-medium text-neutral-700 mb-1">Result</label>
                 <textarea
+                    aria-label="Result"
                     value={form.result}
                     onChange={(e) => set("result", e.target.value)}
                     rows={2}

@@ -146,6 +146,7 @@ export function TrainingRegistrationModal({
                 </label>
                 <input
                   type="text"
+                  aria-label="Full name"
                   value={formData.full_name}
                   onChange={(e) =>
                     setFormData((s) => ({ ...s, full_name: e.target.value }))
@@ -165,6 +166,7 @@ export function TrainingRegistrationModal({
                 </label>
                 <input
                   type="email"
+                  aria-label="Work email"
                   value={formData.email}
                   onChange={(e) =>
                     setFormData((s) => ({ ...s, email: e.target.value }))
@@ -184,6 +186,7 @@ export function TrainingRegistrationModal({
                 </label>
                 <input
                   type="text"
+                  aria-label="Company name"
                   value={formData.company_name}
                   onChange={(e) =>
                     setFormData((s) => ({ ...s, company_name: e.target.value }))
@@ -208,6 +211,7 @@ export function TrainingRegistrationModal({
                   <input
                     id="training-reg-phone"
                     type="tel"
+                    aria-label="Phone (optional)"
                     value={formData.phone}
                     onChange={(e) =>
                       setFormData((s) => ({ ...s, phone: e.target.value }))
@@ -226,6 +230,7 @@ export function TrainingRegistrationModal({
                   <input
                     id="training-reg-team-size"
                     type="number"
+                    aria-label="Team size"
                     min={1}
                     max={50}
                     value={formData.team_size}

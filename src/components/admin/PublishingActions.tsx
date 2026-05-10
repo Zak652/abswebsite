@@ -87,6 +87,7 @@ export function PublishingActions({
                         <div className="flex items-center gap-1.5">
                             <input
                                 type="datetime-local"
+                                aria-label="Schedule publish date and time"
                                 value={scheduleDate}
                                 onChange={(e) => setScheduleDate(e.target.value)}
                                 className="text-xs border border-neutral-300 rounded-lg px-2 py-1.5 focus:outline-none focus:border-primary-500"

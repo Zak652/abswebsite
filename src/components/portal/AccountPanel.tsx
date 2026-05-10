@@ -135,6 +135,7 @@ export function AccountPanel() {
                         <input
                             id="delete-confirm"
                             type="text"
+                            aria-label={`Type ${DELETE_CONFIRM_PHRASE} to confirm account deletion`}
                             value={confirmText}
                             onChange={(e) => setConfirmText(e.target.value)}
                             className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-red-500 mb-3"

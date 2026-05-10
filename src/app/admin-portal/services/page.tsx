@@ -127,6 +127,7 @@ function ServiceExpandPanel({
             <div>
               <p className="text-xs text-neutral-500 mb-1.5">Admin notes (auto-saved on blur)</p>
               <textarea
+                aria-label="Admin notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 onBlur={handleNotesBlur}

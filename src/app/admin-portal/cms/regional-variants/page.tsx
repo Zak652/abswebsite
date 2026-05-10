@@ -69,40 +69,40 @@ function RegionalVariantForm({
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Content Type ID</label>
-                    <input value={form.content_type} onChange={(e) => set("content_type", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.content_type} onChange={(e) => set("content_type", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Content Type ID" />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Object ID</label>
-                    <input value={form.object_id} onChange={(e) => set("object_id", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.object_id} onChange={(e) => set("object_id", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Object ID" />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Region</label>
-                    <select value={form.region} onChange={(e) => set("region", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500">
+                    <select value={form.region} onChange={(e) => set("region", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Region" >
                         {REGION_CHOICES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
                     </select>
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Language</label>
-                    <select value={form.language} onChange={(e) => set("language", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500">
+                    <select value={form.language} onChange={(e) => set("language", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Language" >
                         {LANGUAGE_CHOICES.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
                     </select>
                 </div>
             </div>
             <div>
                 <label className="block text-xs font-medium text-neutral-700 mb-1">Title Override</label>
-                <input value={form.title_override} onChange={(e) => set("title_override", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                <input value={form.title_override} onChange={(e) => set("title_override", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Title Override" />
             </div>
             <div>
                 <label className="block text-xs font-medium text-neutral-700 mb-1">Body Override</label>
-                <textarea value={form.body_override} onChange={(e) => set("body_override", e.target.value)} rows={4} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                <textarea value={form.body_override} onChange={(e) => set("body_override", e.target.value)} rows={4} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Body Override" />
             </div>
             <div>
                 <label className="block text-xs font-medium text-neutral-700 mb-1">CTA Link Override</label>
-                <input value={form.cta_link_override} onChange={(e) => set("cta_link_override", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                <input value={form.cta_link_override} onChange={(e) => set("cta_link_override", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="CTA Link Override" />
             </div>
             <div>
                 <label className="block text-xs font-medium text-neutral-700 mb-1">Data Override <span className="font-normal text-neutral-400">(JSON)</span></label>
-                <textarea value={form.data_override} onChange={(e) => handleJson(e.target.value)} rows={3} className={`w-full text-sm border rounded-lg px-3 py-2 focus:outline-none font-mono ${jsonError ? "border-red-400" : "border-neutral-300"}`} />
+                <textarea aria-label="Data override (JSON)" value={form.data_override} onChange={(e) => handleJson(e.target.value)} rows={3} className={`w-full text-sm border rounded-lg px-3 py-2 focus:outline-none font-mono ${jsonError ? "border-red-400" : "border-neutral-300"}`} />
                 {jsonError && <p className="text-[10px] text-red-500 mt-1">Invalid JSON</p>}
             </div>
             <div className="flex justify-end gap-2 pt-2">

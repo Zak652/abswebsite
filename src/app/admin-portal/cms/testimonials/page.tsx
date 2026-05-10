@@ -61,40 +61,40 @@ function TestimonialForm({
         <div className="bg-white rounded-xl border border-neutral-200 p-6 space-y-4">
             <div>
                 <label className="block text-xs font-medium text-neutral-700 mb-1">Quote</label>
-                <textarea value={form.quote} onChange={(e) => set("quote", e.target.value)} rows={3} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                <textarea value={form.quote} onChange={(e) => set("quote", e.target.value)} rows={3} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Quote" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Author Name</label>
-                    <input value={form.author_name} onChange={(e) => set("author_name", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.author_name} onChange={(e) => set("author_name", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Author Name" />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Role / Title</label>
-                    <input value={form.author_role} onChange={(e) => set("author_role", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.author_role} onChange={(e) => set("author_role", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Role / Title" />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Company</label>
-                    <input value={form.company_name} onChange={(e) => set("company_name", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.company_name} onChange={(e) => set("company_name", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Company" />
                 </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Industry</label>
-                    <input value={form.industry} onChange={(e) => set("industry", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.industry} onChange={(e) => set("industry", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Industry" />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Rating (1-5)</label>
-                    <input type="number" min={1} max={5} value={form.rating} onChange={(e) => set("rating", parseInt(e.target.value) || 5)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input type="number" min={1} max={5} value={form.rating} onChange={(e) => set("rating", parseInt(e.target.value) || 5)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Rating (1-5)" />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Placement</label>
-                    <select value={form.placement} onChange={(e) => set("placement", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500">
+                    <select value={form.placement} onChange={(e) => set("placement", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Placement" >
                         {PLACEMENT_CHOICES.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
                     </select>
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Order</label>
-                    <input type="number" value={form.order} onChange={(e) => set("order", parseInt(e.target.value) || 0)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input type="number" value={form.order} onChange={(e) => set("order", parseInt(e.target.value) || 0)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Order" />
                 </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">

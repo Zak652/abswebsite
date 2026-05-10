@@ -99,15 +99,15 @@ export default function SettingsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                         <label className="block text-xs font-medium text-neutral-700 mb-1">Phone</label>
-                        <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                        <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Phone" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-neutral-700 mb-1">Email</label>
-                        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Email" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-neutral-700 mb-1">Address</label>
-                        <input value={address} onChange={(e) => setAddress(e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                        <input value={address} onChange={(e) => setAddress(e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Address" />
                     </div>
                 </div>
 
@@ -117,11 +117,11 @@ export default function SettingsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-xs font-medium text-neutral-700 mb-1">Default OG Image URL</label>
-                        <input value={ogImage} onChange={(e) => setOgImage(e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                        <input value={ogImage} onChange={(e) => setOgImage(e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Default OG Image URL" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-neutral-700 mb-1">Google Analytics ID</label>
-                        <input value={gaId} onChange={(e) => setGaId(e.target.value)} placeholder="G-XXXXXXXXXX" className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                        <input value={gaId} onChange={(e) => setGaId(e.target.value)} placeholder="G-XXXXXXXXXX" className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Google Analytics ID" />
                     </div>
                 </div>
 
@@ -134,6 +134,7 @@ export default function SettingsPage() {
                             Currency Rates <span className="font-normal text-neutral-400">{`{"USD": 1, "UGX": 3750}`}</span>
                         </label>
                         <textarea
+                            aria-label="Currency rates (JSON)"
                             value={currencyRates}
                             onChange={(e) => handleJsonChange(setCurrencyRates, setCurrencyJsonError, e.target.value)}
                             rows={3}
@@ -146,6 +147,7 @@ export default function SettingsPage() {
                             Social Links <span className="font-normal text-neutral-400">{`{"twitter": "https://…"}`}</span>
                         </label>
                         <textarea
+                            aria-label="Social links (JSON)"
                             value={socialLinks}
                             onChange={(e) => handleJsonChange(setSocialLinks, setSocialJsonError, e.target.value)}
                             rows={3}
@@ -156,6 +158,7 @@ export default function SettingsPage() {
                     <div>
                         <label className="block text-xs font-medium text-neutral-700 mb-1">Organization Schema (JSON-LD)</label>
                         <textarea
+                            aria-label="Organization Schema (JSON-LD)"
                             value={orgSchema}
                             onChange={(e) => handleJsonChange(setOrgSchema, setSchemaJsonError, e.target.value)}
                             rows={4}

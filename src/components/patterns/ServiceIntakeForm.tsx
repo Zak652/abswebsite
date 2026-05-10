@@ -229,6 +229,7 @@ export function ServiceIntakeForm({ serviceType, onSuccess, className = "" }: Se
                     ) : (
                       <input
                         type={q.type}
+                        aria-label={q.label}
                         className={inputClass}
                         value={serviceAnswers[q.id] ?? ""}
                         onChange={(e) => handleServiceAnswer(q.id, e.target.value)}
@@ -267,20 +268,20 @@ export function ServiceIntakeForm({ serviceType, onSuccess, className = "" }: Se
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className={labelClass}>Full name <span className="text-error">*</span></label>
-                    <input type="text" className={inputClass} value={contact.full_name} onChange={(e) => handleContactChange("full_name", e.target.value)} placeholder="Jane Smith" />
+                    <input type="text" aria-label="Full name" className={inputClass} value={contact.full_name} onChange={(e) => handleContactChange("full_name", e.target.value)} placeholder="Jane Smith" />
                   </div>
                   <div>
                     <label className={labelClass}>Company <span className="text-error">*</span></label>
-                    <input type="text" className={inputClass} value={contact.company_name} onChange={(e) => handleContactChange("company_name", e.target.value)} placeholder="Acme Corp" />
+                    <input type="text" aria-label="Company" className={inputClass} value={contact.company_name} onChange={(e) => handleContactChange("company_name", e.target.value)} placeholder="Acme Corp" />
                   </div>
                 </div>
                 <div>
                   <label className={labelClass}>Work email <span className="text-error">*</span></label>
-                  <input type="email" className={inputClass} value={contact.email} onChange={(e) => handleContactChange("email", e.target.value)} placeholder="jane@acme.com" />
+                  <input type="email" aria-label="Work email" className={inputClass} value={contact.email} onChange={(e) => handleContactChange("email", e.target.value)} placeholder="jane@acme.com" />
                 </div>
                 <div>
                   <label className={labelClass}>Phone (optional)</label>
-                  <input type="tel" className={inputClass} value={contact.phone} onChange={(e) => handleContactChange("phone", e.target.value)} placeholder="+1 555 000 0000" />
+                  <input type="tel" className={inputClass} value={contact.phone} onChange={(e) => handleContactChange("phone", e.target.value)} placeholder="+1 555 000 0000" aria-label="Phone (optional)" />
                 </div>
               </div>
               {submitMutation.isError && (
