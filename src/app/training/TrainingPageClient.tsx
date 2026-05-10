@@ -190,7 +190,7 @@ export function TrainingPageClient({ currencyRates, hero, pageBlocks, trainingSe
                         </h3>
                       </div>
                       <div className="text-right shrink-0 ml-4">
-                        <p className="text-2xl font-bold font-mono text-accent-500">
+                        <p className="text-2xl font-bold font-mono text-accent-700">
                           {formatPrice(session.price_usd, currency)}
                         </p>
                         <p className="text-xs text-primary-900/40">per person</p>
@@ -199,19 +199,19 @@ export function TrainingPageClient({ currencyRates, hero, pageBlocks, trainingSe
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                       <div className="flex items-center text-primary-900/70">
-                        <Calendar className="w-5 h-5 mr-2 text-accent-500 shrink-0" />
+                        <Calendar className="w-5 h-5 mr-2 text-accent-700 shrink-0" />
                         <span className="text-sm font-medium">
                           {formatSessionDate(session.date)}
                         </span>
                       </div>
                       <div className="flex items-center text-primary-900/70">
-                        <Clock className="w-5 h-5 mr-2 text-accent-500 shrink-0" />
+                        <Clock className="w-5 h-5 mr-2 text-accent-700 shrink-0" />
                         <span className="text-sm font-medium">
                           {session.time_start} – {session.time_end}
                         </span>
                       </div>
                       <div className="flex items-center text-primary-900/70">
-                        <MapPin className="w-5 h-5 mr-2 text-accent-500 shrink-0" />
+                        <MapPin className="w-5 h-5 mr-2 text-accent-700 shrink-0" />
                         <span className="text-sm font-medium">
                           {session.location}
                         </span>
@@ -219,7 +219,7 @@ export function TrainingPageClient({ currencyRates, hero, pageBlocks, trainingSe
                     </div>
 
                     {session.seats_remaining <= 5 && session.seats_remaining > 0 && (
-                      <div className="flex items-center gap-1.5 text-xs text-accent-500 mb-4">
+                      <div className="flex items-center gap-1.5 text-xs text-accent-700 mb-4">
                         <Users className="w-3.5 h-3.5" />
                         {formatLowSeats(session.seats_remaining)}
                       </div>
@@ -233,7 +233,7 @@ export function TrainingPageClient({ currencyRates, hero, pageBlocks, trainingSe
                       }
                       disabled={session.seats_remaining === 0}
                       className={`w-full py-4 rounded-xl font-medium transition-colors ${session.seats_remaining > 0
-                        ? "bg-accent-500 text-white hover:bg-accent-600"
+                        ? "bg-accent-600 text-white hover:bg-accent-600"
                         : "bg-gray-100 text-gray-400 cursor-not-allowed"
                         }`}
                     >
@@ -256,7 +256,7 @@ export function TrainingPageClient({ currencyRates, hero, pageBlocks, trainingSe
               </p>
               <Link
                 href={sidebar.link_url}
-                className="block w-full py-4 bg-accent-500 text-white font-medium rounded-xl hover:bg-accent-600 transition-colors text-center"
+                className="block w-full py-4 bg-accent-600 text-white font-medium rounded-xl hover:bg-accent-600 transition-colors text-center"
               >
                 {sidebar.link_text}
               </Link>

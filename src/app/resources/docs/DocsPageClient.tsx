@@ -29,7 +29,7 @@ const FALLBACK_SECTIONS: DocSection[] = [
       </ul>
       <h3 class="text-lg font-heading font-semibold text-primary-900 pt-2">First Login</h3>
       <p class="text-sm text-primary-900/70 leading-relaxed">Navigate to your tenant URL (e.g. <code class="font-mono text-xs bg-neutral-100 px-1.5 py-0.5 rounded">yourorg.arcplus.io</code>) and sign in with the credentials from your welcome email. You will be prompted to set a new password on first login.</p>
-      <div class="bg-accent-500/5 border border-accent-500/20 rounded-2xl p-4 text-sm text-primary-900/70"><strong class="text-primary-900">Tip:</strong> Enable two-factor authentication immediately from Settings → Security.</div>
+      <div class="bg-accent-600/5 border border-accent-600/20 rounded-2xl p-4 text-sm text-primary-900/70"><strong class="text-primary-900">Tip:</strong> Enable two-factor authentication immediately from Settings → Security.</div>
     </div>`,
     },
     {
@@ -94,7 +94,7 @@ const FALLBACK_SECTIONS: DocSection[] = [
         label: "API Access",
         content: `<div class="space-y-4">
       <p class="text-sm text-primary-900/70 leading-relaxed">REST API access is available on Growth and Professional plans. API tokens are generated from <strong>Settings → API → New Token</strong>.</p>
-      <p class="text-sm text-primary-900/70">For full endpoint documentation, see the <a href="/resources/api-reference" class="text-accent-500 hover:text-accent-600 underline underline-offset-2">API Reference</a>.</p>
+      <p class="text-sm text-primary-900/70">For full endpoint documentation, see the <a href="/resources/api-reference" class="text-accent-700 hover:text-accent-600 underline underline-offset-2">API Reference</a>.</p>
       <div class="bg-neutral-50 border border-neutral-100 rounded-2xl p-4 text-sm text-primary-900/70 space-y-1"><p>Token scopes: <code class="font-mono text-xs bg-neutral-100 px-1 rounded">read</code>, <code class="font-mono text-xs bg-neutral-100 px-1 rounded">write</code>, <code class="font-mono text-xs bg-neutral-100 px-1 rounded">admin</code></p><p>Rate limit: 1,000 requests per minute per token.</p></div>
     </div>`,
     },
@@ -133,7 +133,7 @@ export default function DocsPageClient({ cmsPages }: DocsPageClientProps) {
                 {/* Back */}
                 <Link
                     href="/"
-                    className="inline-flex items-center text-sm font-medium text-primary-900/60 hover:text-accent-500 transition-colors mb-12"
+                    className="inline-flex items-center text-sm font-medium text-primary-900/60 hover:text-accent-700 transition-colors mb-12"
                 >
                     <ArrowLeft className="w-4 h-4 mr-2" /> Back
                 </Link>
@@ -200,7 +200,7 @@ export default function DocsPageClient({ cmsPages }: DocsPageClientProps) {
                                         );
                                         setActiveSection(sections[idx - 1].id);
                                     }}
-                                    className="inline-flex items-center gap-2 text-sm font-medium text-primary-900/60 hover:text-accent-500 transition-colors"
+                                    className="inline-flex items-center gap-2 text-sm font-medium text-primary-900/60 hover:text-accent-700 transition-colors"
                                 >
                                     ←{" "}
                                     {
@@ -225,7 +225,7 @@ export default function DocsPageClient({ cmsPages }: DocsPageClientProps) {
                                         );
                                         setActiveSection(sections[idx + 1].id);
                                     }}
-                                    className="inline-flex items-center gap-2 text-sm font-medium text-primary-900/60 hover:text-accent-500 transition-colors ml-auto"
+                                    className="inline-flex items-center gap-2 text-sm font-medium text-primary-900/60 hover:text-accent-700 transition-colors ml-auto"
                                 >
                                     {
                                         sections[

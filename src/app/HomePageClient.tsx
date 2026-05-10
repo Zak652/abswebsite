@@ -316,7 +316,7 @@ export function HomePageClient({ hero, blocks, testimonials = [] }: HomePageClie
               <motion.div key={`${idx}-${item.href}`} variants={fade}>
                 <Link href={item.href} className="group block">
                   <div className="bg-neutral-100 p-10 rounded-3xl h-full flex items-start space-x-6 hover:bg-primary-900 transition-colors duration-300">
-                    <div className="bg-white p-4 rounded-2xl shadow-sm text-primary-900 group-hover:text-accent-500 transition-colors">
+                    <div className="bg-white p-4 rounded-2xl shadow-sm text-primary-900 group-hover:text-accent-700 transition-colors">
                       <item.icon className="w-8 h-8" />
                     </div>
                     <div>
@@ -326,7 +326,7 @@ export function HomePageClient({ hero, blocks, testimonials = [] }: HomePageClie
                       <p className="text-primary-900/60 group-hover:text-white/70 transition-colors mb-6 text-lg">
                         {item.desc}
                       </p>
-                      <span className="inline-flex items-center font-medium text-accent-500 opacity-0 group-hover:opacity-100 transform translate-x-[-10px] group-hover:translate-x-0 transition-all duration-300">
+                      <span className="inline-flex items-center font-medium text-accent-700 opacity-0 group-hover:opacity-100 transform translate-x-[-10px] group-hover:translate-x-0 transition-all duration-300">
                         {item.cta} <ArrowRight className="w-5 h-5 ml-2" />
                       </span>
                     </div>
@@ -363,7 +363,7 @@ export function HomePageClient({ hero, blocks, testimonials = [] }: HomePageClie
                 variants={fade}
                 className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8"
               >
-                <span className="inline-block text-sm font-mono font-bold text-accent-500 mb-4">
+                <span className="inline-block text-sm font-mono font-bold text-accent-700 mb-4">
                   {String(idx + 1).padStart(2, "0")}
                 </span>
                 <h3 className="text-lg md:text-xl font-heading font-bold text-white mb-2">
@@ -388,7 +388,7 @@ export function HomePageClient({ hero, blocks, testimonials = [] }: HomePageClie
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div variants={fade} className="text-center mb-16">
-            <h2 className="text-sm font-bold font-mono text-accent-500 uppercase tracking-widest mb-4">
+            <h2 className="text-sm font-bold font-mono text-accent-700 uppercase tracking-widest mb-4">
               {logoBlock?.data?.eyebrow as string ?? statsBlock?.data?.eyebrow as string ?? "Trusted by many"}
             </h2>
             <h3 className="text-3xl md:text-5xl font-heading font-bold text-primary-900">
@@ -438,12 +438,12 @@ export function HomePageClient({ hero, blocks, testimonials = [] }: HomePageClie
           <motion.div variants={fade} className="mb-14 text-center">
             <div className="mb-8 flex items-center justify-center gap-4">
               <span className="h-px w-16 bg-gradient-to-r from-transparent to-accent-500/50" />
-              <span className="rounded-full border border-accent-500/15 bg-white/70 px-4 py-2 text-[0.7rem] font-mono font-bold uppercase tracking-[0.28em] text-primary-900/45 shadow-sm backdrop-blur-sm">
+              <span className="rounded-full border border-accent-600/15 bg-white/70 px-4 py-2 text-[0.7rem] font-mono font-bold uppercase tracking-[0.28em] text-primary-900/45 shadow-sm backdrop-blur-sm">
                 {(testimonialsBlock?.data?.eyebrow_tag as string | undefined) ?? "Customer voices"}
               </span>
               <span className="h-px w-16 bg-gradient-to-l from-transparent to-accent-500/50" />
             </div>
-            <p className="mb-4 text-sm font-bold font-mono uppercase tracking-[0.3em] text-accent-500">
+            <p className="mb-4 text-sm font-bold font-mono uppercase tracking-[0.3em] text-accent-700">
               {(testimonialsBlock?.data?.eyebrow_label as string | undefined) ?? "Proven in the field"}
             </p>
             <h2 className="text-4xl font-heading font-bold text-primary-900 md:text-5xl">

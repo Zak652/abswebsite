@@ -30,7 +30,7 @@ const SECTOR_COLORS: Record<string, string> = {
 
 const ACCENT_COLORS: Record<string, string> = {
   Government: "bg-primary-500",
-  "Aviation MRO": "bg-accent-500",
+  "Aviation MRO": "bg-accent-600",
   "Public Utilities": "bg-[var(--color-success)]",
 };
 
@@ -129,7 +129,7 @@ export default async function CaseStudiesPage() {
         {/* Back */}
         <Link
           href="/"
-          className="inline-flex items-center text-sm font-medium text-primary-900/60 hover:text-accent-500 transition-colors mb-12"
+          className="inline-flex items-center text-sm font-medium text-primary-900/60 hover:text-accent-700 transition-colors mb-12"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
@@ -198,7 +198,7 @@ export default async function CaseStudiesPage() {
 
                     {/* Hero Metric */}
                     <div className="sm:text-right shrink-0">
-                      <p className="text-5xl font-heading font-bold text-accent-500 leading-none">
+                      <p className="text-5xl font-heading font-bold text-accent-700 leading-none">
                         {cs.heroMetric}
                       </p>
                       <p className="text-sm text-primary-900/60 mt-1 max-w-[200px] sm:ml-auto">
@@ -251,7 +251,7 @@ export default async function CaseStudiesPage() {
                     </p>
                     <Link
                       href="/rfq"
-                      className="shrink-0 ml-4 inline-flex items-center gap-2 bg-primary-900 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-accent-500 transition-colors"
+                      className="shrink-0 ml-4 inline-flex items-center gap-2 bg-primary-900 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-accent-600 transition-colors"
                     >
                       Read full story
                     </Link>
@@ -275,7 +275,7 @@ export default async function CaseStudiesPage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/rfq"
-              className="inline-flex items-center justify-center gap-2 bg-accent-500 text-white px-7 py-3.5 rounded-xl font-medium hover:bg-accent-600 transition-colors"
+              className="inline-flex items-center justify-center gap-2 bg-accent-600 text-white px-7 py-3.5 rounded-xl font-medium hover:bg-accent-600 transition-colors"
             >
               Request a Quote
             </Link>

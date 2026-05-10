@@ -28,7 +28,7 @@ export default function ProductCard({ title, imageAlt, imageSrc, href, ctaText, 
                     <h3 className="text-2xl font-heading font-bold text-primary-900">{title}</h3>
 
                     <div className="mt-auto opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
-                        <span className="inline-flex items-center text-sm font-medium text-accent-500">
+                        <span className="inline-flex items-center text-sm font-medium text-accent-700">
                             {ctaText} <ArrowRight className="w-4 h-4 ml-1" />
                         </span>
                     </div>

@@ -132,7 +132,7 @@ export function TagsPageClient({ hero }: TagsPageClientProps) {
                             <button
                                 key={f.key}
                                 onClick={() => { setActiveFilter(f.key); setFilterValue("all"); }}
-                                className={`px-5 py-2.5 rounded-full text-sm font-medium transition-colors ${activeFilter === f.key ? 'bg-accent-500 text-white' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
+                                className={`px-5 py-2.5 rounded-full text-sm font-medium transition-colors ${activeFilter === f.key ? 'bg-accent-600 text-white' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
                             >
                                 {f.label}
                             </button>
@@ -176,7 +176,7 @@ export function TagsPageClient({ hero }: TagsPageClientProps) {
                                 className="bg-white/5 border border-white/10 p-6 rounded-2xl hover:bg-white/10 transition-colors group"
                             >
                                 <div className="flex items-center mb-4">
-                                    <tag.icon className="w-8 h-8 text-accent-500 mr-4" />
+                                    <tag.icon className="w-8 h-8 text-accent-700 mr-4" />
                                     <h3 className="text-xl font-bold font-heading">{tag.name}</h3>
                                 </div>
                                 <p className="text-white/60 mb-4">{tag.desc}</p>
@@ -215,7 +215,7 @@ export function TagsPageClient({ hero }: TagsPageClientProps) {
                             />
                         </motion.div>
                         <motion.div variants={fadeInUp} className="md:w-1/2 order-1 md:order-2">
-                            <h2 className="text-sm font-bold font-mono text-accent-500 uppercase tracking-widest mb-4">Construction</h2>
+                            <h2 className="text-sm font-bold font-mono text-accent-700 uppercase tracking-widest mb-4">Construction</h2>
                             <h3 className="text-4xl font-heading font-bold text-primary-900 mb-6">Built to last.</h3>
                             <p className="text-lg text-primary-900/70 mb-8">
                                 The face stock, adhesive layer, core inlay, and encapsulation are manufactured as a unified block, preventing delamination over decade-long lifespans.
@@ -270,7 +270,7 @@ export function TagsPageClient({ hero }: TagsPageClientProps) {
             >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <motion.div variants={fadeInUp} className="text-center mb-16">
-                        <h2 className="text-sm font-bold font-mono text-accent-500 uppercase tracking-widest mb-4">Tag Selection Flow</h2>
+                        <h2 className="text-sm font-bold font-mono text-accent-700 uppercase tracking-widest mb-4">Tag Selection Flow</h2>
                         <h3 className="text-4xl md:text-5xl font-heading font-bold text-primary-900 mb-6">Select the right identity layer.</h3>
                     </motion.div>
 
@@ -306,7 +306,7 @@ export function TagsPageClient({ hero }: TagsPageClientProps) {
                         Ready to tag your assets?
                     </h3>
                     <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
-                        <Link href="/configurator" className="bg-accent-500 text-white px-10 py-5 rounded-full text-lg font-medium hover:bg-accent-600 transition-colors">
+                        <Link href="/configurator" className="bg-accent-600 text-white px-10 py-5 rounded-full text-lg font-medium hover:bg-accent-600 transition-colors">
                             Configure Tags
                         </Link>
                         <Link href="/rfq" className="bg-transparent text-white border-2 border-white/20 px-10 py-5 rounded-full text-lg font-medium hover:border-white/40 transition-colors">

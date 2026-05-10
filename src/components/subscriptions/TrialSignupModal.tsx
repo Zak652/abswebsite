@@ -125,7 +125,7 @@ export function TrialSignupModal({
                 </p>
                 <button
                   onClick={handleClose}
-                  className="w-full py-3.5 bg-primary-900 text-white rounded-xl font-medium hover:bg-accent-500 transition-colors"
+                  className="w-full py-3.5 bg-primary-900 text-white rounded-xl font-medium hover:bg-accent-600 transition-colors"
                 >
                   Done
                 </button>
@@ -179,7 +179,7 @@ export function TrialSignupModal({
                       placeholder="Jane Smith"
                       className={`w-full bg-surface border rounded-xl px-4 py-3 text-primary-900 focus:outline-none transition-colors ${errors.full_name
                           ? "border-[var(--color-error)]"
-                          : "border-neutral-200 focus:border-accent-500"
+                          : "border-neutral-200 focus:border-accent-600"
                         }`}
                     />
                     {errors.full_name && (
@@ -203,7 +203,7 @@ export function TrialSignupModal({
                       placeholder="jane@company.com"
                       className={`w-full bg-surface border rounded-xl px-4 py-3 text-primary-900 focus:outline-none transition-colors ${errors.email
                           ? "border-[var(--color-error)]"
-                          : "border-neutral-200 focus:border-accent-500"
+                          : "border-neutral-200 focus:border-accent-600"
                         }`}
                     />
                     {errors.email && (
@@ -230,7 +230,7 @@ export function TrialSignupModal({
                       placeholder="ACME Corp"
                       className={`w-full bg-surface border rounded-xl px-4 py-3 text-primary-900 focus:outline-none transition-colors ${errors.company_name
                           ? "border-[var(--color-error)]"
-                          : "border-neutral-200 focus:border-accent-500"
+                          : "border-neutral-200 focus:border-accent-600"
                         }`}
                     />
                     {errors.company_name && (
@@ -252,7 +252,7 @@ export function TrialSignupModal({
                         setFormData((s) => ({ ...s, phone: e.target.value }))
                       }
                       placeholder="+1 555 000 0000"
-                      className="w-full bg-surface border border-neutral-200 rounded-xl px-4 py-3 text-primary-900 focus:outline-none focus:border-accent-500 transition-colors"
+                      className="w-full bg-surface border border-neutral-200 rounded-xl px-4 py-3 text-primary-900 focus:outline-none focus:border-accent-600 transition-colors"
                     />
                   </div>
 
@@ -272,7 +272,7 @@ export function TrialSignupModal({
                           plan: e.target.value as typeof formData.plan,
                         }))
                       }
-                      className="w-full bg-surface border border-neutral-200 rounded-xl px-4 py-3 text-primary-900 focus:outline-none focus:border-accent-500 appearance-none transition-colors"
+                      className="w-full bg-surface border border-neutral-200 rounded-xl px-4 py-3 text-primary-900 focus:outline-none focus:border-accent-600 appearance-none transition-colors"
                     >
                       {planOptions.map((o) => (
                         <option key={o.value} value={o.value}>
@@ -285,7 +285,7 @@ export function TrialSignupModal({
                   <button
                     type="submit"
                     disabled={submitTrial.isPending}
-                    className="w-full py-4 bg-accent-500 text-white rounded-xl font-medium hover:bg-accent-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="w-full py-4 bg-accent-600 text-white rounded-xl font-medium hover:bg-accent-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {submitTrial.isPending ? (
                       <>

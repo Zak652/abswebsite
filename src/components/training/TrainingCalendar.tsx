@@ -137,7 +137,7 @@ export function TrainingCalendar({ sessions, onSelectSession }: Props) {
               >
                 <span
                   className={`text-xs font-mono font-medium self-end w-6 h-6 flex items-center justify-center rounded-full ${isToday
-                      ? "bg-accent-500 text-white"
+                      ? "bg-accent-600 text-white"
                       : isPast
                         ? "text-primary-900/25"
                         : "text-primary-900/60"

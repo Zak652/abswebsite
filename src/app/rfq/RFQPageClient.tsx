@@ -43,14 +43,14 @@ function ConfigSummaryBanner({
     <div className="mb-8 bg-primary-900/5 border border-primary-900/10 rounded-2xl p-5">
       <div className="flex items-start justify-between gap-2 mb-3">
         <div className="flex items-center gap-2">
-          <Settings2 className="w-4 h-4 text-accent-500 shrink-0 mt-0.5" />
+          <Settings2 className="w-4 h-4 text-accent-700 shrink-0 mt-0.5" />
           <p className="text-sm font-semibold text-primary-900">
             Configuration from Configurator
           </p>
         </div>
         <Link
           href={`/configurator?product=${config.product}`}
-          className="text-xs text-accent-500 hover:underline shrink-0"
+          className="text-xs text-accent-700 hover:underline shrink-0"
         >
           Edit →
         </Link>
@@ -168,7 +168,7 @@ function RFQContent() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <Link
           href="/"
-          className="inline-flex items-center text-sm font-medium text-primary-900/60 hover:text-accent-500 transition-colors mb-8"
+          className="inline-flex items-center text-sm font-medium text-primary-900/60 hover:text-accent-700 transition-colors mb-8"
         >
           <ArrowLeft className="w-4 h-4 mr-2" /> Cancel Quote Builder
         </Link>
@@ -247,7 +247,7 @@ function RFQContent() {
                       </div>
                       <div
                         className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${formData[item.id as keyof typeof formData]
-                            ? "border-white bg-accent-500"
+                            ? "border-white bg-accent-600"
                             : "border-gray-300"
                           }`}
                       >
@@ -396,7 +396,7 @@ function RFQContent() {
                 </p>
                 <Link
                   href="/"
-                  className="bg-primary-900 text-white px-8 py-4 rounded-full font-medium hover:bg-accent-500 transition-colors"
+                  className="bg-primary-900 text-white px-8 py-4 rounded-full font-medium hover:bg-accent-600 transition-colors"
                 >
                   Return Home
                 </Link>
@@ -429,7 +429,7 @@ function RFQContent() {
               <button
                 onClick={nextStep}
                 disabled={submitRFQ.isPending}
-                className="flex items-center gap-2 bg-accent-500 text-white px-8 py-3 rounded-full font-medium hover:bg-accent-600 transition-colors shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 bg-accent-600 text-white px-8 py-3 rounded-full font-medium hover:bg-accent-600 transition-colors shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {submitRFQ.isPending ? (
                   <>

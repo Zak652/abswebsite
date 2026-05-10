@@ -59,13 +59,13 @@ export function WorkflowVisualizer({
                   key={step.label}
                   onClick={() => setActiveStep(idx)}
                   className={`w-full text-left p-6 rounded-2xl border transition-all duration-300 flex items-center justify-between ${activeStep === idx
-                      ? "bg-accent-500/10 border-accent-500 text-white"
+                      ? "bg-accent-600/10 border-accent-600 text-white"
                       : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"
                     }`}
                 >
                   <span className="text-xl font-medium">{step.label}</span>
                   {activeStep === idx && (
-                    <ArrowRight className="w-5 h-5 text-accent-500" />
+                    <ArrowRight className="w-5 h-5 text-accent-700" />
                   )}
                 </button>
               ))}
@@ -98,9 +98,9 @@ export function WorkflowVisualizer({
                   transition={{ duration: 0.4 }}
                   className="text-center"
                 >
-                  <div className="w-32 h-32 mx-auto mb-6 bg-accent-500/20 rounded-full flex items-center justify-center border border-accent-500/50 shadow-[0_0_30px_rgba(249,115,22,0.3)]">
+                  <div className="w-32 h-32 mx-auto mb-6 bg-accent-600/20 rounded-full flex items-center justify-center border border-accent-600/50 shadow-[0_0_30px_rgba(249,115,22,0.3)]">
                     <RefreshCw
-                      className={`w-12 h-12 text-accent-500 ${activeStep % 2 === 0 ? "animate-spin-slow" : "animate-bounce"
+                      className={`w-12 h-12 text-accent-700 ${activeStep % 2 === 0 ? "animate-spin-slow" : "animate-bounce"
                         }`}
                       style={{ animationDuration: "3s" }}
                     />
@@ -116,7 +116,7 @@ export function WorkflowVisualizer({
 
               <button
                 onClick={nextStep}
-                className="absolute bottom-4 right-4 text-xs font-mono text-white/30 hover:text-accent-500 transition-colors"
+                className="absolute bottom-4 right-4 text-xs font-mono text-white/30 hover:text-accent-700 transition-colors"
                 aria-label="Next lifecycle step"
               >
                 NEXT FRAME →

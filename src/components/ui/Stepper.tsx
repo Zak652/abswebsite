@@ -20,7 +20,7 @@ export function Stepper({ currentStep, totalSteps, className = "" }: StepperProp
           <div key={i} className="flex-1 flex flex-col items-center">
             <div
               className={`w-10 h-10 rounded-full flex items-center justify-center font-bold font-mono transition-colors duration-300 ${currentStep >= i
-                  ? "bg-accent-500 text-white"
+                  ? "bg-accent-600 text-white"
                   : "bg-neutral-200 text-neutral-400"
                 }`}
             >
@@ -31,7 +31,7 @@ export function Stepper({ currentStep, totalSteps, className = "" }: StepperProp
       </div>
       <div className="relative h-1 bg-neutral-200 mt-[-24px] z-[-1] mx-8">
         <motion.div
-          className="absolute top-0 left-0 h-1 bg-accent-500"
+          className="absolute top-0 left-0 h-1 bg-accent-600"
           initial={{ width: "0%" }}
           animate={{ width: `${progressPercent}%` }}
           transition={{ duration: 0.3 }}

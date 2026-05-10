@@ -120,7 +120,7 @@ export function ServicesPageClient({ hero, cmsServices }: ServicesPageClientProp
             >
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                     <motion.div variants={fadeInUp} className="text-center mb-20">
-                        <h2 className="text-sm font-bold font-mono text-accent-500 uppercase tracking-widest mb-4">Outcome-Based Delivery</h2>
+                        <h2 className="text-sm font-bold font-mono text-accent-700 uppercase tracking-widest mb-4">Outcome-Based Delivery</h2>
                         <h3 className="text-3xl md:text-5xl font-heading font-bold text-primary-900">Problem → Process → Result</h3>
                     </motion.div>
 
@@ -137,10 +137,10 @@ export function ServicesPageClient({ hero, cmsServices }: ServicesPageClientProp
                                 {/* Service Header */}
                                 <div className="bg-primary-900 p-8 md:p-10 flex items-center space-x-4">
                                     <div className="p-3 bg-white/10 rounded-2xl">
-                                        <service.icon className="w-8 h-8 text-accent-500" />
+                                        <service.icon className="w-8 h-8 text-accent-700" />
                                     </div>
                                     <div>
-                                        <span className="text-xs font-mono text-accent-500 uppercase tracking-wider">Service {String(idx + 1).padStart(2, '0')}</span>
+                                        <span className="text-xs font-mono text-accent-700 uppercase tracking-wider">Service {String(idx + 1).padStart(2, '0')}</span>
                                         <h3 className="text-2xl md:text-3xl font-heading font-bold text-white">{service.title}</h3>
                                     </div>
                                 </div>
@@ -176,7 +176,7 @@ export function ServicesPageClient({ hero, cmsServices }: ServicesPageClientProp
 
                                     {/* Result */}
                                     <div className="p-8 md:p-10 bg-neutral-100">
-                                        <span className="inline-block px-3 py-1 bg-accent-500/10 text-accent-500 text-xs font-bold uppercase tracking-wider rounded-full mb-4">The Result</span>
+                                        <span className="inline-block px-3 py-1 bg-accent-600/10 text-accent-700 text-xs font-bold uppercase tracking-wider rounded-full mb-4">The Result</span>
                                         <p className="text-primary-900 text-lg font-medium leading-relaxed">{service.result}</p>
                                     </div>
                                 </div>
@@ -192,7 +192,7 @@ export function ServicesPageClient({ hero, cmsServices }: ServicesPageClientProp
                     <h2 className="text-4xl md:text-5xl font-heading font-bold text-white mb-8">Ready to deploy expert services?</h2>
                     <p className="text-lg text-white/60 mb-10 max-w-2xl mx-auto">Our specialized teams operate globally. Tell us your requirements and we&apos;ll scope a custom engagement.</p>
                     <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
-                        <Link href="/rfq" className="bg-accent-500 text-white px-10 py-5 rounded-full text-lg font-medium hover:bg-accent-600 transition-colors flex items-center">
+                        <Link href="/rfq" className="bg-accent-600 text-white px-10 py-5 rounded-full text-lg font-medium hover:bg-accent-600 transition-colors flex items-center">
                             Request Consultation <ArrowRight className="w-5 h-5 ml-2" />
                         </Link>
                         <Link href="/arcplus#pricing" className="bg-transparent text-white border-2 border-white/20 px-10 py-5 rounded-full text-lg font-medium hover:border-white/40 transition-colors">

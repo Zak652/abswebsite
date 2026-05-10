@@ -52,7 +52,7 @@ export default function TestimonialCarousel({
             <div className="relative px-6 py-10 sm:px-10 lg:px-14 lg:py-14">
                 <div className="flex items-start justify-between gap-6">
                     <div className="flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-500/10 text-accent-500">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-600/10 text-accent-700">
                             <Quote size={28} aria-hidden />
                         </div>
                         {t.industry && (
@@ -116,7 +116,7 @@ export default function TestimonialCarousel({
 
                     <div className="flex flex-col items-start gap-4 sm:items-end">
                         {t.company_name && (
-                            <span className="rounded-full bg-accent-500/10 px-4 py-2 text-sm font-semibold text-accent-600">
+                            <span className="rounded-full bg-accent-600/10 px-4 py-2 text-sm font-semibold text-accent-600">
                                 {t.company_name}
                             </span>
                         )}
@@ -131,7 +131,7 @@ export default function TestimonialCarousel({
                                     <Star
                                         key={i}
                                         size={18}
-                                        className={i < t.rating! ? "fill-accent-500 text-accent-500" : "text-primary-900/15"}
+                                        className={i < t.rating! ? "fill-accent-600 text-accent-700" : "text-primary-900/15"}
                                     />
                                 ))}
                             </div>
@@ -145,7 +145,7 @@ export default function TestimonialCarousel({
                                         type="button"
                                         onClick={() => setCurrent(i)}
                                         aria-label={`Go to testimonial ${i + 1}`}
-                                        className={`h-2.5 rounded-full transition-all ${i === current ? "w-8 bg-accent-500" : "w-2.5 bg-primary-900/15 hover:bg-primary-900/30"}`}
+                                        className={`h-2.5 rounded-full transition-all ${i === current ? "w-8 bg-accent-600" : "w-2.5 bg-primary-900/15 hover:bg-primary-900/30"}`}
                                     />
                                 ))}
                             </div>

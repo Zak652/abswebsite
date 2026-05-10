@@ -153,7 +153,7 @@ function ProductCompareTable({
                                     }`}
                             >
                                 {p.is_recommended && (
-                                    <div className="absolute top-0 left-0 right-0 h-1 bg-accent-500" />
+                                    <div className="absolute top-0 left-0 right-0 h-1 bg-accent-600" />
                                 )}
                                 <div className="flex flex-col items-center">
                                     <div className="relative w-24 h-24 mb-4">
@@ -169,7 +169,7 @@ function ProductCompareTable({
                                         {p.name}
                                     </h3>
                                     {p.is_recommended && (
-                                        <span className="text-[10px] font-bold text-accent-500 uppercase tracking-wider bg-accent-500/10 px-2 py-1 rounded-full mb-2">
+                                        <span className="text-[10px] font-bold text-accent-700 uppercase tracking-wider bg-accent-600/10 px-2 py-1 rounded-full mb-2">
                                             Recommended
                                         </span>
                                     )}
@@ -216,7 +216,7 @@ function ProductCompareTable({
                                     <Link
                                         href={`/configurator?product=${p.slug}`}
                                         className={`inline-flex items-center gap-2 w-full justify-center py-3 rounded-full font-medium transition-colors ${p.is_recommended
-                                            ? "bg-accent-500 text-white hover:bg-accent-600"
+                                            ? "bg-accent-600 text-white hover:bg-accent-600"
                                             : "bg-neutral-100 text-primary-900 hover:bg-neutral-200"
                                             }`}
                                     >
@@ -226,7 +226,7 @@ function ProductCompareTable({
                                     <Link
                                         href={`/${category}/${p.slug}`}
                                         className={`inline-block w-full py-3 rounded-full font-medium transition-colors ${p.is_recommended
-                                            ? "bg-accent-500 text-white hover:bg-accent-600"
+                                            ? "bg-accent-600 text-white hover:bg-accent-600"
                                             : "bg-neutral-100 text-primary-900 hover:bg-neutral-200"
                                             }`}
                                     >
@@ -261,7 +261,7 @@ function ArcplusCompareTable({ data }: { data: typeof FALLBACK_ARCPLUS }) {
                                     }`}
                             >
                                 {p.recommended && (
-                                    <div className="absolute top-0 left-0 right-0 h-1 bg-accent-500" />
+                                    <div className="absolute top-0 left-0 right-0 h-1 bg-accent-600" />
                                 )}
                                 <div className="flex flex-col items-center">
                                     <div className="relative w-24 h-24 mb-4">
@@ -277,7 +277,7 @@ function ArcplusCompareTable({ data }: { data: typeof FALLBACK_ARCPLUS }) {
                                         {p.name}
                                     </h3>
                                     {p.recommended && (
-                                        <span className="text-[10px] font-bold text-accent-500 uppercase tracking-wider bg-accent-500/10 px-2 py-1 rounded-full mb-4">
+                                        <span className="text-[10px] font-bold text-accent-700 uppercase tracking-wider bg-accent-600/10 px-2 py-1 rounded-full mb-4">
                                             Recommended
                                         </span>
                                     )}
@@ -326,7 +326,7 @@ function ArcplusCompareTable({ data }: { data: typeof FALLBACK_ARCPLUS }) {
                                 <Link
                                     href="/arcplus#pricing"
                                     className={`inline-block w-full py-3 rounded-full font-medium transition-colors ${p.recommended
-                                        ? "bg-accent-500 text-white hover:bg-accent-600"
+                                        ? "bg-accent-600 text-white hover:bg-accent-600"
                                         : "bg-neutral-100 text-primary-900 hover:bg-neutral-200"
                                         }`}
                                 >
@@ -357,7 +357,7 @@ export function ComparePageClient({ cmsPricingPlans }: ComparePageClientProps) {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <Link
                     href="/"
-                    className="inline-flex items-center text-sm font-medium text-primary-900/60 hover:text-accent-500 transition-colors mb-8"
+                    className="inline-flex items-center text-sm font-medium text-primary-900/60 hover:text-accent-700 transition-colors mb-8"
                 >
                     <ArrowLeft className="w-4 h-4 mr-2" /> Back to Home
                 </Link>
@@ -386,7 +386,7 @@ export function ComparePageClient({ cmsPricingPlans }: ComparePageClientProps) {
                             {activeCategory === cat.id && (
                                 <motion.div
                                     layoutId="activeTab"
-                                    className="absolute bottom-0 left-0 right-0 h-1 bg-accent-500 rounded-t-full"
+                                    className="absolute bottom-0 left-0 right-0 h-1 bg-accent-600 rounded-t-full"
                                 />
                             )}
                         </button>
@@ -422,7 +422,7 @@ export function ComparePageClient({ cmsPricingPlans }: ComparePageClientProps) {
                     </p>
                     <Link
                         href="/rfq"
-                        className="inline-block bg-primary-900 text-white px-10 py-5 rounded-full text-lg font-medium hover:bg-accent-500 transition-colors"
+                        className="inline-block bg-primary-900 text-white px-10 py-5 rounded-full text-lg font-medium hover:bg-accent-600 transition-colors"
                     >
                         Get Custom Quote
                     </Link>

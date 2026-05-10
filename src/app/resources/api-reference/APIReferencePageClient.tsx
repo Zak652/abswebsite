@@ -179,7 +179,7 @@ export default function APIReferencePageClient({
                 {/* Back */}
                 <Link
                     href="/"
-                    className="inline-flex items-center text-sm font-medium text-primary-900/60 hover:text-accent-500 transition-colors mb-12"
+                    className="inline-flex items-center text-sm font-medium text-primary-900/60 hover:text-accent-700 transition-colors mb-12"
                 >
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Back
@@ -349,7 +349,7 @@ Content-Type:   application/json`}</pre>
                     </div>
                     <Link
                         href="/arcplus#pricing"
-                        className="shrink-0 inline-flex items-center gap-2 bg-accent-500 text-white px-6 py-3 rounded-xl font-medium hover:bg-accent-600 transition-colors text-sm"
+                        className="shrink-0 inline-flex items-center gap-2 bg-accent-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-accent-600 transition-colors text-sm"
                     >
                         View Pricing
                     </Link>
