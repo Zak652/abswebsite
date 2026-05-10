@@ -144,6 +144,55 @@ jobs:
       - name: pytest
         run: pytest --quiet
 
+  backend-check-deploy:
+    name: Backend · manage.py check --deploy
+    runs-on: ubuntu-latest
+    # Loads ``abs_backend.settings.production`` against placeholder-but-real-
+    # shaped secrets and runs Django's deploy preflight. Catches HTTPS/HSTS/
+    # cookie-flag regressions before they ride a deploy. Real prod secrets
+    # never leave the deploy pipeline; CI uses fixture values that satisfy
+    # production.py's required-secret gate without granting any real access.
+    env:
+      DJANGO_SETTINGS_MODULE: abs_backend.settings.production
+      # 50 chars — passes Django's "secret key has enough length" check.
+      DJANGO_SECRET_KEY: ci-deploy-check-django-secret-50-chars-fixture-aaaa
+      JWT_SECRET: ci-deploy-check-jwt-secret-32+chars-fixture-aaaa
+      RESEND_API_KEY: ci-deploy-check-resend-api-key-fixture
+      FLUTTERWAVE_SECRET_KEY: ci-deploy-check-fw-secret-fixture
+      FLUTTERWAVE_WEBHOOK_SECRET: ci-deploy-check-fw-webhook-fixture
+      REVALIDATION_SECRET: ci-deploy-check-revalidation-fixture
+      ALLOWED_HOSTS: example.com,www.example.com
+      CORS_ALLOWED_ORIGINS: https://example.com
+      CSRF_TRUSTED_ORIGINS: https://example.com
+      # Postgres + Redis aren't actually contacted for `check --deploy`,
+      # but the env vars must be present for settings/base.py to import.
+      POSTGRES_DB: db
+      POSTGRES_USER: u
+      POSTGRES_PASSWORD: p
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: "5432"
+      REDIS_URL: redis://localhost:6379/0
+      DATABASE_URL: postgres://u:p@localhost:5432/db
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: manage.py check --deploy
+        # --fail-level WARNING upgrades any deploy advisory to a hard fail
+        # so a future regression that, e.g., flips SECURE_SSL_REDIRECT off
+        # cannot pass CI silently.
+        run: python manage.py check --deploy --fail-level WARNING
+
   # ---------------------------------------------------------------------------
   # Security
   # ---------------------------------------------------------------------------
