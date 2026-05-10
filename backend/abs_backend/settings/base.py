@@ -216,7 +216,19 @@ CELERY_BEAT_SCHEDULE = {
         # next minute. Matches the resolution promised in the build guide.
         "schedule": 60.0,
     },
+    "sweep-inactive-accounts": {
+        "task": "apps.accounts.tasks.sweep_inactive_accounts",
+        # Daily at 03:15 UTC — off-peak for our user base, well clear of
+        # any back-office reporting windows. Once-a-day cadence is fine
+        # because the retention window is months, not minutes.
+        "schedule": 24 * 60 * 60.0,
+    },
 }
+
+# GDPR data-minimisation: soft-delete accounts inactive for this many
+# days. The default matches the policy recorded in COMPLIANCE.md (~24
+# months); override via ACCOUNT_RETENTION_DAYS env var when needed.
+ACCOUNT_RETENTION_DAYS = env.int("ACCOUNT_RETENTION_DAYS", default=24 * 30)
 
 # --------------------------------------------------------------------------
 # Logging — JSON to stdout so the docker logs stream is structured. Every
