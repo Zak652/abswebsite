@@ -395,7 +395,7 @@ export function ArcplusPageClient({
           modulesIntroData.eyebrow) && (
             <motion.div variants={fadeInUp} className="text-center mb-12">
               {modulesIntroData.eyebrow && (
-                <p className="text-xs font-mono uppercase tracking-widest text-accent-500 mb-3">
+                <p className="text-xs font-mono uppercase tracking-widest text-accent-700 mb-3">
                   {modulesIntroData.eyebrow}
                 </p>
               )}
@@ -423,7 +423,7 @@ export function ArcplusPageClient({
               onClick={() =>
                 setActiveModule(activeModule === mod.id ? null : mod.id)
               }
-              className={`cursor-pointer group relative bg-white p-6 rounded-3xl border border-neutral-100 hover:border-accent-500 transition-colors shadow-sm hover:shadow-md overflow-hidden h-48 flex flex-col justify-center items-center text-center ${activeModule === mod.id ? "ring-2 ring-accent-500" : ""
+              className={`cursor-pointer group relative bg-white p-6 rounded-3xl border border-neutral-100 hover:border-accent-600 transition-colors shadow-sm hover:shadow-md overflow-hidden h-48 flex flex-col justify-center items-center text-center ${activeModule === mod.id ? "ring-2 ring-accent-600" : ""
                 }`}
               whileHover={{ y: -4 }}
             >
@@ -435,7 +435,7 @@ export function ArcplusPageClient({
               </h3>
 
               <div className="absolute inset-0 bg-primary-900 p-6 text-left opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-center">
-                <h3 className="text-sm font-bold font-mono text-accent-500 mb-2">
+                <h3 className="text-sm font-bold font-mono text-accent-700 mb-2">
                   {mod.name}
                 </h3>
                 <p className="text-white text-sm">{mod.capability}</p>
@@ -467,7 +467,7 @@ export function ArcplusPageClient({
                     const ModIcon =
                       resolvedModules.find((m) => m.id === activeModule)?.icon ||
                       Database;
-                    return <ModIcon className="w-8 h-8 text-accent-500" />;
+                    return <ModIcon className="w-8 h-8 text-accent-700" />;
                   })()}
                 </div>
                 <h3 className="text-3xl font-heading font-bold">
@@ -508,13 +508,13 @@ export function ArcplusPageClient({
                     key={step}
                     onClick={() => setActiveStep(idx)}
                     className={`w-full text-left p-6 rounded-2xl border transition-all duration-300 flex items-center justify-between ${safeActiveStep === idx
-                      ? "bg-accent-500/10 border-accent-500 text-white"
+                      ? "bg-accent-600/10 border-accent-600 text-white"
                       : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"
                       }`}
                   >
                     <span className="text-xl font-medium">{step}</span>
                     {safeActiveStep === idx && (
-                      <ArrowRight className="w-5 h-5 text-accent-500" />
+                      <ArrowRight className="w-5 h-5 text-accent-700" />
                     )}
                   </button>
                 ))}
@@ -580,7 +580,7 @@ export function ArcplusPageClient({
                       </>
                     ) : (
                       <div className="flex-1 p-8 flex flex-col items-center justify-center text-center">
-                        <div className="w-32 h-32 mx-auto mb-6 bg-accent-500/20 rounded-full flex items-center justify-center border border-accent-500/50 shadow-[0_0_30px_rgba(249,115,22,0.3)]">
+                        <div className="w-32 h-32 mx-auto mb-6 bg-accent-600/20 rounded-full flex items-center justify-center border border-accent-600/50 shadow-[0_0_30px_rgba(249,115,22,0.3)]">
                           {(() => {
                             const ICONS: Record<
                               string,
@@ -601,7 +601,7 @@ export function ArcplusPageClient({
                               RefreshCw;
                             return (
                               <Icon
-                                className={`w-12 h-12 text-accent-500 ${safeActiveStep % 2 === 0
+                                className={`w-12 h-12 text-accent-700 ${safeActiveStep % 2 === 0
                                   ? "animate-spin-slow"
                                   : "animate-bounce"
                                   }`}
@@ -625,7 +625,7 @@ export function ArcplusPageClient({
 
                 <button
                   onClick={nextStep}
-                  className="absolute bottom-4 right-4 text-xs font-mono text-white/40 hover:text-accent-500 transition-colors z-10 bg-[#0f172a]/60 px-2 py-1 rounded"
+                  className="absolute bottom-4 right-4 text-xs font-mono text-white/40 hover:text-accent-700 transition-colors z-10 bg-[#0f172a]/60 px-2 py-1 rounded"
                   aria-label="Next lifecycle step"
                 >
                   NEXT FRAME →
@@ -672,7 +672,7 @@ export function ArcplusPageClient({
         <div className="mt-16 text-center">
           <button
             onClick={() => setShowFeatureComparison(!showFeatureComparison)}
-            className="inline-flex items-center text-lg font-medium text-primary-900 hover:text-accent-500 transition-colors"
+            className="inline-flex items-center text-lg font-medium text-primary-900 hover:text-accent-700 transition-colors"
           >
             {showFeatureComparison ? toggleHideLabel : toggleShowLabel}
             <ChevronDown
@@ -700,7 +700,7 @@ export function ArcplusPageClient({
                       <th className="p-6 border-b border-r border-neutral-100 text-center text-sm font-bold text-primary-900">
                         {featureColumnLabels.starter}
                       </th>
-                      <th className="p-6 border-b border-r border-neutral-100 text-center text-sm font-bold text-accent-500 bg-accent-500/5">
+                      <th className="p-6 border-b border-r border-neutral-100 text-center text-sm font-bold text-accent-700 bg-accent-600/5">
                         {featureColumnLabels.growth}
                       </th>
                       <th className="p-6 border-b border-r border-neutral-100 text-center text-sm font-bold text-primary-900">
@@ -725,7 +725,7 @@ export function ArcplusPageClient({
                             <td
                               key={i}
                               className={`p-4 border-b border-neutral-100 text-center ${i < 3 ? "border-r" : ""
-                                } ${i === 1 ? "bg-accent-500/5" : ""}`}
+                                } ${i === 1 ? "bg-accent-600/5" : ""}`}
                             >
                               {val ? (
                                 <Check className="w-5 h-5 text-green-500 mx-auto" />
@@ -781,14 +781,14 @@ export function ArcplusPageClient({
               return opensTrial ? (
                 <button
                   onClick={() => openTrialModal("growth")}
-                  className="bg-accent-500 text-white px-10 py-5 rounded-full text-xl font-medium hover:bg-accent-600 transition-colors"
+                  className="bg-accent-600 text-white px-10 py-5 rounded-full text-xl font-medium hover:bg-accent-600 transition-colors"
                 >
                   {primaryLabel}
                 </button>
               ) : (
                 <Link
                   href={primaryHref}
-                  className="bg-accent-500 text-white px-10 py-5 rounded-full text-xl font-medium hover:bg-accent-600 transition-colors"
+                  className="bg-accent-600 text-white px-10 py-5 rounded-full text-xl font-medium hover:bg-accent-600 transition-colors"
                 >
                   {primaryLabel}
                 </Link>

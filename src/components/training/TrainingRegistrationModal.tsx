@@ -114,7 +114,7 @@ export function TrainingRegistrationModal({
                 </h3>
                 {session && (
                   <div className="mt-1">
-                    <p className="text-sm font-medium text-accent-500">
+                    <p className="text-sm font-medium text-accent-700">
                       {session.title}
                     </p>
                     <p className="text-xs text-primary-900/60">
@@ -152,7 +152,7 @@ export function TrainingRegistrationModal({
                     setFormData((s) => ({ ...s, full_name: e.target.value }))
                   }
                   placeholder="Jane Smith"
-                  className={`w-full bg-surface border rounded-xl px-4 py-3 text-primary-900 focus:outline-none transition-colors ${errors.full_name ? "border-[var(--color-error)]" : "border-neutral-200 focus:border-accent-500"
+                  className={`w-full bg-surface border rounded-xl px-4 py-3 text-primary-900 focus:outline-none transition-colors ${errors.full_name ? "border-[var(--color-error)]" : "border-neutral-200 focus:border-accent-600"
                     }`}
                 />
                 {errors.full_name && (
@@ -172,7 +172,7 @@ export function TrainingRegistrationModal({
                     setFormData((s) => ({ ...s, email: e.target.value }))
                   }
                   placeholder="jane@company.com"
-                  className={`w-full bg-surface border rounded-xl px-4 py-3 text-primary-900 focus:outline-none transition-colors ${errors.email ? "border-[var(--color-error)]" : "border-neutral-200 focus:border-accent-500"
+                  className={`w-full bg-surface border rounded-xl px-4 py-3 text-primary-900 focus:outline-none transition-colors ${errors.email ? "border-[var(--color-error)]" : "border-neutral-200 focus:border-accent-600"
                     }`}
                 />
                 {errors.email && (
@@ -192,7 +192,7 @@ export function TrainingRegistrationModal({
                     setFormData((s) => ({ ...s, company_name: e.target.value }))
                   }
                   placeholder="ACME Corp"
-                  className={`w-full bg-surface border rounded-xl px-4 py-3 text-primary-900 focus:outline-none transition-colors ${errors.company_name ? "border-[var(--color-error)]" : "border-neutral-200 focus:border-accent-500"
+                  className={`w-full bg-surface border rounded-xl px-4 py-3 text-primary-900 focus:outline-none transition-colors ${errors.company_name ? "border-[var(--color-error)]" : "border-neutral-200 focus:border-accent-600"
                     }`}
                 />
                 {errors.company_name && (
@@ -217,7 +217,7 @@ export function TrainingRegistrationModal({
                       setFormData((s) => ({ ...s, phone: e.target.value }))
                     }
                     placeholder="+1 555 000 0000"
-                    className="w-full bg-surface border border-neutral-200 rounded-xl px-4 py-3 text-primary-900 focus:outline-none focus:border-accent-500 transition-colors"
+                    className="w-full bg-surface border border-neutral-200 rounded-xl px-4 py-3 text-primary-900 focus:outline-none focus:border-accent-600 transition-colors"
                   />
                 </div>
                 <div>
@@ -240,7 +240,7 @@ export function TrainingRegistrationModal({
                         team_size: Math.max(1, parseInt(e.target.value) || 1),
                       }))
                     }
-                    className="w-full bg-surface border border-neutral-200 rounded-xl px-4 py-3 text-primary-900 focus:outline-none focus:border-accent-500 transition-colors"
+                    className="w-full bg-surface border border-neutral-200 rounded-xl px-4 py-3 text-primary-900 focus:outline-none focus:border-accent-600 transition-colors"
                   />
                 </div>
               </div>
@@ -253,7 +253,7 @@ export function TrainingRegistrationModal({
               <button
                 type="submit"
                 disabled={registerForTraining.isPending}
-                className="w-full py-4 bg-accent-500 text-white rounded-xl font-medium hover:bg-accent-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-4 bg-accent-600 text-white rounded-xl font-medium hover:bg-accent-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {registerForTraining.isPending ? (
                   <>

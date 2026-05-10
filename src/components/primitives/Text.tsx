@@ -47,7 +47,7 @@ const colorClasses: Record<TextColor, string> = {
   secondary: "text-neutral-700",
   muted: "text-neutral-500",
   subtle: "text-neutral-400",
-  accent: "text-accent-500",
+  accent: "text-accent-700",
   white: "text-white",
   inherit: "",
 };

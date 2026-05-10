@@ -60,19 +60,19 @@ function FeatureCard({
         }`}
     >
       {item.badge && (
-        <span className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${isDark ? "bg-accent-500/20 text-accent-400" : "bg-accent-500/10 text-accent-500"
+        <span className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${isDark ? "bg-accent-600/20 text-accent-400" : "bg-accent-600/10 text-accent-700"
           }`}>
           {item.badge}
         </span>
       )}
       {Icon && (
-        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-5 ${isDark ? "bg-white/10 text-accent-400" : isCard ? "bg-primary-50 text-primary-500" : "bg-accent-100 text-accent-500"
+        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-5 ${isDark ? "bg-white/10 text-accent-400" : isCard ? "bg-primary-50 text-primary-500" : "bg-accent-100 text-accent-700"
           }`}>
           <Icon className="w-6 h-6" />
         </div>
       )}
       {item.eyebrow && (
-        <p className={`text-xs font-bold font-mono uppercase tracking-widest mb-2 ${isDark ? "text-accent-400" : "text-accent-500"
+        <p className={`text-xs font-bold font-mono uppercase tracking-widest mb-2 ${isDark ? "text-accent-400" : "text-accent-700"
           }`}>
           {item.eyebrow}
         </p>
@@ -129,7 +129,7 @@ export function FeatureGrid({
             className="text-center mb-16 max-w-3xl mx-auto"
           >
             {eyebrow && (
-              <p className={`text-xs font-bold font-mono uppercase tracking-widest mb-4 ${isDark ? "text-accent-400" : "text-accent-500"
+              <p className={`text-xs font-bold font-mono uppercase tracking-widest mb-4 ${isDark ? "text-accent-400" : "text-accent-700"
                 }`}>
                 {eyebrow}
               </p>

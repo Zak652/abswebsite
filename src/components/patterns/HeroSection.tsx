@@ -42,12 +42,12 @@ interface HeroSectionProps {
 
 const badgeClasses = {
   default: "bg-neutral-100 text-primary-900",
-  accent: "bg-accent-500/10 text-accent-500 border border-accent-500/20",
+  accent: "bg-accent-600/10 text-accent-700 border border-accent-600/20",
   outline: "border border-white/30 text-white",
 };
 
 const ctaClasses = {
-  primary: "bg-accent-500 text-white hover:bg-accent-600 shadow-sm hover:shadow-md",
+  primary: "bg-accent-600 text-white hover:bg-accent-600 shadow-sm hover:shadow-md",
   secondary: "bg-primary-900 text-white hover:bg-primary-800 shadow-sm",
   ghost: "bg-white/10 backdrop-blur-md text-white border border-white/30 hover:bg-white/20",
 };
@@ -78,7 +78,7 @@ export function HeroSection({
               transition={{ duration: 0.7, ease: "easeOut" }}
             >
               {eyebrow && (
-                <p className="text-xs font-bold font-mono text-accent-500 uppercase tracking-widest mb-4">
+                <p className="text-xs font-bold font-mono text-accent-700 uppercase tracking-widest mb-4">
                   {eyebrow}
                 </p>
               )}

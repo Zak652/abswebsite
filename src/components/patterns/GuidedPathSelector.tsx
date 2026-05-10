@@ -56,7 +56,7 @@ export function GuidedPathSelector({
             <motion.div key={item.href} variants={fadeInUp}>
               <Link href={item.href} className="group block">
                 <div className="bg-neutral-100 p-10 rounded-3xl h-full flex items-start space-x-6 hover:bg-primary-900 transition-colors duration-300">
-                  <div className="bg-white p-4 rounded-2xl shadow-sm text-primary-900 group-hover:text-accent-500 transition-colors flex-shrink-0">
+                  <div className="bg-white p-4 rounded-2xl shadow-sm text-primary-900 group-hover:text-accent-700 transition-colors flex-shrink-0">
                     <item.icon className="w-8 h-8" />
                   </div>
                   <div>
@@ -66,7 +66,7 @@ export function GuidedPathSelector({
                     <p className="text-primary-900/60 group-hover:text-white/70 transition-colors mb-6 text-lg">
                       {item.description}
                     </p>
-                    <span className="inline-flex items-center font-medium text-accent-500 opacity-0 group-hover:opacity-100 transform translate-x-[-10px] group-hover:translate-x-0 transition-all duration-300">
+                    <span className="inline-flex items-center font-medium text-accent-700 opacity-0 group-hover:opacity-100 transform translate-x-[-10px] group-hover:translate-x-0 transition-all duration-300">
                       {item.ctaLabel} <ArrowRight className="w-5 h-5 ml-2" />
                     </span>
                   </div>

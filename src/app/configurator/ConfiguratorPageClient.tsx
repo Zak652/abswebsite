@@ -48,7 +48,7 @@ function OptionButton({
         <button
             onClick={onSelect}
             className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 relative ${selected
-                ? "border-accent-500 bg-accent-500/5"
+                ? "border-accent-600 bg-accent-600/5"
                 : "border-neutral-200 hover:border-primary-900/20"
                 }`}
         >
@@ -56,7 +56,7 @@ function OptionButton({
                 <div className="flex items-center gap-2">
                     <span className="font-bold text-primary-900">{opt.name}</span>
                     {opt.badge && (
-                        <span className="text-[10px] font-bold text-accent-500 bg-accent-500/10 px-2 py-0.5 rounded-full uppercase">
+                        <span className="text-[10px] font-bold text-accent-700 bg-accent-600/10 px-2 py-0.5 rounded-full uppercase">
                             {opt.badge}
                         </span>
                     )}
@@ -71,7 +71,7 @@ function OptionButton({
                 <p className="text-sm text-primary-900/60 pr-8">{opt.description}</p>
             )}
             {selected && (
-                <Check className="absolute right-4 top-1/2 -translate-y-1/2 text-accent-500 w-5 h-5" />
+                <Check className="absolute right-4 top-1/2 -translate-y-1/2 text-accent-700 w-5 h-5" />
             )}
         </button>
     );
@@ -182,7 +182,7 @@ function ConfiguratorContent() {
                 <div className="pt-24 px-4 sm:px-6 lg:px-8 border-b border-neutral-100 pb-4">
                     <Link
                         href="/scanners"
-                        className="inline-flex items-center text-sm font-medium text-primary-900/60 hover:text-accent-500 transition-colors mb-4"
+                        className="inline-flex items-center text-sm font-medium text-primary-900/60 hover:text-accent-700 transition-colors mb-4"
                     >
                         <ArrowLeft className="w-4 h-4 mr-2" /> Back to Scanners
                     </Link>
@@ -201,7 +201,7 @@ function ConfiguratorContent() {
                     </p>
                     <Link
                         href="/scanners"
-                        className="bg-accent-500 text-white px-8 py-4 rounded-full font-medium hover:bg-accent-600 transition-colors"
+                        className="bg-accent-600 text-white px-8 py-4 rounded-full font-medium hover:bg-accent-600 transition-colors"
                     >
                         Browse Scanners
                     </Link>
@@ -216,7 +216,7 @@ function ConfiguratorContent() {
             <div className="pt-24 px-4 sm:px-6 lg:px-8 border-b border-neutral-100 pb-4 bg-white z-20">
                 <Link
                     href={backHref}
-                    className="inline-flex items-center text-sm font-medium text-primary-900/60 hover:text-accent-500 transition-colors mb-4"
+                    className="inline-flex items-center text-sm font-medium text-primary-900/60 hover:text-accent-700 transition-colors mb-4"
                 >
                     <ArrowLeft className="w-4 h-4 mr-2" /> Back
                 </Link>
@@ -261,7 +261,7 @@ function ConfiguratorContent() {
                                             key={`${opt.overlay_label}-${idx}`}
                                             initial={{ opacity: 0, scale: 0.8 }}
                                             animate={{ opacity: 1, scale: 1 }}
-                                            className={`absolute ${opt.overlay_position ?? "top-10 right-10"} ${opt.overlay_color ?? "bg-accent-500 text-white"} text-xs font-bold px-3 py-1.5 rounded-full flex items-center shadow-lg`}
+                                            className={`absolute ${opt.overlay_position ?? "top-10 right-10"} ${opt.overlay_color ?? "bg-accent-600 text-white"} text-xs font-bold px-3 py-1.5 rounded-full flex items-center shadow-lg`}
                                         >
                                             <IconComponent className="w-3.5 h-3.5 mr-1.5" />
                                             {opt.overlay_label}
@@ -398,7 +398,7 @@ function ConfiguratorContent() {
 
                             <Link
                                 href={rfqHref}
-                                className="bg-primary-900 text-white px-8 py-4 rounded-full font-medium hover:bg-accent-500 transition-colors shadow-md hover:shadow-lg whitespace-nowrap"
+                                className="bg-primary-900 text-white px-8 py-4 rounded-full font-medium hover:bg-accent-600 transition-colors shadow-md hover:shadow-lg whitespace-nowrap"
                             >
                                 Add to Quote
                             </Link>
@@ -416,7 +416,7 @@ export function ConfiguratorPageClient() {
         <Suspense
             fallback={
                 <div className="flex items-center justify-center min-h-screen">
-                    <Loader2 className="w-8 h-8 animate-spin text-accent-500" />
+                    <Loader2 className="w-8 h-8 animate-spin text-accent-700" />
                 </div>
             }
         >

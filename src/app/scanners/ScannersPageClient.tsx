@@ -56,7 +56,7 @@ export function ScannersPageClient({ hero }: ScannersPageClientProps) {
                             <p className="text-white/70 text-lg mb-8">
                                 Equipment doesn&apos;t matter if it can&apos;t survive the environment. Our scanners are deployable in freezers, foundries, and flight lines. Drop-tested to concrete, sealed against dust and water.
                             </p>
-                            <ul className="space-y-4 font-mono text-sm text-accent-500">
+                            <ul className="space-y-4 font-mono text-sm text-accent-700">
                                 <li className="flex items-center"><CheckCircle2 className="w-5 h-5 mr-3" /> IP65 / IP67 Sealing Options</li>
                                 <li className="flex items-center"><CheckCircle2 className="w-5 h-5 mr-3" /> 8ft (2.4m) Concrete Drop Spec</li>
                                 <li className="flex items-center"><CheckCircle2 className="w-5 h-5 mr-3" /> Extreme Temp Operations (-20°C to 50°C)</li>
@@ -97,13 +97,13 @@ export function ScannersPageClient({ hero }: ScannersPageClientProps) {
                         />
                         {/* Hotspots overlay */}
                         <div className="absolute top-1/4 left-1/3 flex flex-col items-center">
-                            <div className="w-4 h-4 bg-accent-500 rounded-full ring-4 ring-white/50 animate-pulse"></div>
+                            <div className="w-4 h-4 bg-accent-600 rounded-full ring-4 ring-white/50 animate-pulse"></div>
                             <div className="mt-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-lg shadow-lg text-sm font-bold text-primary-900">
                                 Tactile scan trigger rated for 5M presses
                             </div>
                         </div>
                         <div className="absolute bottom-1/3 right-1/4 flex flex-col items-center">
-                            <div className="w-4 h-4 bg-accent-500 rounded-full ring-4 ring-white/50 animate-pulse"></div>
+                            <div className="w-4 h-4 bg-accent-600 rounded-full ring-4 ring-white/50 animate-pulse"></div>
                             <div className="mt-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-lg shadow-lg text-sm font-bold text-primary-900">
                                 Gorilla Glass display rated IP67
                             </div>
@@ -150,7 +150,7 @@ export function ScannersPageClient({ hero }: ScannersPageClientProps) {
             >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <motion.div variants={fadeInUp} className="text-center mb-16 max-w-3xl mx-auto">
-                        <h2 className="text-sm font-bold font-mono text-accent-500 uppercase tracking-widest mb-4">Build your ideal unit</h2>
+                        <h2 className="text-sm font-bold font-mono text-accent-700 uppercase tracking-widest mb-4">Build your ideal unit</h2>
                         <h3 className="text-4xl md:text-5xl font-heading font-bold text-primary-900 mb-6">Configure for your operation.</h3>
                         <p className="text-lg text-primary-900/60">Select scan engines, battery tiers, and environmental protection levels to match your exact workflow.</p>
                     </motion.div>
@@ -173,7 +173,7 @@ export function ScannersPageClient({ hero }: ScannersPageClientProps) {
                             ))}
                         </div>
                         <div className="mt-12 text-center">
-                            <Link href="/configurator" className="inline-block bg-accent-500 text-white px-10 py-5 rounded-full text-lg font-medium hover:bg-accent-600 transition-colors shadow-lg hover:shadow-xl hover:-translate-y-1 transform duration-200">
+                            <Link href="/configurator" className="inline-block bg-accent-600 text-white px-10 py-5 rounded-full text-lg font-medium hover:bg-accent-600 transition-colors shadow-lg hover:shadow-xl hover:-translate-y-1 transform duration-200">
                                 Open Hardware Configurator
                             </Link>
                         </div>
@@ -188,7 +188,7 @@ export function ScannersPageClient({ hero }: ScannersPageClientProps) {
                         Need help choosing?
                     </h2>
                     <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
-                        <Link href="/compare" className="bg-accent-500 text-white px-10 py-5 rounded-full text-lg font-medium hover:bg-accent-600 transition-colors">
+                        <Link href="/compare" className="bg-accent-600 text-white px-10 py-5 rounded-full text-lg font-medium hover:bg-accent-600 transition-colors">
                             Compare Models
                         </Link>
                         <Link href="/rfq" className="bg-transparent text-white border-2 border-white/20 px-10 py-5 rounded-full text-lg font-medium hover:border-white/40 transition-colors">

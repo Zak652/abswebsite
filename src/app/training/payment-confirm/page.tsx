@@ -36,7 +36,7 @@ function PaymentConfirmContent() {
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link
                 href="/portal/training"
-                className="inline-flex items-center gap-2 bg-primary-900 text-white px-6 py-3 rounded-xl font-medium hover:bg-accent-500 transition-colors"
+                className="inline-flex items-center gap-2 bg-primary-900 text-white px-6 py-3 rounded-xl font-medium hover:bg-accent-600 transition-colors"
               >
                 View My Registrations
                 <ArrowRight className="w-4 h-4" />
@@ -70,7 +70,7 @@ function PaymentConfirmContent() {
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link
                 href="/training"
-                className="inline-flex items-center gap-2 bg-accent-500 text-white px-6 py-3 rounded-xl font-medium hover:bg-accent-600 transition-colors"
+                className="inline-flex items-center gap-2 bg-accent-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-accent-600 transition-colors"
               >
                 Try Again
               </Link>

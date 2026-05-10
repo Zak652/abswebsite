@@ -185,7 +185,7 @@ export function ServiceDetailPageClient({ slug, serviceType }: ServiceDetailPage
       {/* 1. HERO */}
       <section className="pt-32 pb-20 bg-primary-900 text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-5 pointer-events-none">
-          <div className="absolute w-96 h-96 rounded-full bg-accent-500 blur-3xl -top-20 -right-20" />
+          <div className="absolute w-96 h-96 rounded-full bg-accent-600 blur-3xl -top-20 -right-20" />
           <div className="absolute w-64 h-64 rounded-full bg-primary-400 blur-3xl bottom-0 left-20" />
         </div>
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -195,7 +195,7 @@ export function ServiceDetailPageClient({ slug, serviceType }: ServiceDetailPage
             transition={{ duration: 0.6 }}
           >
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 rounded-2xl bg-accent-500/20">
+              <div className="p-3 rounded-2xl bg-accent-600/20">
                 <Icon className="w-6 h-6 text-accent-400" />
               </div>
               <span className="text-xs font-bold font-mono text-accent-400 uppercase tracking-widest">
@@ -224,7 +224,7 @@ export function ServiceDetailPageClient({ slug, serviceType }: ServiceDetailPage
       >
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div variants={fadeInUp} className="mb-16">
-            <p className="text-xs font-bold font-mono text-accent-500 uppercase tracking-widest mb-3">How It Works</p>
+            <p className="text-xs font-bold font-mono text-accent-700 uppercase tracking-widest mb-3">How It Works</p>
             <h2 className="text-3xl md:text-4xl font-heading font-bold text-primary-900">
               Four steps to a verified result
             </h2>
@@ -242,7 +242,7 @@ export function ServiceDetailPageClient({ slug, serviceType }: ServiceDetailPage
                   </div>
                   <div className="flex-1 pb-8">
                     <div className="flex items-center gap-3 mb-2">
-                      <step.icon className="w-5 h-5 text-accent-500" />
+                      <step.icon className="w-5 h-5 text-accent-700" />
                       <h3 className="text-lg font-bold font-heading text-primary-900">{step.title}</h3>
                     </div>
                     <p className="text-primary-900/60">{step.description}</p>
@@ -264,7 +264,7 @@ export function ServiceDetailPageClient({ slug, serviceType }: ServiceDetailPage
       >
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div variants={fadeInUp} className="mb-12">
-            <p className="text-xs font-bold font-mono text-accent-500 uppercase tracking-widest mb-3">What You Get</p>
+            <p className="text-xs font-bold font-mono text-accent-700 uppercase tracking-widest mb-3">What You Get</p>
             <h2 className="text-3xl md:text-4xl font-heading font-bold text-primary-900">
               Deliverables included in every engagement
             </h2>
@@ -309,7 +309,7 @@ export function ServiceDetailPageClient({ slug, serviceType }: ServiceDetailPage
       <section className="py-24 bg-surface">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
-            <p className="text-xs font-bold font-mono text-accent-500 uppercase tracking-widest mb-3">Get Started</p>
+            <p className="text-xs font-bold font-mono text-accent-700 uppercase tracking-widest mb-3">Get Started</p>
             <h2 className="text-3xl md:text-4xl font-heading font-bold text-primary-900">
               Tell us about your project
             </h2>

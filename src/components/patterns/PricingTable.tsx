@@ -98,7 +98,7 @@ export function PricingTable({
               }`}
             onClick={() => setBillingAnnual(true)}
           >
-            Annual <span className="text-accent-500 ml-1">(Save 15%)</span>
+            Annual <span className="text-accent-700 ml-1">(Save 15%)</span>
           </button>
           <motion.div
             className="absolute top-1.5 bottom-1.5 bg-primary-900 rounded-full shadow z-0"
@@ -144,12 +144,12 @@ export function PricingTable({
               key={plan.name}
               variants={fadeInUp}
               className={`relative bg-white rounded-3xl p-8 flex flex-col ${plan.recommended
-                  ? "border-2 border-accent-500 shadow-xl scale-105 z-10"
+                  ? "border-2 border-accent-600 shadow-xl scale-105 z-10"
                   : "border border-neutral-100 shadow-sm hover:shadow-md"
                 } transition-shadow`}
             >
               {plan.recommended && (
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-accent-500 text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-accent-600 text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
                   Recommended
                 </div>
               )}
@@ -184,7 +184,7 @@ export function PricingTable({
               <button
                 onClick={() => handleSelect(plan.plan)}
                 className={`w-full py-3.5 rounded-full font-medium transition-colors mb-8 ${plan.recommended
-                    ? "bg-accent-500 text-white hover:bg-accent-600"
+                    ? "bg-accent-600 text-white hover:bg-accent-600"
                     : "bg-neutral-100 text-primary-900 hover:bg-neutral-200"
                   }`}
               >
@@ -198,7 +198,7 @@ export function PricingTable({
                 <ul className="space-y-3">
                   {plan.features.map((feature, i) => (
                     <li key={i} className="flex items-start">
-                      <Check className="w-5 h-5 text-accent-500 mr-3 shrink-0 mt-0.5" />
+                      <Check className="w-5 h-5 text-accent-700 mr-3 shrink-0 mt-0.5" />
                       <span className="text-primary-900/80 text-sm">{feature}</span>
                     </li>
                   ))}

@@ -72,7 +72,7 @@ export function ProductDetailContent({ slug }: ProductDetailContentProps) {
         <Package className="w-16 h-16 text-neutral-300 mb-4" />
         <h1 className="text-2xl font-heading font-bold text-primary-900 mb-2">Product not found</h1>
         <p className="text-primary-900/60 mb-6">This product may have been removed or is unavailable.</p>
-        <Link href="/scanners" className="text-accent-500 font-medium hover:text-accent-600 transition-colors">
+        <Link href="/scanners" className="text-accent-700 font-medium hover:text-accent-600 transition-colors">
           Browse all scanners →
         </Link>
       </div>
@@ -90,11 +90,11 @@ export function ProductDetailContent({ slug }: ProductDetailContentProps) {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.7 }}
             >
-              <p className="text-xs font-bold font-mono text-accent-500 uppercase tracking-widest mb-4">
+              <p className="text-xs font-bold font-mono text-accent-700 uppercase tracking-widest mb-4">
                 {product.category.name}
               </p>
               {product.is_recommended && (
-                <span className="inline-block bg-accent-500/10 text-accent-500 border border-accent-500/20 px-3 py-1 rounded-full text-xs font-bold mb-4">
+                <span className="inline-block bg-accent-600/10 text-accent-700 border border-accent-600/20 px-3 py-1 rounded-full text-xs font-bold mb-4">
                   Recommended
                 </span>
               )}
@@ -108,7 +108,7 @@ export function ProductDetailContent({ slug }: ProductDetailContentProps) {
                 {product.is_configurable && (
                   <Link
                     href={`/configurator?product=${product.slug}`}
-                    className="inline-flex items-center gap-2 bg-accent-500 text-white px-6 py-3.5 rounded-full font-medium hover:bg-accent-600 transition-colors shadow-sm hover:shadow-md"
+                    className="inline-flex items-center gap-2 bg-accent-600 text-white px-6 py-3.5 rounded-full font-medium hover:bg-accent-600 transition-colors shadow-sm hover:shadow-md"
                   >
                     <Settings className="w-4 h-4" /> Configure & Quote
                   </Link>
@@ -200,7 +200,7 @@ export function ProductDetailContent({ slug }: ProductDetailContentProps) {
         >
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div variants={fadeInUp} className="mb-12">
-              <p className="text-xs font-bold font-mono text-accent-500 uppercase tracking-widest mb-3">Technical</p>
+              <p className="text-xs font-bold font-mono text-accent-700 uppercase tracking-widest mb-3">Technical</p>
               <h2 className="text-3xl font-heading font-bold text-primary-900">Specifications</h2>
             </motion.div>
 
@@ -241,7 +241,7 @@ export function ProductDetailContent({ slug }: ProductDetailContentProps) {
             </p>
             <Link
               href={`/configurator?product=${product.slug}`}
-              className="inline-flex items-center gap-3 bg-accent-500 text-white px-10 py-5 rounded-full text-lg font-medium hover:bg-accent-600 transition-colors shadow-lg hover:shadow-xl"
+              className="inline-flex items-center gap-3 bg-accent-600 text-white px-10 py-5 rounded-full text-lg font-medium hover:bg-accent-600 transition-colors shadow-lg hover:shadow-xl"
             >
               <Settings className="w-5 h-5" /> Open Configurator
             </Link>

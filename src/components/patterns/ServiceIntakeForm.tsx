@@ -115,7 +115,7 @@ export function ServiceIntakeForm({ serviceType, onSuccess, className = "" }: Se
     <div className={`bg-white rounded-3xl border border-neutral-200 shadow-sm overflow-hidden ${className}`}>
       {/* Header */}
       <div className="bg-primary-900 px-8 py-6">
-        <p className="text-xs font-mono text-accent-500 uppercase tracking-widest mb-1">Service Enquiry</p>
+        <p className="text-xs font-mono text-accent-700 uppercase tracking-widest mb-1">Service Enquiry</p>
         <h3 className="text-2xl font-heading font-bold text-white">{SERVICE_LABELS[serviceType]}</h3>
       </div>
 
@@ -132,9 +132,9 @@ export function ServiceIntakeForm({ serviceType, onSuccess, className = "" }: Se
               <div
                 key={s}
                 className={`flex-1 py-3 text-center text-xs font-medium border-b-2 transition-colors ${isActive
-                    ? "text-primary-900 border-accent-500"
+                    ? "text-primary-900 border-accent-600"
                     : isDone
-                      ? "text-accent-500 border-accent-500/40"
+                      ? "text-accent-700 border-accent-600/40"
                       : "text-primary-900/40 border-transparent"
                   }`}
               >
@@ -299,7 +299,7 @@ export function ServiceIntakeForm({ serviceType, onSuccess, className = "" }: Se
                 <button
                   onClick={handleSubmit}
                   disabled={!canSubmit || submitMutation.isPending}
-                  className="flex-1 py-4 bg-accent-500 text-white rounded-2xl font-medium flex items-center justify-center gap-2 hover:bg-accent-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex-1 py-4 bg-accent-600 text-white rounded-2xl font-medium flex items-center justify-center gap-2 hover:bg-accent-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {submitMutation.isPending ? (
                     <><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</>

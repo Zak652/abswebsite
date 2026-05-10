@@ -19,14 +19,14 @@ export function StatsCard({
     <div
       className={`
         bg-white rounded-xl border p-6
-        ${urgent ? "border-accent-500" : "border-neutral-200"}
+        ${urgent ? "border-accent-600" : "border-neutral-200"}
       `}
     >
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-neutral-500 font-medium">{label}</p>
           <p
-            className={`text-3xl font-bold mt-1 font-heading ${urgent ? "text-accent-500" : "text-primary-900"
+            className={`text-3xl font-bold mt-1 font-heading ${urgent ? "text-accent-700" : "text-primary-900"
               }`}
           >
             {value.toLocaleString()}

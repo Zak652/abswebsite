@@ -134,13 +134,13 @@ export default function Header({ cmsNavItems }: HeaderProps) {
                         {navItems.map((item) =>
                             item.hasDropdown ? (
                                 <div key={item.url} className="relative h-full flex items-center" onMouseEnter={() => handleMouseEnter(item.url.replace("/", ""))}>
-                                    <Link href={item.url} className={`flex items-center space-x-1 text-sm font-medium transition-colors border-b-2 pb-0.5 ${pathname.startsWith(item.url) ? "text-primary-900 border-accent-500" : "text-primary-900/80 hover:text-primary-900 border-transparent"}`}>
+                                    <Link href={item.url} className={`flex items-center space-x-1 text-sm font-medium transition-colors border-b-2 pb-0.5 ${pathname.startsWith(item.url) ? "text-primary-900 border-accent-600" : "text-primary-900/80 hover:text-primary-900 border-transparent"}`}>
                                         <span>{item.label}</span>
                                         <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${activeMenu === item.url.replace("/", "") ? "rotate-180" : ""}`} />
                                     </Link>
                                 </div>
                             ) : (
-                                <Link key={item.url} href={item.url} className={`text-sm font-medium transition-colors border-b-2 pb-0.5 ${pathname === item.url || pathname.startsWith(item.url + "/") ? "text-primary-900 border-accent-500" : "text-primary-900/80 hover:text-primary-900 border-transparent"}`}>
+                                <Link key={item.url} href={item.url} className={`text-sm font-medium transition-colors border-b-2 pb-0.5 ${pathname === item.url || pathname.startsWith(item.url + "/") ? "text-primary-900 border-accent-600" : "text-primary-900/80 hover:text-primary-900 border-transparent"}`}>
                                     {item.label}
                                 </Link>
                             )
@@ -149,7 +149,7 @@ export default function Header({ cmsNavItems }: HeaderProps) {
 
                     {/* CTA */}
                     <div className="hidden md:flex items-center">
-                        <Link href="/configurator" className="bg-primary-900 text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-accent-500 transition-colors shadow-sm hover:shadow-md">
+                        <Link href="/configurator" className="bg-primary-900 text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-accent-600 transition-colors shadow-sm hover:shadow-md">
                             Configure Solution
                         </Link>
                     </div>
@@ -204,7 +204,7 @@ export default function Header({ cmsNavItems }: HeaderProps) {
                                                             />
                                                         </div>
                                                         <div className="flex-1 min-w-0">
-                                                            <span className="text-sm font-medium text-primary-900 group-hover:text-accent-500 transition-colors block">
+                                                            <span className="text-sm font-medium text-primary-900 group-hover:text-accent-700 transition-colors block">
                                                                 {item.name}
                                                             </span>
                                                             <p className="text-xs text-primary-900/60 truncate">{item.desc}</p>
@@ -223,7 +223,7 @@ export default function Header({ cmsNavItems }: HeaderProps) {
                                         <p className="text-xs text-primary-900/60 mb-4">Use our visual comparison tool to find the perfect match for your environment.</p>
                                     </div>
                                     <div className="space-y-3">
-                                        <Link href="/compare" className="flex items-center text-sm font-medium text-accent-500 hover:text-primary-900 transition-colors">
+                                        <Link href="/compare" className="flex items-center text-sm font-medium text-accent-700 hover:text-primary-900 transition-colors">
                                             Compare Products <ArrowRight className="w-4 h-4 ml-1" />
                                         </Link>
                                         <Link href="/configurator" className="flex items-center text-sm font-medium text-primary-900/70 hover:text-primary-900 transition-colors">
@@ -286,7 +286,7 @@ export default function Header({ cmsNavItems }: HeaderProps) {
                                     <div className="space-y-8">
                                         {(mobileStep === "scanners" ? scannersMenu : tagsMenu).map((group, idx) => (
                                             <div key={idx}>
-                                                <h3 className="text-xs font-bold font-mono text-accent-500 uppercase tracking-wider mb-4">
+                                                <h3 className="text-xs font-bold font-mono text-accent-700 uppercase tracking-wider mb-4">
                                                     {group.category}
                                                 </h3>
                                                 <ul className="space-y-4">
@@ -309,7 +309,7 @@ export default function Header({ cmsNavItems }: HeaderProps) {
                                     </div>
 
                                     <div className="pt-6 border-t border-neutral-100">
-                                        <Link href="/compare" className="flex items-center text-sm font-medium text-accent-500 py-3" onClick={() => setMobileMenuOpen(false)}>
+                                        <Link href="/compare" className="flex items-center text-sm font-medium text-accent-700 py-3" onClick={() => setMobileMenuOpen(false)}>
                                             Compare {mobileStep === "scanners" ? "Scanners" : "Tags"} <ArrowRight className="w-4 h-4 ml-1" />
                                         </Link>
                                     </div>
