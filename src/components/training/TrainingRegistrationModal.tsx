@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, AlertCircle } from "lucide-react";
 import { useRegisterForTraining } from "@/lib/hooks/useTraining";
+import { useFocusTrap } from "@/lib/hooks/useFocusTrap";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import type { TrainingSession } from "@/types/training";
 
@@ -27,6 +28,13 @@ export function TrainingRegistrationModal({
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const registerForTraining = useRegisterForTraining();
+
+  // Trap focus within the dialog while it's open and restore it on close.
+  // ESC closes (mirrors the overlay click).
+  const dialogRef = useFocusTrap<HTMLDivElement>({
+    active: isOpen,
+    onEscape: () => handleClose(),
+  });
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -86,15 +94,22 @@ export function TrainingRegistrationModal({
           onClick={handleClose}
         >
           <motion.div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="training-registration-modal-title"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="bg-white rounded-3xl p-8 max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-3xl p-8 max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto outline-none"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-start mb-6">
               <div>
-                <h3 className="text-2xl font-heading font-bold text-primary-900">
+                <h3
+                  id="training-registration-modal-title"
+                  className="text-2xl font-heading font-bold text-primary-900"
+                >
                   Register for Session
                 </h3>
                 {session && (
@@ -184,10 +199,14 @@ export function TrainingRegistrationModal({
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                  <label
+                    htmlFor="training-reg-phone"
+                    className="block text-sm font-medium text-neutral-700 mb-1.5"
+                  >
                     Phone (optional)
                   </label>
                   <input
+                    id="training-reg-phone"
                     type="tel"
                     value={formData.phone}
                     onChange={(e) =>
@@ -198,10 +217,14 @@ export function TrainingRegistrationModal({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                  <label
+                    htmlFor="training-reg-team-size"
+                    className="block text-sm font-medium text-neutral-700 mb-1.5"
+                  >
                     Team Size
                   </label>
                   <input
+                    id="training-reg-team-size"
                     type="number"
                     min={1}
                     max={50}

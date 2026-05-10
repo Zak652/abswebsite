@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Check, AlertCircle } from "lucide-react";
 import { useSubmitTrialSignup } from "@/lib/hooks/useSubscription";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useFocusTrap } from "@/lib/hooks/useFocusTrap";
 
 interface TrialSignupModalProps {
   isOpen: boolean;
@@ -36,6 +37,13 @@ export function TrialSignupModal({
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const submitTrial = useSubmitTrialSignup();
+
+  // Trap focus inside the dialog while it's open and restore it on close.
+  // ESC closes (mirrors the overlay click).
+  const dialogRef = useFocusTrap<HTMLDivElement>({
+    active: isOpen,
+    onEscape: () => handleClose(),
+  });
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -88,10 +96,16 @@ export function TrialSignupModal({
           onClick={handleClose}
         >
           <motion.div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={
+              submitted ? "trial-signup-success-title" : "trial-signup-modal-title"
+            }
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="bg-white rounded-3xl p-8 md:p-12 max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-3xl p-8 md:p-12 max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto outline-none"
             onClick={(e) => e.stopPropagation()}
           >
             {submitted ? (
@@ -99,7 +113,10 @@ export function TrialSignupModal({
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Check className="w-8 h-8 text-green-600" />
                 </div>
-                <h3 className="text-2xl font-heading font-bold text-primary-900 mb-3">
+                <h3
+                  id="trial-signup-success-title"
+                  className="text-2xl font-heading font-bold text-primary-900 mb-3"
+                >
                   Request Received!
                 </h3>
                 <p className="text-primary-900/60 mb-6">
@@ -117,7 +134,10 @@ export function TrialSignupModal({
               <>
                 <div className="flex justify-between items-start mb-6">
                   <div>
-                    <h3 className="text-2xl font-heading font-bold text-primary-900">
+                    <h3
+                      id="trial-signup-modal-title"
+                      className="text-2xl font-heading font-bold text-primary-900"
+                    >
                       Start Your Free Trial
                     </h3>
                     <p className="text-primary-900/60 mt-1 text-sm">
@@ -233,10 +253,14 @@ export function TrialSignupModal({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                    <label
+                      htmlFor="trial-signup-plan"
+                      className="block text-sm font-medium text-neutral-700 mb-1.5"
+                    >
                       Plan
                     </label>
                     <select
+                      id="trial-signup-plan"
                       value={formData.plan}
                       onChange={(e) =>
                         setFormData((s) => ({
