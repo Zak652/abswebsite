@@ -283,6 +283,7 @@ function RFQContent() {
                       Estimated number of assets
                     </label>
                     <select
+                        aria-label="Estimated number of assets"
                       value={formData.assetCount}
                       onChange={(e) =>
                         setFormData((s) => ({
@@ -304,6 +305,7 @@ function RFQContent() {
                       Number of locations
                     </label>
                     <select
+                        aria-label="Number of locations"
                       value={formData.locations}
                       onChange={(e) =>
                         setFormData((s) => ({
@@ -346,6 +348,7 @@ function RFQContent() {
                       Work Email
                     </label>
                     <input
+                        aria-label="Work Email"
                       type="email"
                       value={formData.email}
                       onChange={(e) =>
@@ -360,6 +363,7 @@ function RFQContent() {
                       Company Name
                     </label>
                     <input
+                        aria-label="Company Name"
                       type="text"
                       value={formData.company}
                       onChange={(e) =>

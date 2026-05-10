@@ -113,6 +113,7 @@ export function MediaUploader({
                 <input
                     ref={fileInputRef}
                     type="file"
+                    aria-label="Upload media file"
                     accept={accept}
                     className="hidden"
                     onChange={(e) => handleFiles(e.target.files)}
@@ -174,6 +175,7 @@ export function MediaUploader({
                             <div>
                                 <label className="block text-xs font-medium text-neutral-700 mb-1">Alt Text</label>
                                 <input
+                                    aria-label="Alt Text"
                                     value={altText}
                                     onChange={(e) => setAltText(e.target.value)}
                                     className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-1.5 focus:outline-none focus:border-primary-500"
@@ -182,6 +184,7 @@ export function MediaUploader({
                             <div>
                                 <label className="block text-xs font-medium text-neutral-700 mb-1">Caption</label>
                                 <input
+                                    aria-label="Caption"
                                     value={caption}
                                     onChange={(e) => setCaption(e.target.value)}
                                     className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-1.5 focus:outline-none focus:border-primary-500"

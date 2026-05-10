@@ -61,7 +61,7 @@ function ImageForm({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Image Type</label>
-                    <select value={form.image_type} onChange={(e) => set("image_type", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500">
+                    <select value={form.image_type} onChange={(e) => set("image_type", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Image Type" >
                         {IMAGE_TYPES.map((t) => (
                             <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
                         ))}
@@ -69,7 +69,7 @@ function ImageForm({
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Order</label>
-                    <input type="number" value={form.order} onChange={(e) => set("order", parseInt(e.target.value) || 0)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input type="number" value={form.order} onChange={(e) => set("order", parseInt(e.target.value) || 0)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Order" />
                 </div>
             </div>
             <MediaPicker
@@ -82,15 +82,15 @@ function ImageForm({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Alt Text</label>
-                    <input value={form.alt_text} onChange={(e) => set("alt_text", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.alt_text} onChange={(e) => set("alt_text", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Alt Text" />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Caption</label>
-                    <input value={form.caption} onChange={(e) => set("caption", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.caption} onChange={(e) => set("caption", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Caption" />
                 </div>
             </div>
             <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={form.is_active} onChange={(e) => set("is_active", e.target.checked)} className="rounded border-neutral-300" />
+                <input type="checkbox" aria-label="Active" checked={form.is_active} onChange={(e) => set("is_active", e.target.checked)} className="rounded border-neutral-300" />
                 <span className="text-xs font-medium text-neutral-700">Active</span>
             </label>
             <div className="flex justify-end gap-2 pt-2">
@@ -164,6 +164,7 @@ export default function GalleriesPage() {
             <div className="mb-5">
                 <label className="block text-xs font-medium text-neutral-700 mb-1">Product ID</label>
                 <input
+                    aria-label="Product ID"
                     value={productId}
                     onChange={(e) => { setProductId(e.target.value); setCreating(false); setEditingId(null); }}
                     placeholder="Enter product UUID…"

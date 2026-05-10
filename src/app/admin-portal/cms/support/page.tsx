@@ -43,19 +43,19 @@ function TierForm({
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Name</label>
-                    <input value={form.name} onChange={(e) => set("name", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.name} onChange={(e) => set("name", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Name" />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Slug</label>
-                    <input value={form.slug} onChange={(e) => set("slug", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.slug} onChange={(e) => set("slug", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Slug" />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Plan</label>
-                    <input value={form.plan} onChange={(e) => set("plan", e.target.value)} placeholder="Starter, Growth, Enterprise…" className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.plan} onChange={(e) => set("plan", e.target.value)} placeholder="Starter, Growth, Enterprise…" className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Plan" />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Order</label>
-                    <input type="number" value={form.order} onChange={(e) => set("order", parseInt(e.target.value) || 0)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input type="number" value={form.order} onChange={(e) => set("order", parseInt(e.target.value) || 0)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Order" />
                 </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">

@@ -74,6 +74,7 @@ function HeroForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Page Slug</label>
                     <input
+                        aria-label="Page Slug"
                         value={form.page}
                         onChange={(e) => set("page", e.target.value)}
                         placeholder="home, arcplus, scanners…"
@@ -83,6 +84,7 @@ function HeroForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Variant</label>
                     <select
+                        aria-label="Variant"
                         value={form.variant}
                         onChange={(e) => set("variant", e.target.value)}
                         className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
@@ -95,6 +97,7 @@ function HeroForm({
             <div>
                 <label className="block text-xs font-medium text-neutral-700 mb-1">Eyebrow</label>
                 <input
+                    aria-label="Eyebrow"
                     value={form.eyebrow}
                     onChange={(e) => set("eyebrow", e.target.value)}
                     className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
@@ -103,6 +106,7 @@ function HeroForm({
             <div>
                 <label className="block text-xs font-medium text-neutral-700 mb-1">Headline</label>
                 <input
+                    aria-label="Headline"
                     value={form.headline}
                     onChange={(e) => set("headline", e.target.value)}
                     className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
@@ -111,6 +115,7 @@ function HeroForm({
             <div>
                 <label className="block text-xs font-medium text-neutral-700 mb-1">Subheadline</label>
                 <textarea
+                    aria-label="Subheadline"
                     value={form.subheadline}
                     onChange={(e) => set("subheadline", e.target.value)}
                     rows={2}
@@ -121,6 +126,7 @@ function HeroForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Primary CTA Text</label>
                     <input
+                        aria-label="Primary CTA Text"
                         value={form.cta_primary_text}
                         onChange={(e) => set("cta_primary_text", e.target.value)}
                         className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
@@ -129,6 +135,7 @@ function HeroForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Primary CTA Link</label>
                     <input
+                        aria-label="Primary CTA Link"
                         value={form.cta_primary_link}
                         onChange={(e) => set("cta_primary_link", e.target.value)}
                         className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
@@ -137,6 +144,7 @@ function HeroForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Secondary CTA Text</label>
                     <input
+                        aria-label="Secondary CTA Text"
                         value={form.cta_secondary_text}
                         onChange={(e) => set("cta_secondary_text", e.target.value)}
                         className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
@@ -145,6 +153,7 @@ function HeroForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Secondary CTA Link</label>
                     <input
+                        aria-label="Secondary CTA Link"
                         value={form.cta_secondary_link}
                         onChange={(e) => set("cta_secondary_link", e.target.value)}
                         className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
@@ -326,6 +335,7 @@ function BlockForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Page Slug</label>
                     <input
+                        aria-label="Page Slug"
                         value={form.page}
                         onChange={(e) => set("page", e.target.value)}
                         placeholder="home, arcplus, scanners…"
@@ -335,6 +345,7 @@ function BlockForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Block Type</label>
                     <select
+                        aria-label="Block Type"
                         value={form.block_type}
                         onChange={(e) => set("block_type", e.target.value)}
                         className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
@@ -349,6 +360,7 @@ function BlockForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Key</label>
                     <input
+                        aria-label="Key"
                         value={form.key}
                         onChange={(e) => set("key", e.target.value)}
                         placeholder="e.g. arcplus_lifecycle"
@@ -358,6 +370,7 @@ function BlockForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Order</label>
                     <input
+                        aria-label="Order"
                         type="number"
                         value={form.order}
                         onChange={(e) => set("order", parseInt(e.target.value) || 0)}
@@ -368,6 +381,7 @@ function BlockForm({
             <div>
                 <label className="block text-xs font-medium text-neutral-700 mb-1">Title</label>
                 <input
+                    aria-label="Title"
                     value={form.title}
                     onChange={(e) => set("title", e.target.value)}
                     className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
@@ -376,6 +390,7 @@ function BlockForm({
             <div>
                 <label className="block text-xs font-medium text-neutral-700 mb-1">Body</label>
                 <textarea
+                    aria-label="Body"
                     value={form.body}
                     onChange={(e) => set("body", e.target.value)}
                     rows={4}
@@ -386,6 +401,7 @@ function BlockForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Icon</label>
                     <input
+                        aria-label="Icon"
                         value={form.icon}
                         onChange={(e) => set("icon", e.target.value)}
                         className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
@@ -394,6 +410,7 @@ function BlockForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Link Text</label>
                     <input
+                        aria-label="Link Text"
                         value={form.link_text}
                         onChange={(e) => set("link_text", e.target.value)}
                         className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
@@ -402,6 +419,7 @@ function BlockForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Link URL</label>
                     <input
+                        aria-label="Link URL"
                         value={form.link_url}
                         onChange={(e) => set("link_url", e.target.value)}
                         placeholder="/path or #trial"
@@ -413,6 +431,7 @@ function BlockForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Video URL</label>
                     <input
+                        aria-label="Video URL"
                         value={form.video_url}
                         onChange={(e) => set("video_url", e.target.value)}
                         className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
@@ -473,6 +492,7 @@ function BlockForm({
                     </div>
                 )}
                 <textarea
+                    aria-label="Raw JSON data"
                     value={form.data_json}
                     onChange={(e) => {
                         set("data_json", e.target.value);

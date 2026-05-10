@@ -107,22 +107,22 @@ function EmailTemplateForm({
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Name</label>
-                    <input value={form.name} onChange={(e) => set("name", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.name} onChange={(e) => set("name", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Name" />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Slug</label>
-                    <input value={form.slug} onChange={(e) => set("slug", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.slug} onChange={(e) => set("slug", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Slug" />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Trigger Type</label>
-                    <select value={form.trigger_type} onChange={(e) => set("trigger_type", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500">
+                    <select value={form.trigger_type} onChange={(e) => set("trigger_type", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Trigger Type" >
                         {TRIGGER_CHOICES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                     </select>
                 </div>
             </div>
             <div>
                 <label className="block text-xs font-medium text-neutral-700 mb-1">Subject</label>
-                <input value={form.subject} onChange={(e) => set("subject", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" placeholder="Use {{ variable }} for template variables" />
+                <input value={form.subject} onChange={(e) => set("subject", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" placeholder="Use {{ variable }} for template variables" aria-label="Subject" />
             </div>
             <div>
                 <div className="flex items-center justify-between mb-1">
@@ -131,21 +131,21 @@ function EmailTemplateForm({
                         <Eye className="w-3 h-3" />{showPreview ? "Hide" : "Show"} Preview
                     </button>
                 </div>
-                <textarea value={form.body_html} onChange={(e) => set("body_html", e.target.value)} rows={10} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500 font-mono" />
+                <textarea aria-label="Body HTML" value={form.body_html} onChange={(e) => set("body_html", e.target.value)} rows={10} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500 font-mono" />
             </div>
             {showPreview && <PreviewPanel html={form.body_html} />}
             <div>
                 <label className="block text-xs font-medium text-neutral-700 mb-1">Body Plain Text</label>
-                <textarea value={form.body_text} onChange={(e) => set("body_text", e.target.value)} rows={4} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500 font-mono" />
+                <textarea value={form.body_text} onChange={(e) => set("body_text", e.target.value)} rows={4} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500 font-mono" aria-label="Body Plain Text" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Available Variables <span className="font-normal text-neutral-400">(JSON array)</span></label>
-                    <textarea value={form.available_variables} onChange={(e) => handleJsonField("available_variables", e.target.value)} rows={2} className={`w-full text-sm border rounded-lg px-3 py-2 focus:outline-none font-mono ${jsonError ? "border-red-400" : "border-neutral-300"}`} />
+                    <textarea aria-label="Available variables (JSON array)" value={form.available_variables} onChange={(e) => handleJsonField("available_variables", e.target.value)} rows={2} className={`w-full text-sm border rounded-lg px-3 py-2 focus:outline-none font-mono ${jsonError ? "border-red-400" : "border-neutral-300"}`} />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Preview Data <span className="font-normal text-neutral-400">(JSON object)</span></label>
-                    <textarea value={form.preview_data} onChange={(e) => handleJsonField("preview_data", e.target.value)} rows={2} className={`w-full text-sm border rounded-lg px-3 py-2 focus:outline-none font-mono ${jsonError ? "border-red-400" : "border-neutral-300"}`} />
+                    <textarea aria-label="Preview data (JSON object)" value={form.preview_data} onChange={(e) => handleJsonField("preview_data", e.target.value)} rows={2} className={`w-full text-sm border rounded-lg px-3 py-2 focus:outline-none font-mono ${jsonError ? "border-red-400" : "border-neutral-300"}`} />
                 </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">

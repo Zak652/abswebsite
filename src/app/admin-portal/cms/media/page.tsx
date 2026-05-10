@@ -106,6 +106,7 @@ export default function MediaLibraryPage() {
                 <div className="relative flex-1 min-w-[200px] max-w-sm">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400" />
                     <input
+                        aria-label="Search files"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Search files…"
@@ -163,6 +164,7 @@ export default function MediaLibraryPage() {
                 </div>
                 <div className="flex items-center gap-1 ml-2">
                     <input
+                        aria-label="New tag name"
                         value={newTag}
                         onChange={(e) => setNewTag(e.target.value)}
                         placeholder="New tag"
@@ -350,11 +352,11 @@ export default function MediaLibraryPage() {
                                 <div className="space-y-2 pt-2 border-t border-neutral-100">
                                     <div>
                                         <label className="block text-xs font-medium text-neutral-700 mb-1">Alt Text</label>
-                                        <input value={altText} onChange={(e) => setAltText(e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-1.5 focus:outline-none focus:border-primary-500" />
+                                        <input value={altText} onChange={(e) => setAltText(e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-1.5 focus:outline-none focus:border-primary-500" aria-label="Alt Text" />
                                     </div>
                                     <div>
                                         <label className="block text-xs font-medium text-neutral-700 mb-1">Caption</label>
-                                        <input value={caption} onChange={(e) => setCaption(e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-1.5 focus:outline-none focus:border-primary-500" />
+                                        <input value={caption} onChange={(e) => setCaption(e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-1.5 focus:outline-none focus:border-primary-500" aria-label="Caption" />
                                     </div>
                                     <div className="flex gap-2 justify-end">
                                         <button onClick={() => setEditingMeta(null)} className="text-xs px-3 py-1.5 rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-50">Cancel</button>

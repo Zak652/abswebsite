@@ -63,6 +63,7 @@ function NavForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Label</label>
                     <input
+                        aria-label="Label"
                         value={form.label}
                         onChange={(e) => set("label", e.target.value)}
                         className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
@@ -71,6 +72,7 @@ function NavForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">URL</label>
                     <input
+                        aria-label="URL"
                         value={form.url}
                         onChange={(e) => set("url", e.target.value)}
                         placeholder="/about, /services, https://..."
@@ -82,6 +84,7 @@ function NavForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Location</label>
                     <select
+                        aria-label="Location"
                         value={form.location}
                         onChange={(e) => set("location", e.target.value)}
                         className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
@@ -96,6 +99,7 @@ function NavForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Parent</label>
                     <select
+                        aria-label="Parent"
                         value={form.parent ?? ""}
                         onChange={(e) => set("parent", e.target.value ? Number(e.target.value) : null)}
                         className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
@@ -111,6 +115,7 @@ function NavForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Order</label>
                     <input
+                        aria-label="Order"
                         type="number"
                         value={form.order}
                         onChange={(e) => set("order", parseInt(e.target.value) || 0)}
@@ -122,6 +127,7 @@ function NavForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Column</label>
                     <input
+                        aria-label="Column"
                         value={form.column}
                         onChange={(e) => set("column", e.target.value)}
                         placeholder="Optional grouping column"
@@ -132,6 +138,7 @@ function NavForm({
                     <label className="flex items-center gap-2 cursor-pointer">
                         <input
                             type="checkbox"
+                            aria-label="Active"
                             checked={form.is_active}
                             onChange={(e) => set("is_active", e.target.checked)}
                             className="rounded border-neutral-300"

@@ -69,6 +69,7 @@ function HeroForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Eyebrow</label>
                     <input
+                        aria-label="Eyebrow"
                         value={form.eyebrow}
                         onChange={(e) => set("eyebrow", e.target.value)}
                         placeholder="e.g. ABS Training Academy"
@@ -78,6 +79,7 @@ function HeroForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Variant</label>
                     <select
+                        aria-label="Variant"
                         title="Variant"
                         value={form.variant}
                         onChange={(e) => set("variant", e.target.value)}
@@ -91,6 +93,7 @@ function HeroForm({
             <div>
                 <label className="block text-xs font-medium text-neutral-700 mb-1">Headline</label>
                 <input
+                    aria-label="Headline"
                     value={form.headline}
                     onChange={(e) => set("headline", e.target.value)}
                     placeholder="Training Academy"
@@ -100,6 +103,7 @@ function HeroForm({
             <div>
                 <label className="block text-xs font-medium text-neutral-700 mb-1">Subheadline</label>
                 <textarea
+                    aria-label="Subheadline"
                     value={form.subheadline}
                     onChange={(e) => set("subheadline", e.target.value)}
                     rows={2}
@@ -111,6 +115,7 @@ function HeroForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Primary CTA Text</label>
                     <input
+                        aria-label="Primary CTA Text"
                         title="Primary CTA Text"
                         placeholder="e.g. Browse courses"
                         value={form.cta_primary_text}
@@ -121,6 +126,7 @@ function HeroForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Primary CTA Link</label>
                     <input
+                        aria-label="Primary CTA Link"
                         title="Primary CTA Link"
                         placeholder="/training/courses"
                         value={form.cta_primary_link}
@@ -131,6 +137,7 @@ function HeroForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Secondary CTA Text</label>
                     <input
+                        aria-label="Secondary CTA Text"
                         title="Secondary CTA Text"
                         placeholder="e.g. Talk to sales"
                         value={form.cta_secondary_text}
@@ -141,6 +148,7 @@ function HeroForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Secondary CTA Link</label>
                     <input
+                        aria-label="Secondary CTA Link"
                         title="Secondary CTA Link"
                         placeholder="/contact"
                         value={form.cta_secondary_link}
@@ -207,6 +215,7 @@ function SidebarForm({
             <div>
                 <label className="block text-xs font-medium text-neutral-700 mb-1">Title</label>
                 <input
+                    aria-label="Title"
                     value={form.title}
                     onChange={(e) => set("title", e.target.value)}
                     placeholder="Need private team training?"
@@ -216,6 +225,7 @@ function SidebarForm({
             <div>
                 <label className="block text-xs font-medium text-neutral-700 mb-1">Body</label>
                 <textarea
+                    aria-label="Body"
                     value={form.body}
                     onChange={(e) => set("body", e.target.value)}
                     rows={3}
@@ -227,6 +237,7 @@ function SidebarForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Button Text</label>
                     <input
+                        aria-label="Button Text"
                         value={form.link_text}
                         onChange={(e) => set("link_text", e.target.value)}
                         placeholder="Request Custom Quote"
@@ -236,6 +247,7 @@ function SidebarForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Button URL</label>
                     <input
+                        aria-label="Button URL"
                         value={form.link_url}
                         onChange={(e) => set("link_url", e.target.value)}
                         placeholder="/rfq"
@@ -747,6 +759,7 @@ function Field({
             <span className="block text-xs font-medium text-primary-900 mb-1">{label}</span>
             {textarea ? (
                 <textarea
+                    aria-label={label}
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     rows={2}
@@ -755,6 +768,7 @@ function Field({
             ) : (
                 <input
                     type="text"
+                    aria-label={label}
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     className="w-full text-sm rounded-lg border border-neutral-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-200"

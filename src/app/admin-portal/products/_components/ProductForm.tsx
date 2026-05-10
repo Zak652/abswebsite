@@ -110,6 +110,7 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
           <div className="sm:col-span-2">
             <label className={labelCls}>Product Name *</label>
             <input
+                aria-label="Product Name *"
               type="text"
               required
               value={name}
@@ -121,6 +122,7 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
           <div>
             <label className={labelCls}>Slug *</label>
             <input
+                aria-label="Slug *"
               type="text"
               required
               value={slug}
@@ -132,6 +134,7 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
           <div>
             <label className={labelCls}>Display Order</label>
             <input
+                aria-label="Display Order"
               type="number"
               value={order}
               onChange={(e) => setOrder(e.target.value)}
@@ -142,6 +145,7 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
           <div className="sm:col-span-2">
             <label className={labelCls}>Short Description</label>
             <input
+                aria-label="Short Description"
               type="text"
               value={shortDescription}
               onChange={(e) => setShortDescription(e.target.value)}
@@ -152,6 +156,7 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
           <div className="sm:col-span-2">
             <label className={labelCls}>Full Description</label>
             <textarea
+                aria-label="Full Description"
               value={fullDescription}
               onChange={(e) => setFullDescription(e.target.value)}
               rows={4}
@@ -178,6 +183,7 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
               <label className={labelCls}>{label}</label>
               <input
                 type="url"
+                aria-label={label}
                 value={value}
                 onChange={(e) => setter(e.target.value)}
                 className={inputCls}
@@ -188,6 +194,7 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
           <div className="sm:col-span-2">
             <label className={labelCls}>Datasheet URL</label>
             <input
+                aria-label="Datasheet URL"
               type="url"
               value={datasheetUrl}
               onChange={(e) => setDatasheetUrl(e.target.value)}
@@ -208,6 +215,7 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
             <div key={i} className="flex items-center gap-2">
               <input
                 type="text"
+                aria-label="Specification field name"
                 value={spec.key}
                 onChange={(e) => updateSpec(i, "key", e.target.value)}
                 placeholder="Field name (e.g. Read Range)"
@@ -215,6 +223,7 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
               />
               <input
                 type="text"
+                aria-label="Specification value"
                 value={spec.value}
                 onChange={(e) => updateSpec(i, "value", e.target.value)}
                 placeholder="Value (e.g. 0–30 cm)"
@@ -268,6 +277,7 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
             <label key={label} className="flex items-center gap-3 cursor-pointer">
               <input
                 type="checkbox"
+                aria-label={label}
                 checked={checked}
                 onChange={(e) => setter(e.target.checked)}
                 className="w-4 h-4 rounded border-neutral-300 text-primary-900 focus:ring-primary-500"

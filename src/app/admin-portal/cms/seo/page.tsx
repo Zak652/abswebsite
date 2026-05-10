@@ -72,32 +72,32 @@ function MetaForm({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Route</label>
-                    <input value={form.route} onChange={(e) => set("route", e.target.value)} placeholder="/services" className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.route} onChange={(e) => set("route", e.target.value)} placeholder="/services" className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Route" />
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Canonical URL</label>
-                    <input value={form.canonical_url} onChange={(e) => set("canonical_url", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.canonical_url} onChange={(e) => set("canonical_url", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="Canonical URL" />
                 </div>
             </div>
             <div>
                 <label className="block text-xs font-medium text-neutral-700 mb-1">
                     Title <span className={`font-normal ${titleLen > 60 ? "text-red-500" : "text-neutral-400"}`}>({titleLen}/60)</span>
                 </label>
-                <input value={form.title} onChange={(e) => set("title", e.target.value)} className={`w-full text-sm border rounded-lg px-3 py-2 focus:outline-none ${titleLen > 60 ? "border-red-400 focus:border-red-500" : "border-neutral-300 focus:border-primary-500"}`} />
+                <input aria-label="SEO title" value={form.title} onChange={(e) => set("title", e.target.value)} className={`w-full text-sm border rounded-lg px-3 py-2 focus:outline-none ${titleLen > 60 ? "border-red-400 focus:border-red-500" : "border-neutral-300 focus:border-primary-500"}`} />
             </div>
             <div>
                 <label className="block text-xs font-medium text-neutral-700 mb-1">
                     Description <span className={`font-normal ${descLen > 160 ? "text-red-500" : "text-neutral-400"}`}>({descLen}/160)</span>
                 </label>
-                <textarea value={form.description} onChange={(e) => set("description", e.target.value)} rows={2} className={`w-full text-sm border rounded-lg px-3 py-2 focus:outline-none ${descLen > 160 ? "border-red-400 focus:border-red-500" : "border-neutral-300 focus:border-primary-500"}`} />
+                <textarea aria-label="SEO description" value={form.description} onChange={(e) => set("description", e.target.value)} rows={2} className={`w-full text-sm border rounded-lg px-3 py-2 focus:outline-none ${descLen > 160 ? "border-red-400 focus:border-red-500" : "border-neutral-300 focus:border-primary-500"}`} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">OG Image URL</label>
-                    <input value={form.og_image} onChange={(e) => set("og_image", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
+                    <input value={form.og_image} onChange={(e) => set("og_image", e.target.value)} className="w-full text-sm border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" aria-label="OG Image URL" />
                 </div>
                 <label className="flex items-center gap-2 cursor-pointer self-end pb-2">
-                    <input type="checkbox" checked={form.is_indexed} onChange={(e) => set("is_indexed", e.target.checked)} className="rounded border-neutral-300" />
+                    <input type="checkbox" aria-label="Allow indexing" checked={form.is_indexed} onChange={(e) => set("is_indexed", e.target.checked)} className="rounded border-neutral-300" />
                     <span className="text-xs font-medium text-neutral-700">Allow indexing</span>
                 </label>
             </div>
@@ -105,6 +105,7 @@ function MetaForm({
                 <div>
                     <label className="block text-xs font-medium text-neutral-700 mb-1">Structured Data (JSON-LD)</label>
                     <textarea
+                        aria-label="Structured Data (JSON-LD)"
                         value={form.structured_data}
                         onChange={(e) => handleJsonChange("structured_data", setSdError, e.target.value)}
                         rows={3}
@@ -117,6 +118,7 @@ function MetaForm({
                         Hreflang Alternates <span className="font-normal text-neutral-400">{`{"en": "/en/page"}`}</span>
                     </label>
                     <textarea
+                        aria-label="Hreflang alternates (JSON)"
                         value={form.hreflang_alternates}
                         onChange={(e) => handleJsonChange("hreflang_alternates", setHlError, e.target.value)}
                         rows={3}

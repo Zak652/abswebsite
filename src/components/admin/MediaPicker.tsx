@@ -188,6 +188,7 @@ export function MediaPicker({
                                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400" />
                                 <input
                                     type="text"
+                                    aria-label="Search media library"
                                     placeholder="Search filename or alt text…"
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}

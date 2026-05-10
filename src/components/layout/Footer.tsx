@@ -115,6 +115,7 @@ export default function Footer({
                             <div className="flex">
                                 <input
                                     type="email"
+                                    aria-label="Email address for newsletter"
                                     placeholder="Enter your email"
                                     className="bg-white/5 border border-white/10 rounded-l-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-accent-500 w-full"
                                 />

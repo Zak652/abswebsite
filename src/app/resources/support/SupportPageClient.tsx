@@ -178,21 +178,21 @@ export function SupportPageClient({ cmsTiers }: SupportPageClientProps) {
                             <div className="grid sm:grid-cols-2 gap-5">
                                 <div>
                                     <label className="text-xs font-medium text-primary-900/60 mb-1.5 block">Full name <span className="text-accent-500">*</span></label>
-                                    <input required type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full px-4 py-3 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-900/20 focus:border-primary-900 transition-colors" placeholder="Jane Mwangi" />
+                                    <input required type="text" aria-label="Full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full px-4 py-3 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-900/20 focus:border-primary-900 transition-colors" placeholder="Jane Mwangi" />
                                 </div>
                                 <div>
                                     <label className="text-xs font-medium text-primary-900/60 mb-1.5 block">Work email <span className="text-accent-500">*</span></label>
-                                    <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-4 py-3 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-900/20 focus:border-primary-900 transition-colors" placeholder="jane@yourorg.com" />
+                                    <input required type="email" aria-label="Work email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-4 py-3 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-900/20 focus:border-primary-900 transition-colors" placeholder="jane@yourorg.com" />
                                 </div>
                             </div>
                             <div className="grid sm:grid-cols-2 gap-5">
                                 <div>
                                     <label className="text-xs font-medium text-primary-900/60 mb-1.5 block">Company</label>
-                                    <input type="text" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} className="w-full px-4 py-3 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-900/20 focus:border-primary-900 transition-colors" placeholder="Your Organisation" />
+                                    <input type="text" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} className="w-full px-4 py-3 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-900/20 focus:border-primary-900 transition-colors" placeholder="Your Organisation" aria-label="Company" />
                                 </div>
                                 <div>
                                     <label className="text-xs font-medium text-primary-900/60 mb-1.5 block">Current Arcplus plan</label>
-                                    <select value={form.plan} onChange={(e) => setForm({ ...form, plan: e.target.value })} className="w-full px-4 py-3 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-900/20 focus:border-primary-900 transition-colors bg-white">
+                                    <select value={form.plan} onChange={(e) => setForm({ ...form, plan: e.target.value })} className="w-full px-4 py-3 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-900/20 focus:border-primary-900 transition-colors bg-white" aria-label="Current Arcplus plan" >
                                         <option value="">Select plan (optional)</option>
                                         <option value="Starter">Starter</option>
                                         <option value="Growth">Growth</option>
@@ -205,7 +205,7 @@ export function SupportPageClient({ cmsTiers }: SupportPageClientProps) {
                             </div>
                             <div>
                                 <label className="text-xs font-medium text-primary-900/60 mb-1.5 block">Message <span className="text-accent-500">*</span></label>
-                                <textarea required rows={5} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="w-full px-4 py-3 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-900/20 focus:border-primary-900 transition-colors resize-none" placeholder="Describe your issue, question, or request..." />
+                                <textarea required rows={5} aria-label="Support message" value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="w-full px-4 py-3 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-900/20 focus:border-primary-900 transition-colors resize-none" placeholder="Describe your issue, question, or request..." />
                             </div>
                             <button type="submit" disabled={submitting} className="w-full sm:w-auto bg-primary-900 text-white px-8 py-3.5 rounded-xl font-medium hover:bg-accent-500 transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
                                 {submitting ? "Sending…" : "Send Message"}
