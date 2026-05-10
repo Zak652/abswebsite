@@ -12,24 +12,33 @@ from apps.subscriptions.models import ArcplusTrialSignup
 
 @pytest.fixture
 def alice(db):
-    return User.objects.create_user(
+    """Verified-email user — clears the IsEmailVerified gate on cancel."""
+    from django.utils import timezone
+    user = User.objects.create_user(
         email="alice@example.com",
-        password="test-password-123",
+        password="test-password-123",  # gitleaks:allow
         full_name="Alice",
         company_name="Co",
         role="client",
     )
+    user.email_verified_at = timezone.now()
+    user.save(update_fields=["email_verified_at"])
+    return user
 
 
 @pytest.fixture
 def bob(db):
-    return User.objects.create_user(
+    from django.utils import timezone
+    user = User.objects.create_user(
         email="bob@example.com",
-        password="test-password-123",
+        password="test-password-123",  # gitleaks:allow
         full_name="Bob",
         company_name="Co",
         role="client",
     )
+    user.email_verified_at = timezone.now()
+    user.save(update_fields=["email_verified_at"])
+    return user
 
 
 @pytest.fixture
